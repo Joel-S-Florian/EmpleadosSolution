@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Bienvenido al Sistema de Gestión de Empleados</h1>
+    <p class="lead">Gestiona empleados y departamentos de tu organización</p>
+    <hr />
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Empleados</h5>
+                    <p class="card-text">Gestiona el personal de la empresa</p>
+                    <a asp-controller="Empleados" asp-action="Index" class="btn btn-primary">Ir a Empleados</a>
+                </div>
+            </div>
+        </div>
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Departamentos</h5>
+                        <p class="card-text">Administra los departamentos</p>
+                        <a asp-controller="Departamentos" asp-action="Index" class="btn btn-success">Ir a Departamentos</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

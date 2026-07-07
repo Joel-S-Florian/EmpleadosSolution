@@ -1,0 +1,91 @@
+﻿@model Empleado
+@using Empleados.Data.Entities
+
+@{
+    ViewData["Title"] = "Detalle del Empleado";
+}
+
+<div class="container mt-4">
+    <h1>Detalle del Empleado</h1>
+    <hr />
+
+    <div class="card">
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9">@Model.Nombre @Model.Apellido</dd>
+
+                <dt class="col-sm-3">Fecha Nacimiento</dt>
+                <dd class="col-sm-9">@Model.FechaNacimiento.ToString("dd/MM/yyyy")</dd>
+
+                <dt class="col-sm-3">Dirección</dt>
+                <dd class="col-sm-9">@Model.Direccion</dd>
+
+                <dt class="col-sm-3">Teléfono</dt>
+                <dd class="col-sm-9">@Model.Telefono</dd>
+
+                <dt class="col-sm-3">Correo Electrónico</dt>
+                <dd class="col-sm-9">@Model.CorreoElectronico</dd>
+
+                <dt class="col-sm-3">Puesto</dt>
+                <dd class="col-sm-9">@Model.Puesto</dd>
+
+                <dt class="col-sm-3">Salario</dt>
+                <dd class="col-sm-9">@Model.Salario.ToString("C")</dd>
+
+                <dt class="col-sm-3">Fecha Contratación</dt>
+                <dd class="col-sm-9">@Model.FechaContratacion.ToString("dd/MM/yyyy")</dd>
+
+                <dt class="col-sm-3">Fecha Terminación</dt>
+                <dd class="col-sm-9">@(Model.FechaTerminacion?.ToString("dd/MM/yyyy") ?? "N/A")</dd>
+
+                <dt class="col-sm-3">Departamento</dt>
+                <dd class="col-sm-9">@Model.Departamento?.Nombre</dd>
+
+                <dt class="col-sm-3">Estado</dt>
+                <dd class="col-sm-9">
+                    <span class="badge @(Model.Estado == EstadoEmpleado.Activo ? "bg-success" : Model.Estado == EstadoEmpleado.Inactivo ? "bg-warning" : "bg-danger")">
+                        @Model.Estado
+                    </span>
+                </dd>
+
+                <dt class="col-sm-3">Foto</dt>
+                <dd class="col-sm-9">
+                    @if (!string.IsNullOrEmpty(Model.FotoRuta))
+                    {
+                        <img src="@Model.FotoRuta" alt="Foto" style="max-width: 200px; max-height: 200px;" />
+                    }
+                    else
+                    {
+                        <span>Sin foto</span>
+                    }
+                </dd>
+            </dl>
+
+            <!-- Formulario para subir foto -->
+            @if (User.IsInRole("Admin") && Model.Estado != EstadoEmpleado.Despedido)
+            {
+                <hr />
+                <h5>Subir Foto</h5>
+                <form asp-action="SubirFoto" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" class="mt-2">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-6">
+                            <input type="file" name="foto" class="form-control" accept="image/*" required />
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary">Subir Foto</button>
+                        </div>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Index" class="btn btn-secondary">Volver a la lista</a>
+        @if (User.IsInRole("Admin") && Model.Estado != EstadoEmpleado.Despedido)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
+        }
+    </div>
+</div>

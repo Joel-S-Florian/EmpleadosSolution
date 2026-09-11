@@ -41,4 +41,6 @@ public class ActualizarEmpleadoDto
 
     [Required(ErrorMessage = "El departamento es obligatorio")]
     public int DepartamentoId { get; set; }
+
+    public int? PuestoId { get; set; }
 }

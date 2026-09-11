@@ -96,6 +96,9 @@ namespace Empleados.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("PuestoId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Salario")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -112,7 +115,71 @@ namespace Empleados.Data.Migrations
 
                     b.HasIndex("DepartamentoId");
 
+                    b.HasIndex("PuestoId");
+
                     b.ToTable("Empleados");
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.Notificacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Leida")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Mensaje")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("UsuarioDestinoId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioDestinoId");
+
+                    b.ToTable("Notificaciones");
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.Puesto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DepartamentoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartamentoId");
+
+                    b.ToTable("Puestos");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -260,12 +327,10 @@ namespace Empleados.Data.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -302,12 +367,10 @@ namespace Empleados.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -321,6 +384,24 @@ namespace Empleados.Data.Migrations
                 {
                     b.HasOne("Empleados.Data.Entities.Departamento", "Departamento")
                         .WithMany("Empleados")
+                        .HasForeignKey("DepartamentoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Empleados.Data.Entities.Puesto", "PuestoNav")
+                        .WithMany("Empleados")
+                        .HasForeignKey("PuestoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Departamento");
+
+                    b.Navigation("PuestoNav");
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.Puesto", b =>
+                {
+                    b.HasOne("Empleados.Data.Entities.Departamento", "Departamento")
+                        .WithMany("Puestos")
                         .HasForeignKey("DepartamentoId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -380,6 +461,13 @@ namespace Empleados.Data.Migrations
                 });
 
             modelBuilder.Entity("Empleados.Data.Entities.Departamento", b =>
+                {
+                    b.Navigation("Empleados");
+
+                    b.Navigation("Puestos");
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.Puesto", b =>
                 {
                     b.Navigation("Empleados");
                 });

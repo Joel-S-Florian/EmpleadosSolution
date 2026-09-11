@@ -16,4 +16,6 @@ public class EmpleadoDto
     public string Estado { get; set; } = string.Empty;
     public string? FotoRuta { get; set; }
     public string NombreDepartamento { get; set; } = string.Empty;
+    public int? PuestoId { get; set; }
+    public string? NombrePuesto { get; set; }
 }

@@ -2,31 +2,58 @@
     ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Bienvenido al Sistema de Gestión de Empleados</h1>
-    <p class="lead">Gestiona empleados y departamentos de tu organización</p>
-    <hr />
-    <div class="row mt-5">
+<div style="max-width: 1100px; margin: 0 auto;">
+    <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-2xl) var(--space-xl); box-shadow: var(--shadow-sm); margin-bottom: var(--space-xl);">
+        <div style="max-width: 640px;">
+            <div style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.25rem 0.6rem; border-radius: var(--radius-pill); background: var(--bg-muted); border:1px solid var(--border-color); color: var(--text-secondary); font-size:0.75rem; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; margin-bottom: var(--space-md);">
+                <i class="bi bi-shield-check" style="color: var(--success);"></i> Sistema RRHH · v1.0
+            </div>
+            <h1 style="font-size:1.9rem; font-weight:700; letter-spacing:-0.03em; margin:0 0 0.5rem; color: var(--text-primary);">Gestión de empleados, simple y precisa</h1>
+            <p style="color: var(--text-secondary); font-size:1rem; line-height:1.6; margin:0 0 var(--space-lg);">Administra empleados, departamentos y puestos con integridad referencial, reportes en tiempo real y notificaciones internas. Diseñado para operar con claridad en modo claro y oscuro.</p>
+            <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                <a asp-controller="Empleados" asp-action="Index" style="display:inline-flex; align-items:center; gap:0.5rem; background: var(--text-primary); color: var(--bg-surface); border:1px solid var(--text-primary); border-radius: var(--radius); padding:0.6rem 1rem; font-weight:500; text-decoration:none;">
+                    <i class="bi bi-people"></i> Ver empleados
+                </a>
+                <a asp-controller="Reportes" asp-action="Index" style="display:inline-flex; align-items:center; gap:0.5rem; background: var(--bg-surface); color: var(--text-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.6rem 1rem; font-weight:500; text-decoration:none;">
+                    <i class="bi bi-bar-chart-line"></i> Ver reportes
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 g-md-4">
         <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Empleados</h5>
-                    <p class="card-text">Gestiona el personal de la empresa</p>
-                    <a asp-controller="Empleados" asp-action="Index" class="btn btn-primary">Ir a Empleados</a>
-                </div>
+            <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding: var(--space-lg); box-shadow: var(--shadow-sm); height:100%; display:flex; flex-direction:column;">
+                <div style="width:40px; height:40px; border-radius: var(--radius); background: var(--bg-muted); border:1px solid var(--border-color); display:grid; place-items:center; color: var(--text-secondary); margin-bottom: var(--space-md);"><i class="bi bi-people" style="font-size:1.2rem;"></i></div>
+                <h3 style="font-size:1rem; font-weight:600; margin:0 0 0.25rem;">Empleados</h3>
+                <p style="color: var(--text-secondary); font-size:0.9rem; margin:0 0 var(--space-md); flex:1;">Altas, ediciones, desactivación y despido con reglas de estado inmutable.</p>
+                <a asp-controller="Empleados" asp-action="Index" style="display:inline-flex; align-items:center; gap:0.4rem; color: var(--text-primary); font-weight:500; font-size:0.9rem; text-decoration:none; border:1px solid var(--border-color); border-radius: var(--radius); padding:0.45rem 0.75rem; align-self:flex-start; background: var(--bg-surface);">Abrir <i class="bi bi-arrow-right" style="font-size:0.85rem;"></i></a>
             </div>
         </div>
         @if (User.IsInRole("Admin"))
         {
             <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Departamentos</h5>
-                        <p class="card-text">Administra los departamentos</p>
-                        <a asp-controller="Departamentos" asp-action="Index" class="btn btn-success">Ir a Departamentos</a>
-                    </div>
+                <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding: var(--space-lg); box-shadow: var(--shadow-sm); height:100%; display:flex; flex-direction:column;">
+                    <div style="width:40px; height:40px; border-radius: var(--radius); background: var(--bg-muted); border:1px solid var(--border-color); display:grid; place-items:center; color: var(--text-secondary); margin-bottom: var(--space-md);"><i class="bi bi-building" style="font-size:1.2rem;"></i></div>
+                    <h3 style="font-size:1rem; font-weight:600; margin:0 0 0.25rem;">Departamentos</h3>
+                    <p style="color: var(--text-secondary); font-size:0.9rem; margin:0 0 var(--space-md); flex:1;">Estructura organizativa con protección contra borrado con empleados o puestos.</p>
+                    <a asp-controller="Departamentos" asp-action="Index" style="display:inline-flex; align-items:center; gap:0.4rem; color: var(--text-primary); font-weight:500; font-size:0.9rem; text-decoration:none; border:1px solid var(--border-color); border-radius: var(--radius); padding:0.45rem 0.75rem; align-self:flex-start; background: var(--bg-surface);">Abrir <i class="bi bi-arrow-right" style="font-size:0.85rem;"></i></a>
                 </div>
             </div>
         }
+        <div class="col-md-4">
+            <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding: var(--space-lg); box-shadow: var(--shadow-sm); height:100%; display:flex; flex-direction:column;">
+                <div style="width:40px; height:40px; border-radius: var(--radius); background: var(--bg-muted); border:1px solid var(--border-color); display:grid; place-items:center; color: var(--text-secondary); margin-bottom: var(--space-md);"><i class="bi bi-briefcase" style="font-size:1.2rem;"></i></div>
+                <h3 style="font-size:1rem; font-weight:600; margin:0 0 0.25rem;">Puestos</h3>
+                <p style="color: var(--text-secondary); font-size:0.9rem; margin:0 0 var(--space-md); flex:1;">Catálogo vinculado a departamento con integridad referencial y filtrado dinámico.</p>
+                <a asp-controller="Puestos" asp-action="Index" style="display:inline-flex; align-items:center; gap:0.4rem; color: var(--text-primary); font-weight:500; font-size:0.9rem; text-decoration:none; border:1px solid var(--border-color); border-radius: var(--radius); padding:0.45rem 0.75rem; align-self:flex-start; background: var(--bg-surface);">Abrir <i class="bi bi-arrow-right" style="font-size:0.85rem;"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: var(--space-xl); display:flex; gap: var(--space-sm); flex-wrap:wrap; color: var(--text-muted); font-size:0.8rem; align-items:center;">
+        <span style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.3rem 0.6rem; border-radius: var(--radius-pill); border:1px solid var(--border-color); background: var(--bg-surface);"><i class="bi bi-moon"></i> Claro / Oscuro</span>
+        <span style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.3rem 0.6rem; border-radius: var(--radius-pill); border:1px solid var(--border-color); background: var(--bg-surface);"><i class="bi bi-palette"></i> Tokens CSS</span>
+        <span style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.3rem 0.6rem; border-radius: var(--radius-pill); border:1px solid var(--border-color); background: var(--bg-surface);"><i class="bi bi-bell"></i> Notificaciones 30s</span>
     </div>
 </div>

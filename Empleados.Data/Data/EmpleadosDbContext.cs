@@ -14,6 +14,8 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
 
     public DbSet<Empleado> Empleados { get; set; }
     public DbSet<Departamento> Departamentos { get; set; }
+    public DbSet<Puesto> Puestos { get; set; }
+    public DbSet<Notificacion> Notificaciones { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,11 +44,44 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
             entity.Property(d => d.Descripcion).HasMaxLength(500);
         });
 
-        // Relación
+        // Configuración de Puesto
+        modelBuilder.Entity<Puesto>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Nombre).IsRequired().HasMaxLength(100);
+            entity.Property(p => p.Descripcion).HasMaxLength(500);
+        });
+
+        // Relación Empleado - Departamento
         modelBuilder.Entity<Empleado>()
             .HasOne(e => e.Departamento)
             .WithMany(d => d.Empleados)
             .HasForeignKey(e => e.DepartamentoId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Relación Puesto - Departamento
+        modelBuilder.Entity<Puesto>()
+            .HasOne(p => p.Departamento)
+            .WithMany(d => d.Puestos)
+            .HasForeignKey(p => p.DepartamentoId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Relación Empleado - Puesto (opcional, integridad referencial)
+        modelBuilder.Entity<Empleado>()
+            .HasOne(e => e.PuestoNav)
+            .WithMany(p => p.Empleados)
+            .HasForeignKey(e => e.PuestoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Configuración de Notificacion
+        modelBuilder.Entity<Notificacion>(entity =>
+        {
+            entity.HasKey(n => n.Id);
+            entity.Property(n => n.Mensaje).IsRequired().HasMaxLength(500);
+            entity.Property(n => n.Tipo).HasConversion<string>().HasMaxLength(20);
+            entity.Property(n => n.UsuarioDestinoId).HasMaxLength(450);
+            entity.HasIndex(n => n.UsuarioDestinoId);
+            entity.Property(n => n.FechaCreacion).IsRequired();
+        });
     }
 }

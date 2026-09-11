@@ -7,4 +7,5 @@ public class Departamento
     public string? Descripcion { get; set; }
 
     public virtual ICollection<Empleado> Empleados { get; set; } = new List<Empleado>();
+    public virtual ICollection<Puesto> Puestos { get; set; } = new List<Puesto>();
 }

@@ -1,36 +1,48 @@
 ﻿@model Departamento
-
 @{
-    ViewData["Title"] = "Nuevo Departamento";
+    ViewData["Title"] = "Nuevo departamento";
 }
 
-<div class="container mt-4">
-    <h1>Nuevo Departamento</h1>
-    <hr />
-
-    <div class="row">
-        <div class="col-md-6">
-            <form asp-action="Create">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="Nombre" class="control-label"></label>
-                    <input asp-for="Nombre" class="form-control" />
-                    <span asp-validation-for="Nombre" class="text-danger"></span>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="Descripcion" class="control-label"></label>
-                    <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
-                    <span asp-validation-for="Descripcion" class="text-danger"></span>
-                </div>
-
-                <div class="form-group mb-3">
-                    <input type="submit" value="Guardar" class="btn btn-primary" />
-                    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-                </div>
-            </form>
+<div style="max-width:720px; margin:0 auto;">
+    <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom: var(--space-lg);">
+        <a asp-action="Index" style="width:36px; height:36px; display:grid; place-items:center; border-radius: var(--radius); border:1px solid var(--border-color); background: var(--bg-surface); color: var(--text-secondary); text-decoration:none;"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h1 style="font-size:1.25rem; font-weight:700; margin:0; letter-spacing:-0.02em;">Nuevo departamento</h1>
+            <p style="margin:0; color: var(--text-secondary); font-size:0.9rem;">Crea una unidad organizativa</p>
         </div>
+    </div>
+
+    <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow:hidden;">
+        <div style="padding: var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border-color); display:flex; align-items:center; gap:0.75rem;">
+            <span style="width:36px; height:36px; display:grid; place-items:center; background: var(--bg-muted); border:1px solid var(--border-color); border-radius: var(--radius); color: var(--text-secondary);"><i class="bi bi-building-add"></i></span>
+            <div>
+                <div style="font-weight:600; color: var(--text-primary);">Información del departamento</div>
+                <div style="font-size:0.8rem; color: var(--text-muted);">Nombre único y descripción opcional</div>
+            </div>
+        </div>
+        <form asp-action="Create" style="padding: var(--space-xl);">
+            <div asp-validation-summary="ModelOnly" style="background: var(--danger-soft); border:1px solid var(--danger-border); color: var(--danger); border-radius: var(--radius); padding:0.75rem 1rem; margin-bottom: var(--space-lg); font-size:0.9rem;"></div>
+
+            <div style="display:flex; flex-direction:column; gap: var(--space-md);">
+                <div>
+                    <label asp-for="Nombre" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Nombre *</label>
+                    <input asp-for="Nombre" class="form-control" placeholder="Ej: Tecnología" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;" />
+                    <span asp-validation-for="Nombre" style="color: var(--danger); font-size:0.8rem;"></span>
+                </div>
+                <div>
+                    <label asp-for="Descripcion" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Descripción</label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="3" placeholder="Breve descripción del departamento" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;"></textarea>
+                    <span asp-validation-for="Descripcion" style="color: var(--danger); font-size:0.8rem;"></span>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top: var(--space-xl); padding-top: var(--space-lg); border-top:1px solid var(--border-color);">
+                <a asp-action="Index" style="display:inline-flex; align-items:center; gap:0.4rem; background: var(--bg-surface); color: var(--text-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.6rem 1rem; font-weight:500; text-decoration:none;">Cancelar</a>
+                <button type="submit" style="display:inline-flex; align-items:center; gap:0.5rem; background: var(--text-primary); color: var(--bg-surface); border:1px solid var(--text-primary); border-radius: var(--radius); padding:0.6rem 1.2rem; font-weight:500; cursor:pointer;">
+                    <i class="bi bi-check-lg"></i> Guardar
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 

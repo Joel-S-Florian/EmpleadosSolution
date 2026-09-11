@@ -1,124 +1,131 @@
 ﻿@model IEnumerable<Empleado>
 @using Empleados.Data.Entities
-
 @{
     ViewData["Title"] = "Empleados";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Empleados</h1>
+<div style="max-width:1200px; margin:0 auto;">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap: var(--space-md); margin-bottom: var(--space-lg); flex-wrap:wrap;">
+        <div style="display:flex; gap: var(--space-md); align-items:flex-start;">
+            <span style="width:44px; height:44px; display:grid; place-items:center; background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); color: var(--text-secondary);"><i class="bi bi-people" style="font-size:1.2rem;"></i></span>
+            <div>
+                <h1 style="font-size:1.35rem; font-weight:700; margin:0; letter-spacing:-0.02em;">Empleados</h1>
+                <p style="margin:0.2rem 0 0; color: var(--text-secondary); font-size:0.9rem;">@ViewBag.TotalCount registros · Página @ViewBag.CurrentPage de @ViewBag.TotalPages</p>
+            </div>
+        </div>
         @if (User.IsInRole("Admin"))
         {
-            <a asp-action="Create" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Nuevo Empleado
+            <a asp-action="Create" style="display:inline-flex; align-items:center; gap:0.5rem; background: var(--text-primary); color: var(--bg-surface); border:1px solid var(--text-primary); border-radius: var(--radius); padding:0.55rem 0.9rem; font-weight:500; text-decoration:none; font-size:0.9rem;">
+                <i class="bi bi-plus-lg"></i> Nuevo empleado
             </a>
         }
     </div>
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div style="background: var(--success-soft); border:1px solid var(--success-border); color: var(--success); border-radius: var(--radius); padding:0.75rem 1rem; display:flex; align-items:center; gap:0.5rem; margin-bottom: var(--space-md);">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
         </div>
     }
-
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div style="background: var(--danger-soft); border:1px solid var(--danger-border); color: var(--danger); border-radius: var(--radius); padding:0.75rem 1rem; display:flex; align-items:center; gap:0.5rem; margin-bottom: var(--space-md);">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
         </div>
     }
 
-    <!-- Filtros -->
-    <div class="card mb-3">
-        <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Nombre</label>
-                    <input type="text" name="nombre" class="form-control" value="@ViewBag.Nombre" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Apellido</label>
-                    <input type="text" name="apellido" class="form-control" value="@ViewBag.Apellido" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Fecha Contratación</label>
-                    <input type="date" name="fechaContratacion" class="form-control" value="@ViewBag.FechaContratacion" />
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">Buscar</button>
-                    <a asp-action="Index" class="btn btn-secondary">Limpiar</a>
-                </div>
-            </form>
-        </div>
+    <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: var(--space-md) var(--space-lg); margin-bottom: var(--space-lg);">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em;">Nombre</label>
+                <input type="text" name="nombre" class="form-control" placeholder="Buscar nombre" value="@ViewBag.Nombre" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius);" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em;">Apellido</label>
+                <input type="text" name="apellido" class="form-control" placeholder="Buscar apellido" value="@ViewBag.Apellido" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius);" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em;">Fecha contratación</label>
+                <input type="date" name="fechaContratacion" class="form-control" value="@ViewBag.FechaContratacion" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius);" />
+            </div>
+            <div class="col-md-3 d-flex gap-2 align-items-end">
+                <button type="submit" style="flex:1; display:inline-flex; align-items:center; justify-content:center; gap:0.4rem; background: var(--text-primary); color: var(--bg-surface); border:1px solid var(--text-primary); border-radius: var(--radius); padding:0.5rem 0.75rem; font-weight:500;"><i class="bi bi-search"></i> Buscar</button>
+                <a asp-action="Index" style="display:inline-flex; align-items:center; justify-content:center; background: var(--bg-surface); color: var(--text-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.5rem 0.75rem; text-decoration:none; font-weight:500;">Limpiar</a>
+            </div>
+        </form>
     </div>
 
-    <!-- Tabla de empleados -->
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th>Departamento</th>
-                    <th>Puesto</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td>@item.Nombre</td>
-                        <td>@item.Apellido</td>
-                        <td>@item.Departamento?.Nombre</td>
-                        <td>@item.Puesto</td>
-                        <td>
-                            <span class="badge @(item.Estado == EstadoEmpleado.Activo ? "bg-success" : item.Estado == EstadoEmpleado.Inactivo ? "bg-warning" : "bg-danger")">
-                                @item.Estado
-                            </span>
-                        </td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Ver</a>
-                                @if (User.IsInRole("Admin") && item.Estado != EstadoEmpleado.Despedido)
-                                {
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Editar</a>
-                                    <form asp-action="Desactivar" asp-route-id="@item.Id" method="post" style="display:inline">
-                                        <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('¿Desactivar este empleado?')">Desactivar</button>
-                                    </form>
-                                    <form asp-action="Despedir" asp-route-id="@item.Id" method="post" style="display:inline">
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Despedir este empleado? Esta acción es irreversible')">Despedir</button>
-                                    </form>
-                                }
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Paginación -->
-    @if (ViewBag.TotalPages > 1)
+    @if (!Model.Any())
     {
-        <nav>
-            <ul class="pagination justify-content-center">
-                @for (int i = 1; i <= ViewBag.TotalPages; i++)
-                {
-                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                        <a class="page-link" href="@Url.Action("Index", new { page = i, pageSize = ViewBag.PageSize, nombre = ViewBag.Nombre, apellido = ViewBag.Apellido, fechaContratacion = ViewBag.FechaContratacion })">@i</a>
-                    </li>
-                }
-            </ul>
-        </nav>
+        <partial name="~/Views/Shared/Components/_EmptyState.cshtml" model='((string Icon, string Title, string Description, string ActionText, string? ActionUrl)) ("bi-people", "Sin empleados", "No hay empleados que coincidan con los filtros. Ajusta la búsqueda o crea un nuevo registro.", User.IsInRole("Admin") ? "Nuevo empleado" : "", User.IsInRole("Admin") ? (Url.Action("Create") ?? "") : "")' />
     }
+    else
+    {
+        <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow:hidden;">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="margin:0;">
+                    <thead style="background: var(--bg-muted);">
+                        <tr>
+                            <th style="padding:0.75rem 1rem; font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600; border-bottom:1px solid var(--border-color);">Nombre</th>
+                            <th style="padding:0.75rem 1rem; font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600; border-bottom:1px solid var(--border-color);">Departamento</th>
+                            <th style="padding:0.75rem 1rem; font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600; border-bottom:1px solid var(--border-color);">Puesto</th>
+                            <th style="padding:0.75rem 1rem; font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600; border-bottom:1px solid var(--border-color);">Estado</th>
+                            <th style="padding:0.75rem 1rem; font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600; border-bottom:1px solid var(--border-color); text-align:right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr style="border-bottom:1px solid var(--border-color);">
+                                <td style="padding:0.85rem 1rem;">
+                                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                                        <span style="width:36px; height:36px; border-radius: var(--radius); background: var(--bg-muted); border:1px solid var(--border-color); display:grid; place-items:center; color: var(--text-secondary); font-weight:600; font-size:0.8rem;">@(item.Nombre.Substring(0,1))@(item.Apellido.Substring(0,1))</span>
+                                        <div>
+                                            <div style="font-weight:600; color: var(--text-primary); font-size:0.9rem; line-height:1.2;">@item.Nombre @item.Apellido</div>
+                                            <div style="font-size:0.8rem; color: var(--text-muted);">@item.CorreoElectronico</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding:0.85rem 1rem;"><span style="display:inline-flex; align-items:center; gap:0.35rem; padding:0.25rem 0.6rem; border-radius: var(--radius-pill); background: var(--bg-muted); border:1px solid var(--border-color); color: var(--text-secondary); font-size:0.8rem; font-weight:500;"><i class="bi bi-building" style="font-size:0.75rem;"></i> @(item.Departamento?.Nombre ?? "—")</span></td>
+                                <td style="padding:0.85rem 1rem; color: var(--text-secondary); font-size:0.9rem;">@item.Puesto</td>
+                                <td style="padding:0.85rem 1rem;"><partial name="~/Views/Shared/Components/_BadgeEstado.cshtml" model="item.Estado" /></td>
+                                <td style="padding:0.85rem 1rem; text-align:right;">
+                                    <div style="display:inline-flex; gap:0.35rem; flex-wrap:wrap; justify-content:flex-end;">
+                                        <a asp-action="Details" asp-route-id="@item.Id" title="Ver" style="width:32px; height:32px; display:grid; place-items:center; border-radius: var(--radius); border:1px solid var(--border-color); background: var(--bg-surface); color: var(--text-secondary); text-decoration:none;"><i class="bi bi-eye" style="font-size:0.9rem;"></i></a>
+                                        @if (User.IsInRole("Admin") && item.Estado != EstadoEmpleado.Despedido)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.Id" title="Editar" style="width:32px; height:32px; display:grid; place-items:center; border-radius: var(--radius); border:1px solid var(--border-color); background: var(--bg-surface); color: var(--text-secondary); text-decoration:none;"><i class="bi bi-pencil" style="font-size:0.85rem;"></i></a>
+                                            <form asp-action="Desactivar" asp-route-id="@item.Id" method="post" style="display:inline">
+                                                <button type="submit" title="Desactivar" onclick="return confirm('¿Desactivar este empleado?')" style="width:32px; height:32px; display:grid; place-items:center; border-radius: var(--radius); border:1px solid var(--border-color); background: var(--bg-surface); color: var(--warning); cursor:pointer;"><i class="bi bi-pause-circle" style="font-size:0.9rem;"></i></button>
+                                            </form>
+                                            <form asp-action="Despedir" asp-route-id="@item.Id" method="post" style="display:inline">
+                                                <button type="submit" title="Despedir" onclick="return confirm('¿Despedir este empleado? Esta acción es irreversible')" style="width:32px; height:32px; display:grid; place-items:center; border-radius: var(--radius); border:1px solid var(--danger-border); background: var(--danger-soft); color: var(--danger); cursor:pointer;"><i class="bi bi-x-circle" style="font-size:0.9rem;"></i></button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-    <div class="text-muted">
-        Mostrando @Model.Count() de @ViewBag.TotalCount registros
-    </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: var(--space-sm); margin-top: var(--space-md);">
+            <span style="color: var(--text-muted); font-size:0.85rem;">Mostrando @Model.Count() de @ViewBag.TotalCount registros</span>
+            @if (ViewBag.TotalPages > 1)
+            {
+                <nav aria-label="Paginación">
+                    <ul class="pagination mb-0" style="gap:2px;">
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = i, pageSize = ViewBag.PageSize, nombre = ViewBag.Nombre, apellido = ViewBag.Apellido, fechaContratacion = ViewBag.FechaContratacion })" style="min-width:36px; text-align:center; border-radius: var(--radius);">@i</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        </div>
+    }
 </div>

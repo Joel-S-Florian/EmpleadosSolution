@@ -1,0 +1,100 @@
+@model IEnumerable<Empleados.Data.DTOs.ReporteDepartamentoDto>
+@using System.Globalization
+@{
+    ViewData["Title"] = "Reportes";
+    var culture = new CultureInfo("es-DO");
+}
+
+<div style="max-width:1200px; margin:0 auto;">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap: var(--space-md); margin-bottom: var(--space-lg); flex-wrap:wrap;">
+        <div style="display:flex; gap: var(--space-md); align-items:flex-start;">
+            <span style="width:44px; height:44px; display:grid; place-items:center; background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); color: var(--text-secondary);"><i class="bi bi-bar-chart-line" style="font-size:1.2rem;"></i></span>
+            <div>
+                <h1 style="font-size:1.35rem; font-weight:700; margin:0; letter-spacing:-0.02em;">Reportes por departamento</h1>
+                <p style="margin:0.2rem 0 0; color: var(--text-secondary); font-size:0.9rem;">Métricas agregadas en tiempo real · @Model.Count() departamentos</p>
+            </div>
+        </div>
+        <span style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.35rem 0.75rem; border-radius: var(--radius-pill); background: var(--bg-surface); border:1px solid var(--border-color); color: var(--text-secondary); font-size:0.8rem; font-weight:600;">
+            <i class="bi bi-clock" style="font-size:0.85rem;"></i> Tiempo real
+        </span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <partial name="~/Views/Shared/Components/_EmptyState.cshtml" model='((string Icon, string Title, string Description, string ActionText, string ActionUrl)) ("bi-bar-chart", "Sin datos para reportar", "No hay departamentos registrados. Crea departamentos y asigna empleados para generar métricas.", "", "")' />
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-md-4">
+            @foreach (var item in Model)
+            {
+                var pct = item.TotalEmpleados > 0 ? (double)item.Activos / item.TotalEmpleados * 100 : 0;
+                <div class="col">
+                    <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow:hidden; height:100%; display:flex; flex-direction:column;">
+                        <div style="padding: var(--space-lg) var(--space-lg) var(--space-md); border-bottom:1px solid var(--border-color); display:flex; align-items:center; gap:0.75rem;">
+                            <span style="width:38px; height:38px; display:grid; place-items:center; background: var(--bg-muted); border:1px solid var(--border-color); border-radius: var(--radius); color: var(--text-secondary);"><i class="bi bi-building"></i></span>
+                            <div style="min-width:0;">
+                                <div style="font-weight:600; color: var(--text-primary); font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">@item.Nombre</div>
+                                <div style="font-size:0.75rem; color: var(--text-muted); letter-spacing:0.03em; text-transform:uppercase;">Departamento</div>
+                            </div>
+                        </div>
+                        <div style="padding: var(--space-lg); flex:1; display:flex; flex-direction:column; gap: var(--space-md);">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap: var(--space-md);">
+                                <div style="background: var(--bg-muted); border:1px solid var(--border-color); border-radius: var(--radius); padding: var(--space-md); text-align:center;">
+                                    <div style="font-size:1.35rem; font-weight:700; color: var(--text-primary); line-height:1;">@item.TotalEmpleados</div>
+                                    <div style="font-size:0.7rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600; margin-top:0.25rem;">Total</div>
+                                </div>
+                                <div style="background: var(--success-soft); border:1px solid var(--success-border); border-radius: var(--radius); padding: var(--space-md); text-align:center;">
+                                    <div style="font-size:1.35rem; font-weight:700; color: var(--success); line-height:1;">@item.Activos</div>
+                                    <div style="font-size:0.7rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--success); font-weight:600; margin-top:0.25rem;">Activos</div>
+                                </div>
+                            </div>
+                            <div style="background: var(--bg-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding: var(--space-md); text-align:center;">
+                                <div style="font-size:0.7rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600;">Nómina mensual (activos)</div>
+                                <div style="font-size:1.15rem; font-weight:700; color: var(--text-primary); margin-top:0.25rem;">@item.NominaMensual.ToString("C", culture)</div>
+                            </div>
+                            <div>
+                                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color: var(--text-muted); margin-bottom:0.35rem;">
+                                    <span>Activos</span><span>@pct.ToString("F0")%</span>
+                                </div>
+                                <div style="height:6px; background: var(--bg-muted); border:1px solid var(--border-color); border-radius: var(--radius-pill); overflow:hidden;">
+                                    <div style="height:100%; background: var(--success); width: @pct.ToString("F0", CultureInfo.InvariantCulture)%; border-radius: var(--radius-pill); transition: width 0.4s ease;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding: 0.6rem var(--space-lg); background: var(--bg-muted); border-top:1px solid var(--border-color); display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color: var(--text-muted);">
+                            <i class="bi bi-people" style="font-size:0.85rem;"></i> @item.TotalEmpleados empleado(s) en total
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--space-lg) var(--space-xl); margin-top: var(--space-xl);">
+            <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom: var(--space-md);">
+                <span style="width:32px; height:32px; display:grid; place-items:center; background: var(--bg-muted); border:1px solid var(--border-color); border-radius: var(--radius); color: var(--text-secondary);"><i class="bi bi-pie-chart"></i></span>
+                <span style="font-weight:600; color: var(--text-primary);">Resumen general</span>
+            </div>
+            <div class="row g-3 text-center">
+                <div class="col-md-4">
+                    <div style="background: var(--bg-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding: var(--space-md);">
+                        <div style="font-size:1.4rem; font-weight:700; color: var(--text-primary);">@Model.Sum(x => x.TotalEmpleados)</div>
+                        <div style="font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600;">Total empleados</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div style="background: var(--success-soft); border:1px solid var(--success-border); border-radius: var(--radius); padding: var(--space-md);">
+                        <div style="font-size:1.4rem; font-weight:700; color: var(--success);">@Model.Sum(x => x.Activos)</div>
+                        <div style="font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--success); font-weight:600;">Total activos</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div style="background: var(--bg-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding: var(--space-md);">
+                        <div style="font-size:1.15rem; font-weight:700; color: var(--text-primary);">@Model.Sum(x => x.NominaMensual).ToString("C", culture)</div>
+                        <div style="font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600;">Nómina total</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

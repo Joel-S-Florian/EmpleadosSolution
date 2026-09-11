@@ -2,25 +2,22 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 
-<ul class="navbar-nav ms-auto">
+<div class="d-flex align-items-center gap-2">
     @if (SignInManager.IsSignedIn(User))
     {
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
-        </li>
-        <li class="nav-item">
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-            </form>
-        </li>
+        <a class="icon-btn" style="width:auto; padding: 0 0.75rem; gap:0.5rem; display:flex; align-items:center; text-decoration:none;" asp-area="Identity" asp-page="/Account/Manage/Index" title="Perfil">
+            <i class="bi bi-person-circle"></i>
+            <span class="d-none d-md-inline" style="font-size:0.85rem; font-weight:500;">@User.Identity?.Name</span>
+        </a>
+        <form class="d-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+            <button type="submit" class="icon-btn" title="Cerrar sesión" aria-label="Cerrar sesión">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+        </form>
     }
     else
     {
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-        </li>
+        <a class="btn btn-sm" style="border:1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary); border-radius: var(--radius);" asp-area="Identity" asp-page="/Account/Login">Acceder</a>
+        <a class="btn btn-sm" style="background: var(--text-primary); color: var(--bg-surface); border-radius: var(--radius);" asp-area="Identity" asp-page="/Account/Register">Registro</a>
     }
-</ul>
+</div>

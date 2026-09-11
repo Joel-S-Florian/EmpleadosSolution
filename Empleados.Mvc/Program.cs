@@ -56,6 +56,9 @@ using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+    var db = scope.ServiceProvider.GetRequiredService<EmpleadosDbContext>();
+    // Aplicar migraciones pendientes automáticamente
+    await db.Database.MigrateAsync();
 
     string[] roleNames = { "Admin", "RRHH" };
     foreach (var roleName in roleNames)
@@ -92,6 +95,17 @@ using (var scope = app.Services.CreateScope())
         };
         await userManager.CreateAsync(rrhhUser, "RRHH123");
         await userManager.AddToRoleAsync(rrhhUser, "RRHH");
+    }
+
+    // SeedData: si no hay departamentos o puestos, poblar datos de prueba (borra y reseed si se fuerza con arg --seed)
+    var forceSeed = args.Contains("--seed");
+    var hasData = await db.Departamentos.AnyAsync() && await db.Puestos.AnyAsync();
+    if (forceSeed || !hasData)
+    {
+        if (forceSeed)
+            Console.WriteLine("Forzando SeedData --seed...");
+        await SeedData.InitializeAsync(db);
+        Console.WriteLine("SeedData completado.");
     }
 }
 

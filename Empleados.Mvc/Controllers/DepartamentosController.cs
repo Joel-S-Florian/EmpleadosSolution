@@ -89,15 +89,21 @@ public class DepartamentosController : Controller
     {
         var departamento = await _context.Departamentos
             .Include(d => d.Empleados)
+            .Include(d => d.Puestos)
             .FirstOrDefaultAsync(d => d.Id == id);
 
         if (departamento == null)
             return NotFound();
 
-        // Regla de negocio: No permitir eliminar departamento con empleados asociados
+        // Regla de negocio: No permitir eliminar departamento con empleados o puestos asociados
         if (departamento.Empleados.Any())
         {
             TempData["Error"] = "No se puede eliminar un departamento con empleados asociados";
+            return RedirectToAction(nameof(Index));
+        }
+        if (departamento.Puestos.Any())
+        {
+            TempData["Error"] = "No se puede eliminar un departamento que tiene puestos asociados";
             return RedirectToAction(nameof(Index));
         }
 

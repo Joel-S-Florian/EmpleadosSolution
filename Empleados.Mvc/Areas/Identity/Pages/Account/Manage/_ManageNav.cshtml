@@ -1,0 +1,39 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+    string? activePage = ViewData["ActivePage"] as string;
+    string IsActive(string page) => string.Equals(activePage, page, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    string navLinkClass(string page) => IsActive(page) == "active"
+        ? "display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius: var(--radius); background: var(--text-primary); color: var(--bg-surface); border:1px solid var(--text-primary); font-weight:600; font-size:0.9rem; text-decoration:none;"
+        : "display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius: var(--radius); color: var(--text-secondary); font-weight:500; font-size:0.9rem; text-decoration:none; border:1px solid transparent;";
+}
+
+<a asp-page="./Index" style="@navLinkClass("Index")">
+    <i class="bi bi-person" style="font-weight:700; -webkit-text-stroke:0.5px currentColor; width:20px; text-align:center;"></i> Perfil
+</a>
+<a asp-page="./Email" style="@navLinkClass("Email")">
+    <i class="bi bi-envelope" style="font-weight:700; -webkit-text-stroke:0.5px currentColor; width:20px; text-align:center;"></i> Correo
+</a>
+<a asp-page="./ChangePassword" style="@navLinkClass("ChangePassword")">
+    <i class="bi bi-key" style="font-weight:700; -webkit-text-stroke:0.5px currentColor; width:20px; text-align:center;"></i> Contraseña
+</a>
+@if (hasExternalLogins)
+{
+    <a asp-page="./ExternalLogins" style="@navLinkClass("ExternalLogins")">
+        <i class="bi bi-box-arrow-in-right" style="font-weight:700; -webkit-text-stroke:0.5px currentColor; width:20px; text-align:center;"></i> Inicios externos
+    </a>
+}
+<a asp-page="./TwoFactorAuthentication" style="@navLinkClass("TwoFactorAuthentication")">
+    <i class="bi bi-shield-lock" style="font-weight:700; -webkit-text-stroke:0.5px currentColor; width:20px; text-align:center;"></i> 2FA
+</a>
+<a asp-page="./PersonalData" style="@navLinkClass("PersonalData")">
+    <i class="bi bi-database" style="font-weight:700; -webkit-text-stroke:0.5px currentColor; width:20px; text-align:center;"></i> Datos personales
+</a>
+
+<style>
+    /* Hover para nav Manage */
+    nav a:hover { background: var(--bg-muted) !important; color: var(--text-primary) !important; border-color: var(--border-color) !important; }
+    nav a.active:hover { background: var(--text-primary) !important; color: var(--bg-surface) !important; }
+    [data-theme="dark"] nav a.active { background: var(--bg-muted) !important; color: var(--text-primary) !important; border-color: var(--border-color-strong) !important; }
+</style>

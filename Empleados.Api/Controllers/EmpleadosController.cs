@@ -4,6 +4,7 @@ using Empleados.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Empleados.Api.Controllers;
 
@@ -36,6 +37,7 @@ public class EmpleadosController : ControllerBase
         // Construir la consulta
         var query = _context.Empleados
             .Include(e => e.Departamento)
+            .Include(e => e.PuestoNav)
             .AsQueryable();
 
         // Aplicar filtros
@@ -70,7 +72,9 @@ public class EmpleadosController : ControllerBase
                 FechaTerminacion = e.FechaTerminacion,
                 Estado = e.Estado.ToString(),
                 FotoRuta = e.FotoRuta,
-                NombreDepartamento = e.Departamento != null ? e.Departamento.Nombre : ""
+                NombreDepartamento = e.Departamento != null ? e.Departamento.Nombre : "",
+                PuestoId = e.PuestoId,
+                NombrePuesto = e.PuestoNav != null ? e.PuestoNav.Nombre : null
             })
             .ToListAsync();
 
@@ -93,6 +97,7 @@ public class EmpleadosController : ControllerBase
     {
         var empleado = await _context.Empleados
             .Include(e => e.Departamento)
+            .Include(e => e.PuestoNav)
             .Where(e => e.Id == id)
             .Select(e => new EmpleadoDto
             {
@@ -109,7 +114,9 @@ public class EmpleadosController : ControllerBase
                 FechaTerminacion = e.FechaTerminacion,
                 Estado = e.Estado.ToString(),
                 FotoRuta = e.FotoRuta,
-                NombreDepartamento = e.Departamento != null ? e.Departamento.Nombre : ""
+                NombreDepartamento = e.Departamento != null ? e.Departamento.Nombre : "",
+                PuestoId = e.PuestoId,
+                NombrePuesto = e.PuestoNav != null ? e.PuestoNav.Nombre : null
             })
             .FirstOrDefaultAsync();
 
@@ -137,6 +144,17 @@ public class EmpleadosController : ControllerBase
         if (emailExiste)
             return BadRequest(new { mensaje = "Ya existe un empleado con ese correo electrónico" });
 
+        // Validar PuestoId si se proporciona: debe existir y pertenecer al departamento
+        Puesto? puestoNav = null;
+        if (dto.PuestoId.HasValue)
+        {
+            puestoNav = await _context.Puestos.FindAsync(dto.PuestoId.Value);
+            if (puestoNav == null)
+                return BadRequest(new { mensaje = "El puesto no existe" });
+            if (puestoNav.DepartamentoId != dto.DepartamentoId)
+                return BadRequest(new { mensaje = "El puesto no pertenece al departamento seleccionado" });
+        }
+
         var empleado = new Empleado
         {
             Nombre = dto.Nombre,
@@ -145,15 +163,51 @@ public class EmpleadosController : ControllerBase
             Direccion = dto.Direccion,
             Telefono = dto.Telefono,
             CorreoElectronico = dto.CorreoElectronico,
-            Puesto = dto.Puesto,
+            Puesto = puestoNav != null ? puestoNav.Nombre : dto.Puesto,
             Salario = dto.Salario,
             FechaContratacion = dto.FechaContratacion,
             DepartamentoId = dto.DepartamentoId,
+            PuestoId = dto.PuestoId,
             Estado = EstadoEmpleado.Activo
         };
 
         _context.Empleados.Add(empleado);
         await _context.SaveChangesAsync();
+
+        // Trigger automático: generar notificación 'Nuevo empleado registrado' para cada usuario
+        try
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? User.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+            var userIds = await _context.Users.Select(u => u.Id).ToListAsync();
+            if (userIds.Any())
+            {
+                foreach (var uid in userIds)
+                {
+                    _context.Notificaciones.Add(new Notificacion
+                    {
+                        Mensaje = $"Nuevo empleado registrado: {empleado.Nombre} {empleado.Apellido}",
+                        Tipo = TipoNotificacion.Success,
+                        Leida = false,
+                        FechaCreacion = DateTime.Now,
+                        UsuarioDestinoId = uid
+                    });
+                }
+            }
+            else
+            {
+                _context.Notificaciones.Add(new Notificacion
+                {
+                    Mensaje = $"Nuevo empleado registrado: {empleado.Nombre} {empleado.Apellido}",
+                    Tipo = TipoNotificacion.Success,
+                    Leida = false,
+                    FechaCreacion = DateTime.Now,
+                    UsuarioDestinoId = currentUserId
+                });
+            }
+            await _context.SaveChangesAsync();
+        }
+        catch { /* no bloquear creación de empleado si notificación falla */ }
 
         return CreatedAtAction(nameof(GetEmpleado), new { id = empleado.Id }, empleado);
     }
@@ -180,16 +234,28 @@ public class EmpleadosController : ControllerBase
         if (emailExiste)
             return BadRequest(new { mensaje = "Ya existe otro empleado con ese correo electrónico" });
 
+        // Validar PuestoId si se proporciona
+        Puesto? puestoNavUpdate = null;
+        if (dto.PuestoId.HasValue)
+        {
+            puestoNavUpdate = await _context.Puestos.FindAsync(dto.PuestoId.Value);
+            if (puestoNavUpdate == null)
+                return BadRequest(new { mensaje = "El puesto no existe" });
+            if (puestoNavUpdate.DepartamentoId != dto.DepartamentoId)
+                return BadRequest(new { mensaje = "El puesto no pertenece al departamento seleccionado" });
+        }
+
         empleado.Nombre = dto.Nombre;
         empleado.Apellido = dto.Apellido;
         empleado.FechaNacimiento = dto.FechaNacimiento;
         empleado.Direccion = dto.Direccion;
         empleado.Telefono = dto.Telefono;
         empleado.CorreoElectronico = dto.CorreoElectronico;
-        empleado.Puesto = dto.Puesto;
+        empleado.Puesto = puestoNavUpdate != null ? puestoNavUpdate.Nombre : dto.Puesto;
         empleado.Salario = dto.Salario;
         empleado.FechaContratacion = dto.FechaContratacion;
         empleado.DepartamentoId = dto.DepartamentoId;
+        empleado.PuestoId = dto.PuestoId;
 
         await _context.SaveChangesAsync();
 

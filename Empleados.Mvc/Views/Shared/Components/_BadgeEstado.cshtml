@@ -1,0 +1,14 @@
+@using Empleados.Data.Entities
+@model EstadoEmpleado
+@{
+    var isActivo = Model == EstadoEmpleado.Activo;
+    var isInactivo = Model == EstadoEmpleado.Inactivo;
+    var bg = isActivo ? "var(--success-soft)" : isInactivo ? "var(--warning-soft)" : "var(--danger-soft)";
+    var color = isActivo ? "var(--success)" : isInactivo ? "var(--warning)" : "var(--danger)";
+    var border = isActivo ? "var(--success-border)" : isInactivo ? "var(--warning-border)" : "var(--danger-border)";
+    var dot = isActivo ? "var(--success)" : isInactivo ? "var(--warning)" : "var(--danger)";
+}
+<span style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.25rem 0.6rem; border-radius:var(--radius-pill); font-size:0.75rem; font-weight:600; letter-spacing:0.03em; background:@bg; color:@color; border:1px solid @border;">
+    <span style="width:6px; height:6px; border-radius:50%; background:@dot; display:inline-block;"></span>
+    @Model.ToString()
+</span>

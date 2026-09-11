@@ -1,0 +1,95 @@
+@model IEnumerable<Empleados.Data.Entities.Puesto>
+@{
+    ViewData["Title"] = "Puestos";
+}
+
+<div style="max-width:1100px; margin:0 auto;">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap: var(--space-md); margin-bottom: var(--space-lg); flex-wrap:wrap;">
+        <div style="display:flex; gap: var(--space-md); align-items:flex-start;">
+            <span style="width:44px; height:44px; display:grid; place-items:center; background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); color: var(--text-secondary);"><i class="bi bi-briefcase" style="font-size:1.2rem;"></i></span>
+            <div>
+                <h1 style="font-size:1.35rem; font-weight:700; margin:0; letter-spacing:-0.02em;">Puestos</h1>
+                <p style="margin:0.2rem 0 0; color: var(--text-secondary); font-size:0.9rem;">Catálogo vinculado a departamento</p>
+            </div>
+        </div>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Create" style="display:inline-flex; align-items:center; gap:0.5rem; background: var(--text-primary); color: var(--bg-surface); border:1px solid var(--text-primary); border-radius: var(--radius); padding:0.55rem 0.9rem; font-weight:500; text-decoration:none; font-size:0.9rem;">
+                <i class="bi bi-plus-lg"></i> Nuevo puesto
+            </a>
+        }
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div style="background: var(--success-soft); border:1px solid var(--success-border); color: var(--success); border-radius: var(--radius); padding:0.75rem 1rem; display:flex; align-items:center; gap:0.5rem; margin-bottom: var(--space-md);"><i class="bi bi-check-circle"></i> @TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div style="background: var(--danger-soft); border:1px solid var(--danger-border); color: var(--danger); border-radius: var(--radius); padding:0.75rem 1rem; display:flex; align-items:center; gap:0.5rem; margin-bottom: var(--space-md);"><i class="bi bi-exclamation-triangle"></i> @TempData["Error"]</div>
+    }
+
+    <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: var(--space-md) var(--space-lg); margin-bottom: var(--space-lg);">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em;">Filtrar por departamento</label>
+                <select name="departamentoId" class="form-select" asp-items="ViewBag.Departamentos" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius);">
+                    <option value="">Todos los departamentos</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" style="display:inline-flex; align-items:center; gap:0.4rem; background: var(--text-primary); color: var(--bg-surface); border:1px solid var(--text-primary); border-radius: var(--radius); padding:0.5rem 0.9rem; font-weight:500;"><i class="bi bi-funnel"></i> Filtrar</button>
+                <a asp-action="Index" style="display:inline-flex; align-items:center; background: var(--bg-surface); color: var(--text-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.5rem 0.9rem; text-decoration:none; font-weight:500;">Limpiar</a>
+            </div>
+        </form>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <partial name="~/Views/Shared/Components/_EmptyState.cshtml" model='((string Icon, string Title, string Description, string ActionText, string? ActionUrl)) ("bi-briefcase", "Sin puestos", "No hay puestos para el filtro seleccionado. Crea el primer puesto vinculado a un departamento.", User.IsInRole("Admin") ? "Nuevo puesto" : "", User.IsInRole("Admin") ? (Url.Action("Create") ?? "") : "")' />
+    }
+    else
+    {
+        <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow:hidden;">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background: var(--bg-muted);">
+                        <tr>
+                            <th style="padding:0.75rem 1rem; font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600; border-bottom:1px solid var(--border-color);">Nombre</th>
+                            <th style="padding:0.75rem 1rem; font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600; border-bottom:1px solid var(--border-color);">Descripción</th>
+                            <th style="padding:0.75rem 1rem; font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600; border-bottom:1px solid var(--border-color);">Departamento</th>
+                            <th style="padding:0.75rem 1rem; font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600; border-bottom:1px solid var(--border-color); text-align:right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr style="border-bottom:1px solid var(--border-color);">
+                                <td style="padding:0.85rem 1rem;">
+                                    <div style="display:flex; align-items:center; gap:0.6rem;">
+                                        <span style="width:32px; height:32px; border-radius: var(--radius); background: var(--bg-muted); border:1px solid var(--border-color); display:grid; place-items:center; color: var(--text-secondary);"><i class="bi bi-briefcase" style="font-size:0.9rem;"></i></span>
+                                        <span style="font-weight:600; color: var(--text-primary); font-size:0.9rem;">@item.Nombre</span>
+                                    </div>
+                                </td>
+                                <td style="padding:0.85rem 1rem; color: var(--text-secondary); font-size:0.9rem; max-width:320px;">@(string.IsNullOrWhiteSpace(item.Descripcion) ? "—" : item.Descripcion)</td>
+                                <td style="padding:0.85rem 1rem;"><span style="display:inline-flex; align-items:center; gap:0.35rem; padding:0.25rem 0.6rem; border-radius: var(--radius-pill); background: var(--bg-muted); border:1px solid var(--border-color); color: var(--text-secondary); font-size:0.8rem; font-weight:500;"><i class="bi bi-building" style="font-size:0.75rem;"></i> @(item.Departamento?.Nombre ?? "—")</span></td>
+                                <td style="padding:0.85rem 1rem; text-align:right;">
+                                    <div style="display:inline-flex; gap:0.35rem; justify-content:flex-end;">
+                                        <a asp-action="Details" asp-route-id="@item.Id" title="Ver" style="width:32px; height:32px; display:grid; place-items:center; border-radius: var(--radius); border:1px solid var(--border-color); background: var(--bg-surface); color: var(--text-secondary); text-decoration:none;"><i class="bi bi-eye" style="font-size:0.9rem;"></i></a>
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.Id" title="Editar" style="width:32px; height:32px; display:grid; place-items:center; border-radius: var(--radius); border:1px solid var(--border-color); background: var(--bg-surface); color: var(--text-secondary); text-decoration:none;"><i class="bi bi-pencil" style="font-size:0.85rem;"></i></a>
+                                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline">
+                                                <button type="submit" title="Eliminar" onclick="return confirm('¿Eliminar este puesto?')" style="width:32px; height:32px; display:grid; place-items:center; border-radius: var(--radius); border:1px solid var(--danger-border); background: var(--danger-soft); color: var(--danger); cursor:pointer;"><i class="bi bi-trash" style="font-size:0.85rem;"></i></button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

@@ -27,6 +27,7 @@ public class EmpleadosController : Controller
     {
         var query = _context.Empleados
             .Include(e => e.Departamento)
+            .Include(e => e.PuestoNav)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(nombre))
@@ -60,6 +61,7 @@ public class EmpleadosController : Controller
     {
         var empleado = await _context.Empleados
             .Include(e => e.Departamento)
+            .Include(e => e.PuestoNav)
             .FirstOrDefaultAsync(e => e.Id == id);
 
         if (empleado == null)
@@ -68,15 +70,12 @@ public class EmpleadosController : Controller
         return View(empleado);
     }
 
-    // GET: Empleados/Create
+     // GET: Empleados/Create
     [Authorize(Roles = "Admin")]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
-        ViewBag.Departamentos = new SelectList(
-            _context.Departamentos.ToList(),
-            "Id",
-            "Nombre"
-        );
+        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre");
+        ViewBag.Puestos = new SelectList(Enumerable.Empty<Puesto>(), "Id", "Nombre");
         return View();
     }
 
@@ -84,20 +83,63 @@ public class EmpleadosController : Controller
     [Authorize(Roles = "Admin")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Nombre,Apellido,FechaNacimiento,Direccion,Telefono,CorreoElectronico,Puesto,Salario,FechaContratacion,DepartamentoId")] Empleado empleado)
+    public async Task<IActionResult> Create([Bind("Nombre,Apellido,FechaNacimiento,Direccion,Telefono,CorreoElectronico,Puesto,Salario,FechaContratacion,DepartamentoId,PuestoId")] Empleado empleado)
     {
+        // Validar integridad referencial Puesto - Departamento
+        if (empleado.PuestoId.HasValue)
+        {
+            var puesto = await _context.Puestos.FindAsync(empleado.PuestoId.Value);
+            if (puesto == null)
+                ModelState.AddModelError("PuestoId", "El puesto no existe");
+            else if (puesto.DepartamentoId != empleado.DepartamentoId)
+                ModelState.AddModelError("PuestoId", "El puesto no pertenece al departamento seleccionado");
+            else
+                empleado.Puesto = puesto.Nombre;
+        }
+
         if (ModelState.IsValid)
         {
             empleado.Estado = EstadoEmpleado.Activo;
             _context.Add(empleado);
             await _context.SaveChangesAsync();
+            // Trigger notificación interna
+            try
+            {
+                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userIds = await _context.Users.Select(u => u.Id).ToListAsync();
+                if (userIds.Any())
+                {
+                    foreach (var uid in userIds)
+                    {
+                        _context.Notificaciones.Add(new Notificacion
+                        {
+                            Mensaje = $"Nuevo empleado registrado: {empleado.Nombre} {empleado.Apellido}",
+                            Tipo = TipoNotificacion.Success,
+                            Leida = false,
+                            FechaCreacion = DateTime.Now,
+                            UsuarioDestinoId = uid
+                        });
+                    }
+                }
+                else
+                {
+                    _context.Notificaciones.Add(new Notificacion
+                    {
+                        Mensaje = $"Nuevo empleado registrado: {empleado.Nombre} {empleado.Apellido}",
+                        Tipo = TipoNotificacion.Success,
+                        Leida = false,
+                        FechaCreacion = DateTime.Now,
+                        UsuarioDestinoId = userId
+                    });
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch { }
             return RedirectToAction(nameof(Index));
         }
-        ViewBag.Departamentos = new SelectList(
-            _context.Departamentos.ToList(),
-            "Id",
-            "Nombre"
-        );
+        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre", empleado.DepartamentoId);
+        var puestosFiltrados = await _context.Puestos.Where(p => p.DepartamentoId == empleado.DepartamentoId).ToListAsync();
+        ViewBag.Puestos = new SelectList(puestosFiltrados, "Id", "Nombre", empleado.PuestoId);
         return View(empleado);
     }
 
@@ -109,11 +151,9 @@ public class EmpleadosController : Controller
         if (empleado == null)
             return NotFound();
 
-        ViewBag.Departamentos = new SelectList(
-            _context.Departamentos.ToList(),
-            "Id",
-            "Nombre"
-        );
+        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre", empleado.DepartamentoId);
+        var puestos = await _context.Puestos.Where(p => p.DepartamentoId == empleado.DepartamentoId).ToListAsync();
+        ViewBag.Puestos = new SelectList(puestos, "Id", "Nombre", empleado.PuestoId);
         return View(empleado);
     }
 
@@ -121,16 +161,39 @@ public class EmpleadosController : Controller
     [Authorize(Roles = "Admin")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,FechaNacimiento,Direccion,Telefono,CorreoElectronico,Puesto,Salario,FechaContratacion,DepartamentoId")] Empleado empleado)
+    public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,FechaNacimiento,Direccion,Telefono,CorreoElectronico,Puesto,Salario,FechaContratacion,DepartamentoId,PuestoId,Estado,FotoRuta")] Empleado empleado)
     {
         if (id != empleado.Id)
             return NotFound();
+
+        if (empleado.PuestoId.HasValue)
+        {
+            var puesto = await _context.Puestos.FindAsync(empleado.PuestoId.Value);
+            if (puesto == null)
+                ModelState.AddModelError("PuestoId", "El puesto no existe");
+            else if (puesto.DepartamentoId != empleado.DepartamentoId)
+                ModelState.AddModelError("PuestoId", "El puesto no pertenece al departamento seleccionado");
+            else
+                empleado.Puesto = puesto.Nombre;
+        }
 
         if (ModelState.IsValid)
         {
             try
             {
-                _context.Update(empleado);
+                var existing = await _context.Empleados.FindAsync(id);
+                if (existing == null) return NotFound();
+                existing.Nombre = empleado.Nombre;
+                existing.Apellido = empleado.Apellido;
+                existing.FechaNacimiento = empleado.FechaNacimiento;
+                existing.Direccion = empleado.Direccion;
+                existing.Telefono = empleado.Telefono;
+                existing.CorreoElectronico = empleado.CorreoElectronico;
+                existing.Puesto = empleado.Puesto;
+                existing.PuestoId = empleado.PuestoId;
+                existing.Salario = empleado.Salario;
+                existing.FechaContratacion = empleado.FechaContratacion;
+                existing.DepartamentoId = empleado.DepartamentoId;
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -141,11 +204,9 @@ public class EmpleadosController : Controller
             }
             return RedirectToAction(nameof(Index));
         }
-        ViewBag.Departamentos = new SelectList(
-            _context.Departamentos.ToList(),
-            "Id",
-            "Nombre"
-        );
+        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre", empleado.DepartamentoId);
+        var puestosFiltrados = await _context.Puestos.Where(p => p.DepartamentoId == empleado.DepartamentoId).ToListAsync();
+        ViewBag.Puestos = new SelectList(puestosFiltrados, "Id", "Nombre", empleado.PuestoId);
         return View(empleado);
     }
 

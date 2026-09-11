@@ -25,4 +25,7 @@ public class Empleado
 
     public int DepartamentoId { get; set; }
     public virtual Departamento? Departamento { get; set; }
+
+    public int? PuestoId { get; set; }
+    public virtual Puesto? PuestoNav { get; set; }
 }

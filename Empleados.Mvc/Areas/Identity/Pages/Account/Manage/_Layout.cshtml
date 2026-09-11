@@ -1,0 +1,29 @@
+@{
+    Layout = "/Areas/Identity/Pages/_Layout.cshtml";
+}
+
+<div style="max-width:1100px; margin:0 auto;">
+    <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom: var(--space-lg);">
+        <span style="width:44px; height:44px; display:grid; place-items:center; background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); color: var(--text-secondary);"><i class="bi bi-person-gear" style="font-size:1.3rem; font-weight:700; -webkit-text-stroke:0.5px currentColor;"></i></span>
+        <div>
+            <h1 style="font-size:1.35rem; font-weight:700; margin:0; letter-spacing:-0.02em;">Gestionar cuenta</h1>
+            <p style="margin:0.2rem 0 0; color: var(--text-secondary); font-size:0.9rem;">Administra tu perfil, seguridad y datos</p>
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 260px 1fr; gap: var(--space-xl); align-items:start;">
+        <nav style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow:hidden; position:sticky; top:72px;">
+            <div style="padding: var(--space-md) var(--space-lg); border-bottom:1px solid var(--border-color); font-size:0.75rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--text-muted); font-weight:700;">Cuenta</div>
+            <div style="padding: var(--space-sm); display:flex; flex-direction:column; gap:0.25rem;">
+                <partial name="_ManageNav" />
+            </div>
+        </nav>
+        <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--space-xl);">
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+}

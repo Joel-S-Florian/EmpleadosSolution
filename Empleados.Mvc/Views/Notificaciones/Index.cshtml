@@ -1,0 +1,60 @@
+@model IEnumerable<Empleados.Data.Entities.Notificacion>
+@{
+    ViewData["Title"] = "Notificaciones";
+}
+
+<div style="max-width:900px; margin:0 auto;">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap: var(--space-md); margin-bottom: var(--space-lg); flex-wrap:wrap;">
+        <div style="display:flex; gap: var(--space-md); align-items:flex-start;">
+            <span style="width:44px; height:44px; display:grid; place-items:center; background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); color: var(--text-secondary);"><i class="bi bi-bell" style="font-size:1.2rem;"></i></span>
+            <div>
+                <h1 style="font-size:1.35rem; font-weight:700; margin:0; letter-spacing:-0.02em;">Notificaciones</h1>
+                <p style="margin:0.2rem 0 0; color: var(--text-secondary); font-size:0.9rem;">@Model.Count(n => !n.Leida) sin leer · @Model.Count() total</p>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <partial name="~/Views/Shared/Components/_EmptyState.cshtml" model='((string Icon, string Title, string Description, string ActionText, string ActionUrl)) ("bi-bell-slash", "Sin notificaciones", "Cuando se registre un nuevo empleado recibirás una notificación aquí. El sistema genera notificaciones automáticamente.", "", "")' />
+    }
+    else
+    {
+        <div style="display:flex; flex-direction:column; gap: var(--space-sm);">
+            @foreach (var n in Model)
+            {
+                var isSuccess = n.Tipo == Empleados.Data.Entities.TipoNotificacion.Success;
+                var isWarning = n.Tipo == Empleados.Data.Entities.TipoNotificacion.Warning;
+                var bg = isSuccess ? "var(--success-soft)" : isWarning ? "var(--warning-soft)" : "var(--info-soft)";
+                var border = isSuccess ? "var(--success-border)" : isWarning ? "var(--warning-border)" : "var(--border-color)";
+                var icon = isSuccess ? "bi-check-circle" : isWarning ? "bi-exclamation-triangle" : "bi-info-circle";
+                var iconColor = isSuccess ? "var(--success)" : isWarning ? "var(--warning)" : "var(--info)";
+                <div style="background: var(--bg-surface); border:1px solid @border; border-left:3px solid @iconColor; border-radius: var(--radius); padding: var(--space-md) var(--space-lg); display:flex; align-items:center; justify-content:space-between; gap: var(--space-md); box-shadow: var(--shadow-sm); opacity:@(n.Leida ? "0.7" : "1");">
+                    <div style="display:flex; gap: var(--space-md); align-items:flex-start; min-width:0;">
+                        <span style="width:36px; height:36px; display:grid; place-items:center; background: @bg; border:1px solid @border; border-radius: var(--radius); color: @iconColor; flex-shrink:0;"><i class="bi @icon"></i></span>
+                        <div style="min-width:0;">
+                            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                                <span style="display:inline-flex; padding:0.2rem 0.5rem; border-radius: var(--radius-pill); background: @bg; border:1px solid @border; color: @iconColor; font-size:0.7rem; font-weight:600; letter-spacing:0.04em; text-transform:uppercase;">@n.Tipo</span>
+                                @if (n.Leida)
+                                {
+                                    <span style="display:inline-flex; padding:0.2rem 0.5rem; border-radius: var(--radius-pill); background: var(--bg-muted); border:1px solid var(--border-color); color: var(--text-muted); font-size:0.7rem; font-weight:600;">Leída</span>
+                                }
+                                <span style="font-size:0.8rem; color: var(--text-muted);">@n.FechaCreacion.ToString("g")</span>
+                            </div>
+                            <div style="font-weight:500; color: var(--text-primary); font-size:0.95rem; margin-top:0.35rem; @(n.Leida ? "" : "font-weight:600;")">@n.Mensaje</div>
+                        </div>
+                    </div>
+                    @if (!n.Leida)
+                    {
+                        <form asp-action="MarcarLeida" asp-route-id="@n.Id" method="post" style="flex-shrink:0;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" style="display:inline-flex; align-items:center; gap:0.4rem; background: var(--bg-surface); color: var(--text-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.45rem 0.75rem; font-weight:500; font-size:0.85rem; cursor:pointer;">
+                                <i class="bi bi-check-lg"></i> Marcar leída
+                            </button>
+                        </form>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

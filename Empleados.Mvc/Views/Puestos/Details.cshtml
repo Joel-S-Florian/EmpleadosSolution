@@ -1,0 +1,38 @@
+@model Empleados.Data.Entities.Puesto
+@{
+    ViewData["Title"] = "Detalle puesto";
+}
+
+<div style="max-width:720px; margin:0 auto;">
+    <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom: var(--space-lg);">
+        <a asp-action="Index" style="width:36px; height:36px; display:grid; place-items:center; border-radius: var(--radius); border:1px solid var(--border-color); background: var(--bg-surface); color: var(--text-secondary); text-decoration:none;"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h1 style="font-size:1.25rem; font-weight:700; margin:0; letter-spacing:-0.02em;">@Model.Nombre</h1>
+            <p style="margin:0; color: var(--text-secondary); font-size:0.9rem;">Vinculado a @(Model.Departamento?.Nombre ?? "—")</p>
+        </div>
+    </div>
+
+    <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow:hidden;">
+        <div style="padding: var(--space-lg) var(--space-xl); display:grid; gap: var(--space-md);">
+            <div style="display:grid; grid-template-columns: 140px 1fr; gap: var(--space-md); padding:0.6rem 0; border-bottom:1px solid var(--border-color);">
+                <span style="font-size:0.8rem; font-weight:600; color: var(--text-muted); letter-spacing:0.02em;">Nombre</span>
+                <span style="font-weight:600; color: var(--text-primary);">@Model.Nombre</span>
+            </div>
+            <div style="display:grid; grid-template-columns: 140px 1fr; gap: var(--space-md); padding:0.6rem 0; border-bottom:1px solid var(--border-color);">
+                <span style="font-size:0.8rem; font-weight:600; color: var(--text-muted); letter-spacing:0.02em;">Descripción</span>
+                <span style="color: var(--text-secondary); font-size:0.9rem;">@(string.IsNullOrWhiteSpace(Model.Descripcion) ? "—" : Model.Descripcion)</span>
+            </div>
+            <div style="display:grid; grid-template-columns: 140px 1fr; gap: var(--space-md); padding:0.6rem 0;">
+                <span style="font-size:0.8rem; font-weight:600; color: var(--text-muted); letter-spacing:0.02em;">Departamento</span>
+                <span style="display:inline-flex; align-items:center; gap:0.35rem; padding:0.25rem 0.6rem; border-radius: var(--radius-pill); background: var(--bg-muted); border:1px solid var(--border-color); color: var(--text-secondary); font-size:0.8rem; font-weight:500; width:fit-content;"><i class="bi bi-building" style="font-size:0.75rem;"></i> @(Model.Departamento?.Nombre ?? "—")</span>
+            </div>
+        </div>
+        <div style="padding: var(--space-lg) var(--space-xl); border-top:1px solid var(--border-color); background: var(--bg-muted); display:flex; gap:0.5rem;">
+            <a asp-action="Index" style="display:inline-flex; align-items:center; gap:0.4rem; background: var(--bg-surface); color: var(--text-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.5rem 0.9rem; font-weight:500; text-decoration:none;"><i class="bi bi-arrow-left"></i> Volver</a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" style="display:inline-flex; align-items:center; gap:0.4rem; background: var(--text-primary); color: var(--bg-surface); border:1px solid var(--text-primary); border-radius: var(--radius); padding:0.5rem 0.9rem; font-weight:500; text-decoration:none;"><i class="bi bi-pencil"></i> Editar</a>
+            }
+        </div>
+    </div>
+</div>

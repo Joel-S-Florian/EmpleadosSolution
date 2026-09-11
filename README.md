@@ -1,47 +1,46 @@
 # Sistema de Gestión de Empleados - ASP.NET Core
 
-Sistema completo para la gestión de empleados desarrollado con ASP.NET Core, implementando dos aplicaciones independientes que comparten la misma base de datos.
+Sistema completo para la gestión de recursos humanos desarrollado con ASP.NET Core 8. Implementa una arquitectura de tres capas con dos aplicaciones independientes (Web API y Web MVC) que comparten la misma base de datos a través de una Class Library. 
+
+El proyecto ha sido elevado a un estándar empresarial, incluyendo un rediseño completo de la interfaz con soporte nativo para modo claro/oscuro, accesibilidad WCAG AA, integridad referencial estricta y un conjunto robusto de pruebas unitarias.
 
 ## Requisitos Previos
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [SQL Server Express](https://www.microsoft.com/es-es/sql-server/sql-server-downloads) o LocalDB
 - [SQL Server Management Studio (SSMS)](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) (opcional)
-- [Visual Studio 2022](https://visualstudio.microsoft.com/es/) con las cargas de trabajo:
+- [Visual Studio 2022](https://visualstudio.microsoft.com/es/) o VS Code con las cargas de trabajo:
   - ASP.NET and web development
   - .NET desktop development
   - Data storage and processing
 
 ## Estructura del Proyecto
 
-```
+```text
 EmpleadosSolution/
-├── Empleados.Data/          # Class Library - Entidades, DbContext, Migraciones
-├── Empleados.Api/           # ASP.NET Core Web API
-├── Empleados.Mvc/           # ASP.NET Core MVC
-└── Empleados.Tests/         # Pruebas unitarias con xUnit
+├── Empleados.Data/          # Class Library - Entidades, DbContext, Migraciones, DTOs
+├── Empleados.Api/           # ASP.NET Core Web API (REST, JWT, Swagger)
+├── Empleados.Mvc/           # ASP.NET Core MVC (Razor, Identity, UI Moderna)
+└── Empleados.Tests/         # Pruebas unitarias con xUnit e In-Memory Database
 ```
 
-## ⚙️ Configuración Inicial
+## Configuración Inicial
 
 ### 1. Clonar el repositorio
-
 ```bash
-git clone https://github.com/tu-usuario/EmpleadosSolution.git
+git clone https://github.com/Joel-S-Florian/EmpleadosSolution.git
 cd EmpleadosSolution
 ```
 
 ### 2. Restaurar paquetes
-
 ```bash
-dotnet restore
+dotnet restore Empleados.Api/Empleados.Api.csproj
+dotnet restore Empleados.Mvc/Empleados.Mvc.csproj
+dotnet restore Empleados.Tests/Empleados.Tests.csproj
 ```
 
 ### 3. Configurar la cadena de conexión
-
-**Para la API:** `Empleados.Api/appsettings.json`
-**Para el MVC:** `Empleados.Mvc/appsettings.json`
-
+Asegúrate de que `appsettings.json` en ambos proyectos (Api y Mvc) tenga la conexión correcta:
 ```json
 {
   "ConnectionStrings": {
@@ -51,123 +50,128 @@ dotnet restore
 ```
 
 ### 4. Aplicar migraciones a la base de datos
-
 ```bash
 dotnet ef database update --project Empleados.Data --startup-project Empleados.Api
 ```
 
 ### 5. Compilar el proyecto
-
 ```bash
 dotnet build
 ```
 
-## 🖥️ Ejecutar la Web API
+## Ejecutar la Aplicación
 
+Debes ejecutar las dos aplicaciones en terminales separadas.
+
+**Terminal 1: Web API**
 ```bash
 dotnet run --project Empleados.Api
 ```
+- HTTPS: `https://localhost:7114`
+- Swagger: `https://localhost:7114/swagger`
 
-La API estará disponible en:
-- **HTTPS:** `https://localhost:7114`
-- **HTTP:** `http://localhost:5284`
-- **Swagger:** `https://localhost:7114/swagger`
-
-## 🌐 Ejecutar la Web MVC
-
+**Terminal 2: Web MVC**
 ```bash
 dotnet run --project Empleados.Mvc
 ```
-
-La aplicación MVC estará disponible en:
-- **HTTPS:** `https://localhost:7293` 
+- HTTPS: `https://localhost:7293`
 
 ## Credenciales de Prueba
 
+**Acceso Web MVC (Identity):**
 | Rol | Usuario | Contraseña |
 |-----|---------|------------|
-| **Admin** | admin@mvc.com | Admin123 |
-| **RRHH** | rrhh@mvc.com | RRHH123 |
+| Admin | admin@mvc.com | Admin123 |
+| RRHH | rrhh@mvc.com | RRHH123 |
+
+**Usuarios de Prueba (Seed API - Roles Cruzados):**
+| Email | Contraseña | Roles en Proyectos/Deptos |
+|-------|------------|---------------------------|
+| demo@demo.com | demo123 | Owner (Depto 1), Editor (Depto 2), Viewer (Depto 3) |
+| ana@demo.com | ana123 | Owner (Depto 2), Editor (Depto 1) |
+| luis@demo.com | luis123 | Owner (Depto 3), Viewer (Depto 1) |
+| joel@demo.com | joel123 | Editor (Depto 1 y 2), Viewer (Depto 3) |
 
 ## Ejecutar Pruebas Unitarias
-
 ```bash
 dotnet test
 ```
+*Nota: La suite de pruebas incluye 11 tests que validan agregaciones de reportes, integridad referencial de puestos y triggers de notificaciones.*
 
 ## Endpoints de la API
 
 ### Empleados
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/api/Empleados?page=1&pageSize=10` | Listado paginado |
+| GET | `/api/Empleados?page=1&pageSize=10` | Listado paginado con filtros |
 | GET | `/api/Empleados/5` | Obtener empleado por ID |
-| POST | `/api/Empleados` | Crear empleado |
+| POST | `/api/Empleados` | Crear empleado (genera notificación automática) |
 | PUT | `/api/Empleados/5` | Actualizar empleado |
 | PATCH | `/api/Empleados/5/desactivar` | Desactivar empleado |
 | PATCH | `/api/Empleados/5/despedir` | Despedir empleado |
-| POST | `/api/Empleados/5/foto` | Subir foto |
+| POST | `/api/Empleados/5/foto` | Subir foto (multipart/form-data) |
 
-### Departamentos
+### Departamentos y Puestos
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | GET | `/api/Departamentos` | Listar departamentos |
-| GET | `/api/Departamentos/5` | Obtener departamento por ID |
 | POST | `/api/Departamentos` | Crear departamento |
-| PUT | `/api/Departamentos/5` | Actualizar departamento |
-| DELETE | `/api/Departamentos/5` | Eliminar departamento |
+| GET | `/api/Puestos?departamentoId=X` | Listar puestos filtrados por departamento |
+| POST | `/api/Puestos` | Crear puesto (valida existencia de departamento) |
+
+### Reportes y Notificaciones
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/Reportes/Departamentos` | Métricas agregadas (Total, Activos, Nómina) |
+| GET | `/api/Notificaciones/mis-notificaciones` | Obtener notificaciones del usuario autenticado |
+| POST | `/api/Notificaciones/marcar-leida/{id}` | Marcar notificación como leída |
 
 ### Autenticación (API)
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | POST | `/api/Auth/login` | Obtener token JWT |
 
-**Ejemplo de login:**
-```json
-{
-  "correo": "admin@mvc.com",
-  "contrasena": "Admin123"
-}
-```
-
 ## Tecnologías Utilizadas
 
 - **.NET 8** (LTS)
-- **ASP.NET Core MVC** - Interfaz web
-- **ASP.NET Core Web API** - API REST
-- **Entity Framework Core** - ORM (Code First)
-- **SQL Server** - Base de datos
-- **Identity** - Autenticación y autorización
-- **JWT Bearer** - Autenticación en API
-- **Swagger/OpenAPI** - Documentación de API
-- **Bootstrap 5** - UI responsiva
-- **xUnit** - Pruebas unitarias
+- **ASP.NET Core Web API** y **ASP.NET Core MVC**
+- **Entity Framework Core** (Code First, LINQ optimizado con GroupJoin)
+- **SQL Server** (LocalDB / Express)
+- **ASP.NET Core Identity** y **JWT Bearer**
+- **xUnit** con In-Memory Database para pruebas
+- **Bootstrap 5** + **Bootstrap Icons** (sin emojis, diseño minimalista)
+- **CSS Design Tokens** (Soporte nativo Modo Claro/Oscuro con persistencia)
 
-## Funcionalidades Implementadas
+## Funcionalidades Avanzadas Implementadas
 
-### Web MVC
-- Autenticación por cookies con Identity
-- CRUD completo de empleados (Crear, Leer, Actualizar, Desactivar, Despedir)
-- CRUD completo de departamentos
-- Paginación y filtros
-- Subida de fotos (multipart/form-data)
-- Autorización por roles (Admin/RRHH)
-- Diseño responsivo con Bootstrap
+### 1. Módulo de Reportes Ejecutivos
+- Dashboard con métricas agregadas en tiempo real por departamento.
+- Consultas LINQ optimizadas para evitar carga innecesaria en memoria.
+- Formato de moneda local y visualización responsiva.
 
-### Web API
-- Autenticación JWT
-- Endpoints REST completos para empleados y departamentos
-- Paginación y filtros
-- DTOs para entrada/salida
-- Validación con Data Annotations
-- Documentación Swagger
-- CORS configurado
+### 2. Integridad Referencial de Puestos
+- Los puestos están vinculados estrictamente a departamentos mediante Foreign Key.
+- Validación cruzada en API y MVC: no se puede asignar un puesto de otro departamento a un empleado.
+- Filtros dinámicos en frontend: al seleccionar un departamento, los puestos disponibles se actualizan vía AJAX.
 
-### Reglas de Negocio
-- Desactivar ≠ Despedir (estados diferentes)
-- No eliminar físicamente empleados
-- No eliminar departamento con empleados asociados
-- Empleado despedido no se puede modificar
+### 3. Sistema de Notificaciones Internas
+- Alertas automáticas en la base de datos ante eventos críticos (ej. nuevo registro de empleado).
+- Endpoints dedicados para recuperación y marcado de lectura.
+- Implementación en MVC con polling asíncrono (30s) y badge de contador en el navbar.
+
+### 4. Rediseño UI/UX Moderno (3 Fases)
+- **Sistema de Diseño:** Variables CSS (:root y [data-theme="dark"]) para transiciones suaves y detección de preferencia del sistema.
+- **Componentes Reutilizables:** Partials de Razor para _BadgeEstado, _EmptyState y _StatCard, eliminando duplicación de estilos.
+- **Accesibilidad WCAG AA:** Anillos de foco visibles (focus-visible), ratios de contraste 16:1 y jerarquía tipográfica clara (Inter / DM Sans).
+- **Área de Identity:** Rediseño completo de `/Account/Manage` para coincidir con el sistema de diseño global.
+
+## Reglas de Negocio
+
+- Desactivar no es igual a Despedir (estados mutuamente excluyentes).
+- No se permite la eliminación física de empleados (soft delete mediante cambio de estado).
+- No se puede eliminar un departamento si tiene puestos o empleados asociados.
+- Un empleado despedido no puede ser modificado.
+- Un puesto solo puede ser asignado a un empleado si pertenece al mismo departamento que el empleado.
 
 ## Autor
 
@@ -175,5 +179,4 @@ dotnet test
 
 ## Licencia
 
-Este proyecto es educativo - sin fines comerciales.
-
+Este proyecto es educativo y de portafolio, sin fines comerciales.

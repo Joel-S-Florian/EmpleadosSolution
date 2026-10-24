@@ -46,12 +46,13 @@ public class NominasController : Controller
     }
 
     // GET: Nominas/Detalle/5
-    public async Task<IActionResult> Detalle(int id)
+    public async Task<IActionResult> Detalle(int id, [FromServices] RecibosCorreoService correo)
     {
         var nomina = await _ciclo.ObtenerAsync(id);
         if (nomina == null)
             return NotFound();
         ViewBag.NetosAnteriores = await _ciclo.NetosAnterioresAsync(nomina);
+        ViewBag.Envios = await correo.EnviosAsync(id);
         return View(nomina);
     }
 
@@ -165,7 +166,19 @@ public class NominasController : Controller
     [Authorize(Roles = "Admin")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Pagar(int id, DateTime fechaPago) => Avisar(await _ciclo.PagarAsync(id, fechaPago), id);
+    public async Task<IActionResult> Pagar(int id, DateTime fechaPago, [FromServices] RecibosCorreoService correo)
+    {
+        var resultado = await _ciclo.PagarAsync(id, fechaPago);
+        if (!resultado.Ok)
+            return Avisar(resultado, id);
+        var envio = await correo.EnviarNominaAsync(id);
+        return Avisar(Resultado.Exito($"{resultado.Mensaje}. {envio.Mensaje}"), id);
+    }
+
+    // POST: Nominas/EnviarRecibos/5 - reenvía los recibos por correo
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EnviarRecibos(int id, [FromServices] RecibosCorreoService correo) => Avisar(await correo.EnviarNominaAsync(id), id);
 
     [Authorize(Roles = "Admin")]
     [HttpPost]

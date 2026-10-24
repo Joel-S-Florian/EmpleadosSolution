@@ -1,0 +1,32 @@
+@page
+@model Empleados.Mvc.Areas.Identity.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Iniciar sesión";
+}
+
+<h1>Iniciar sesión</h1>
+<p class="acceso-sub">Entra con el correo y la contraseña de tu cuenta.</p>
+
+<form method="post" novalidate>
+    <div asp-validation-summary="ModelOnly" class="app-resumen-error" role="alert"></div>
+    <div class="mb-3">
+        <label asp-for="Entrada.Correo" class="app-etiqueta">Correo electrónico</label>
+        <input asp-for="Entrada.Correo" class="form-control" autocomplete="username" autofocus />
+        <span asp-validation-for="Entrada.Correo" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Entrada.Contrasena" class="app-etiqueta">Contraseña</label>
+        <input asp-for="Entrada.Contrasena" class="form-control" autocomplete="current-password" />
+        <span asp-validation-for="Entrada.Contrasena" class="text-danger small"></span>
+    </div>
+    <div class="form-check mb-4">
+        <input asp-for="Entrada.Recordarme" class="form-check-input" />
+        <label asp-for="Entrada.Recordarme" class="form-check-label">Mantener la sesión iniciada</label>
+    </div>
+    <button type="submit" class="pub-boton w-100 justify-content-center"><i class="bi bi-box-arrow-in-right"></i> Entrar</button>
+</form>
+<p class="app-ayuda mt-3 mb-0">¿Olvidaste la contraseña o no tienes cuenta? Pide acceso al administrador de tu empresa.</p>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

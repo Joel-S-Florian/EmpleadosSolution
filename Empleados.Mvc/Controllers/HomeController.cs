@@ -6,9 +6,10 @@ namespace Empleados.Mvc.Controllers
 {
     public class HomeController : Controller
     {
+        // Sin sesión: la página pública; con sesión: el inicio del sistema
         public IActionResult Index()
         {
-            return View();
+            return User.Identity?.IsAuthenticated == true ? View() : View("Landing");
         }
 
         public IActionResult Privacy()

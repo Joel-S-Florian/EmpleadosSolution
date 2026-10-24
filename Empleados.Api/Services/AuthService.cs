@@ -32,9 +32,11 @@ public class AuthService
         if (!await _userManager.CheckPasswordAsync(usuario, contrasena))
             return null;
 
-        // Obtener roles del usuario
+        // La API es solo para Admin y RRHH: los usuarios sin rol o del portal del empleado no reciben token
         var roles = await _userManager.GetRolesAsync(usuario);
-        var rol = roles.FirstOrDefault() ?? "RRHH";
+        var rol = roles.Contains("Admin") ? "Admin" : roles.Contains("RRHH") ? "RRHH" : null;
+        if (rol == null)
+            return null;
 
         // Generar token JWT
         return GenerarToken(usuario, rol);

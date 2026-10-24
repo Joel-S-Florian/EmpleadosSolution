@@ -109,8 +109,18 @@ public class NominasController : ControllerBase
     // POST: api/Nominas/5/pagar?fechaPago=2026-10-15
     [Authorize(Roles = "Admin")]
     [HttpPost("{id}/pagar")]
-    public async Task<IActionResult> Pagar(int id, [FromQuery] DateTime? fechaPago) =>
-        Respuesta(await _ciclo.PagarAsync(id, fechaPago ?? DateTime.Today));
+    public async Task<IActionResult> Pagar(int id, [FromQuery] DateTime? fechaPago, [FromServices] RecibosCorreoService correo)
+    {
+        var resultado = await _ciclo.PagarAsync(id, fechaPago ?? DateTime.Today);
+        if (!resultado.Ok)
+            return this.Error(resultado);
+        var envio = await correo.EnviarNominaAsync(id);
+        return Ok(new { mensaje = resultado.Mensaje, correo = envio.Mensaje });
+    }
+
+    // POST: api/Nominas/5/enviar-recibos
+    [HttpPost("{id}/enviar-recibos")]
+    public async Task<IActionResult> EnviarRecibos(int id, [FromServices] RecibosCorreoService correo) => Respuesta(await correo.EnviarNominaAsync(id));
 
     [Authorize(Roles = "Admin")]
     [HttpPost("{id}/cerrar")]

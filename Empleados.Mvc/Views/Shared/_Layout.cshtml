@@ -78,11 +78,20 @@
                 var controlador = ViewContext.RouteData.Values["controller"]?.ToString();
                 string Activo(params string[] controladores) => controladores.Contains(controlador) ? "active" : "";
                 var gestionaNomina = User.IsInRole("Admin") || User.IsInRole("RRHH");
+                var esPortal = User.IsInRole("Empleado") && !gestionaNomina;
                 var enNomina = new[] { "Nominas", "Prestamos", "Incidencias", "PagosEspeciales", "Liquidaciones", "Archivos", "Nomina" }.Contains(controlador);
             }
             <nav class="sidebar-nav">
-                <a class="nav-link @Activo("Home")" asp-controller="Home" asp-action="Index"><i class="bi bi-house"></i> Inicio</a>
-                <a class="nav-link @Activo("Empleados")" asp-controller="Empleados" asp-action="Index"><i class="bi bi-people"></i> Empleados</a>
+                @if (esPortal)
+                {
+                    <a class="nav-link @Activo("Portal")" asp-controller="Portal" asp-action="Index"><i class="bi bi-person-badge"></i> Mi portal</a>
+                    <a class="nav-link" asp-area="Identity" asp-page="/Account/Manage/ChangePassword"><i class="bi bi-key"></i> Cambiar contraseña</a>
+                }
+                else
+                {
+                    <a class="nav-link @Activo("Home")" asp-controller="Home" asp-action="Index"><i class="bi bi-house"></i> Inicio</a>
+                    <a class="nav-link @Activo("Empleados")" asp-controller="Empleados" asp-action="Index"><i class="bi bi-people"></i> Empleados</a>
+                }
                 @if (gestionaNomina)
                 {
                     <details class="nav-grupo" open="@enNomina">
@@ -128,7 +137,7 @@
                     <span class="topbar-title d-none d-md-inline">@ViewData["Title"]</span>
                 </div>
                 <div class="topbar-actions">
-                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    @if (User.Identity != null && User.Identity.IsAuthenticated && !esPortal)
                     {
                         @await Component.InvokeAsync("SelectorEmpresa")
                         <a class="icon-btn notif-btn" asp-controller="Notificaciones" asp-action="Index" title="Notificaciones" id="notif-bell" aria-label="Notificaciones">

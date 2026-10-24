@@ -38,6 +38,7 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
     public DbSet<Prestamo> Prestamos { get; set; }
     public DbSet<Incidencia> Incidencias { get; set; }
     public DbSet<Liquidacion> Liquidaciones { get; set; }
+    public DbSet<EnvioCorreo> EnviosCorreo { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -69,6 +70,8 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
         modelBuilder.Entity<Empleado>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.UsuarioId).HasMaxLength(450);
+            entity.HasIndex(e => e.UsuarioId).IsUnique().HasFilter("[UsuarioId] IS NOT NULL");
             entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Apellido).IsRequired().HasMaxLength(100);
             entity.Property(e => e.CorreoElectronico).IsRequired().HasMaxLength(255);
@@ -295,6 +298,18 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
             entity.HasOne(i => i.Empleado).WithMany().HasForeignKey(i => i.EmpleadoId).OnDelete(DeleteBehavior.Restrict);
             entity.HasIndex(i => new { i.EmpleadoId, i.FechaInicio });
             entity.HasQueryFilter(i => !FiltrarPorEmpresa || i.EmpresaId == EmpresaActualId);
+        });
+
+        modelBuilder.Entity<EnvioCorreo>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("EnviosCorreo");
+            entity.Property(e => e.Destino).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.Asunto).IsRequired().HasMaxLength(300);
+            entity.Property(e => e.Estado).HasConversion<string>().HasMaxLength(20);
+            entity.Property(e => e.Error).HasMaxLength(500);
+            entity.HasIndex(e => e.ReciboId);
+            entity.HasQueryFilter(e => !FiltrarPorEmpresa || e.EmpresaId == EmpresaActualId);
         });
 
         modelBuilder.Entity<Liquidacion>(entity =>

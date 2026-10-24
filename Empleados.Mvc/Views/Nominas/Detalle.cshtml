@@ -44,6 +44,10 @@
                     <button type="submit" class="app-boton" onclick="return confirm('Al marcarla como pagada ya no se podrá modificar y se descontarán las cuotas de los préstamos. ¿Continuar?')"><i class="bi bi-cash-coin"></i> Marcar pagada</button>
                 </form>
             }
+            @if (Model.Estado is EstadoNomina.Pagada or EstadoNomina.Cerrada)
+            {
+                <form asp-action="EnviarRecibos" asp-route-id="@Model.Id" method="post"><button type="submit" class="app-boton-sec" onclick="return confirm('¿Enviar de nuevo los recibos por correo a todos los empleados?')"><i class="bi bi-envelope"></i> Enviar recibos por correo</button></form>
+            }
             @if (esAdmin && Model.Estado == EstadoNomina.Pagada)
             {
                 <form asp-action="Cerrar" asp-route-id="@Model.Id" method="post"><button type="submit" class="app-boton"><i class="bi bi-lock"></i> Cerrar período</button></form>
@@ -136,4 +140,21 @@
             </table>
         </div>
     </div>
+    @{ var envios = (List<EnvioCorreo>)ViewBag.Envios; }
+    @if (envios.Any())
+    {
+        var ultimos = envios.GroupBy(e => e.ReciboId).Select(g => g.First()).ToList();
+        <div class="app-tarjeta">
+            <div class="app-tarjeta-titulo"><i class="bi bi-envelope"></i> Recibos por correo <small>@ultimos.Count(e => e.Estado == EstadoEnvio.Enviado) enviado(s) · @ultimos.Count(e => e.Estado == EstadoEnvio.Fallido) fallido(s) · último envío @envios.Max(e => e.Fecha).ToString("dd/MM/yyyy HH:mm")</small></div>
+            @if (ultimos.Any(e => e.Estado == EstadoEnvio.Fallido))
+            {
+                <ul class="app-tarjeta-cuerpo mb-0">
+                    @foreach (var e in ultimos.Where(e => e.Estado == EstadoEnvio.Fallido))
+                    {
+                        <li>@e.Destino: @e.Error</li>
+                    }
+                </ul>
+            }
+        </div>
+    }
 </div>

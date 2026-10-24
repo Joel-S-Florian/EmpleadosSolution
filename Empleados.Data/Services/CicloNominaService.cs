@@ -3,8 +3,6 @@ using Empleados.Data.DTOs;
 using Empleados.Data.Entities;
 using Empleados.Nomina;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
@@ -20,12 +18,14 @@ public class CicloNominaService
     private readonly EmpleadosDbContext _context;
     private readonly NominaService _nomina;
     private readonly IContextoUsuario _contexto;
+    private readonly NotificacionService? _notificaciones;
 
-    public CicloNominaService(EmpleadosDbContext context, NominaService nomina, IContextoUsuario contexto)
+    public CicloNominaService(EmpleadosDbContext context, NominaService nomina, IContextoUsuario contexto, NotificacionService? notificaciones = null)
     {
         _context = context;
         _nomina = nomina;
         _contexto = contexto;
+        _notificaciones = notificaciones;
     }
 
     public Task<List<NominaPeriodo>> ListarAsync() =>
@@ -89,6 +89,7 @@ public class CicloNominaService
         await _context.SaveChangesAsync();
 
         var calculo = await CalcularAsync(nomina.Id);
+        await AvisarListaAsync(nomina);
         return calculo.Ok
             ? Resultado<NominaPeriodo>.Con(nomina, "Nómina creada y calculada")
             : Resultado<NominaPeriodo>.Con(nomina, $"Nómina creada, pero no se pudo calcular: {calculo.Mensaje}");
@@ -118,6 +119,7 @@ public class CicloNominaService
         await _context.SaveChangesAsync();
 
         var calculo = await CalcularAsync(nomina.Id);
+        await AvisarListaAsync(nomina);
         return calculo.Ok
             ? Resultado<NominaPeriodo>.Con(nomina, "Salario de Navidad creado y calculado")
             : Resultado<NominaPeriodo>.Con(nomina, $"Salario de Navidad creado, pero no se pudo calcular: {calculo.Mensaje}");
@@ -213,6 +215,14 @@ public class CicloNominaService
         }
 
         return await GuardarCalculoAsync(nomina);
+    }
+
+    // Aviso a RRHH y administración cuando una nómina nueva queda sin errores
+    private async Task AvisarListaAsync(NominaPeriodo nomina)
+    {
+        if (_notificaciones != null && nomina.Estado == EstadoNomina.Calculada && nomina.Recibos.Count > 0 && nomina.Recibos.All(r => r.ErroresJson == null))
+            await _notificaciones.NotificarEmpresaAsync(nomina.EmpresaId,
+                $"La nómina {nomina.Descripcion} está calculada y lista para aprobar (neto {nomina.TotalNeto:N2})", TipoNotificacion.Info);
     }
 
     private async Task<Resultado> GuardarCalculoAsync(NominaPeriodo nomina)
@@ -519,6 +529,5 @@ public class CicloNominaService
 
     private static string Json(IEnumerable<string> textos) => JsonSerializer.Serialize(textos, OpcionesJson);
 
-    private static string Texto(Enum valor) =>
-        valor.GetType().GetField(valor.ToString())?.GetCustomAttribute<DisplayAttribute>()?.GetName() ?? valor.ToString();
+    private static string Texto(Enum valor) => Textos.De(valor);
 }

@@ -104,7 +104,7 @@ Estos usuarios se crean al arrancar el MVC solo en desarrollo (contraseñas en `
 ```bash
 dotnet test
 ```
-*Nota: La suite de pruebas incluye 71 tests que validan los casos de nómina de [docs/CASOS_NOMINA.md](docs/CASOS_NOMINA.md), el motor de cálculo, reportes, integridad referencial, notificaciones, reglas de negocio, subida de fotos, aislamiento entre empresas, parámetros legales por vigencia, datos de nómina e historial de movimientos.*
+*Nota: La suite de pruebas incluye 83 tests que validan los casos de nómina de [docs/CASOS_NOMINA.md](docs/CASOS_NOMINA.md), el motor de cálculo, reportes, integridad referencial, notificaciones, reglas de negocio, subida de fotos, aislamiento entre empresas, parámetros legales por vigencia, datos de nómina e historial de movimientos.*
 
 **CI:** cada push a `master` y cada PR ejecutan en GitHub Actions (`.github/workflows/ci.yml`) la compilación, los tests y una revisión de que el modelo de EF coincide con las migraciones desde la API y desde el MVC.
 
@@ -121,7 +121,16 @@ El sistema evoluciona hacia una nómina para República Dominicana; el plan por 
 - **Deducciones internas** y **aportes del empleador** (AFP, SFS, SRL e INFOTEP).
 - Una **explicación paso a paso** de cada cálculo.
 
-En la pantalla **Nómina → Simulador** y en `POST /api/Nomina/simular` se prueba con los datos reales de un empleado, sin guardar nada. Las reglas de cálculo y los casos para validarlas están en [docs/CASOS_NOMINA.md](docs/CASOS_NOMINA.md).
+En la pantalla **Nómina → Simulador** y en `POST /api/Nomina/simular` se prueba con los datos reales de un empleado, sin guardar nada.
+
+### Ciclo de nómina
+**Nómina → Nóminas** maneja una nómina por empresa, período (quincena o mes) y frecuencia.
+- **Borrador / Calculada:** incluye a los empleados activos con esa frecuencia. Se cargan las **novedades** de cada recibo (horas extra, ausencias, bonos, descuentos) y se recalcula las veces que haga falta.
+- **Aprobada** (solo Admin): no se puede aprobar si algún recibo tiene errores, por ejemplo si falta la cédula o el NSS. La 2.ª quincena solo se calcula con la 1.ª aprobada, porque usa lo ya retenido. Una nómina aprobada se puede **reabrir** mientras no se haya pagado.
+- **Pagada:** ya no se modifica, y baja el saldo de los **préstamos en cuotas** (Nómina → Préstamos).
+- **Cerrada:** cierre del período.
+
+Cada recibo guarda una copia de los datos del empleado, sus líneas y la explicación del cálculo, y se descarga en **PDF** (uno o todos los de la nómina). Mientras la nómina no esté pagada, el PDF lleva la marca BORRADOR. Las reglas de cálculo y los casos para validarlas están en [docs/CASOS_NOMINA.md](docs/CASOS_NOMINA.md).
 
 ### Multiempresa
 - Cada departamento, puesto y empleado pertenece a una **empresa** (empleador con su RNC).
@@ -147,6 +156,12 @@ Todos requieren token JWT, salvo el login. Crear, editar o eliminar departamento
 | GET | `/api/Parametros/salarios-minimos` | Salarios mínimos por tamaño de empresa |
 | GET | `/api/Parametros/feriados/2026` | Feriados del año |
 | POST | `/api/Nomina/simular` | Simula el recibo de un empleado en un período (Admin o RRHH) |
+| GET / POST | `/api/Nominas` | Lista nóminas / crea y calcula la nómina de un período |
+| GET | `/api/Nominas/5` | Nómina con sus recibos |
+| POST | `/api/Nominas/5/calcular` · `aprobar` · `reabrir` · `pagar?fechaPago=` · `cerrar` | Ciclo de la nómina (aprobar, reabrir, pagar y cerrar: solo Admin) |
+| PUT | `/api/Nominas/recibos/7/novedades` | Novedades de un recibo (recalcula) |
+| GET | `/api/Nominas/recibos/7/pdf` | Recibo en PDF |
+| GET / POST | `/api/Prestamos` | Préstamos en cuotas |
 
 ### Empleados
 | Método | Endpoint | Descripción |

@@ -99,6 +99,12 @@
                 @if (User.IsInRole("Admin") || User.IsInRole("RRHH"))
                 {
                     <div class="nav-section" style="margin-top: 0.5rem;">Nómina</div>
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Nominas" ? "active" : "")" asp-controller="Nominas" asp-action="Index">
+                        <i class="bi bi-cash-stack"></i> Nóminas
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Prestamos" ? "active" : "")" asp-controller="Prestamos" asp-action="Index">
+                        <i class="bi bi-piggy-bank"></i> Préstamos
+                    </a>
                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Nomina" ? "active" : "")" asp-controller="Nomina" asp-action="Simulador">
                         <i class="bi bi-calculator"></i> Simulador
                     </a>

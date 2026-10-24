@@ -156,7 +156,7 @@ public static class MotorNomina
             var monto = R(deduccion.Monto);
             var aplicado = Math.Min(monto, Math.Max(disponible, 0));
             if (aplicado > 0)
-                lineas.Add(new LineaRecibo(TipoLinea.DeduccionInterna, Codigos.Deduccion, deduccion.Concepto, aplicado));
+                lineas.Add(new LineaRecibo(TipoLinea.DeduccionInterna, Codigos.Deduccion, deduccion.Concepto, aplicado, Referencia: deduccion.Referencia));
             if (aplicado < monto)
                 advertencias.Add($"{deduccion.Concepto}: no se descontaron {N(monto - aplicado)} porque el neto no alcanza");
             disponible -= aplicado;

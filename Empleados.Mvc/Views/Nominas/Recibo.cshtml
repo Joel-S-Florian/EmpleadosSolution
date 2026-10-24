@@ -1,0 +1,83 @@
+@model ReciboPago
+@using Empleados.Data.Services
+@using Empleados.Nomina
+@{
+    ViewData["Title"] = "Recibo " + Model.NombreEmpleado;
+    var nomina = Model.Nomina!;
+    string M(decimal v) => v.ToString("N2");
+}
+
+<div class="app-pagina-angosta">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <a asp-action="Detalle" asp-route-id="@Model.NominaId" class="app-icono" aria-label="Volver"><i class="bi bi-arrow-left"></i></a>
+            <div>
+                <h1>@Model.NombreEmpleado</h1>
+                <p>Nómina @nomina.Descripcion · @(Model.Documento ?? "sin documento") · @(Model.Puesto ?? "—")</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            @if (nomina.Editable)
+            {
+                <a asp-action="Novedades" asp-route-id="@Model.Id" class="app-boton-sec"><i class="bi bi-pencil-square"></i> Novedades</a>
+            }
+            <a asp-action="ReciboPdf" asp-route-id="@Model.Id" class="app-boton"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+        </div>
+    </div>
+
+    @foreach (var e in CicloNominaService.Lista(Model.ErroresJson))
+    {
+        <div class="app-alerta-error"><i class="bi bi-x-octagon"></i> @e</div>
+    }
+    @foreach (var a in CicloNominaService.Lista(Model.AdvertenciasJson))
+    {
+        <div class="app-aviso"><i class="bi bi-exclamation-triangle"></i> @a</div>
+    }
+
+    <div class="app-tarjeta">
+        <div class="table-responsive">
+            <table class="table app-tabla">
+                <thead><tr><th>Concepto</th><th class="app-numero">Cantidad</th><th class="app-numero">Ingresos</th><th class="app-numero">Deducciones</th></tr></thead>
+                <tbody>
+                    @foreach (var l in Model.Lineas.Where(l => l.Tipo != nameof(TipoLinea.AportePatronal)).OrderBy(l => l.Orden))
+                    {
+                        var ingreso = l.Tipo == nameof(TipoLinea.Ingreso);
+                        <tr>
+                            <td>@l.Concepto @if (l.PrestamoId != null) { <span class="app-ayuda">(cuota de préstamo)</span> }</td>
+                            <td class="app-numero">@l.Cantidad?.ToString("0.##")</td>
+                            <td class="app-numero">@(ingreso ? M(l.Monto) : "")</td>
+                            <td class="app-numero">@(ingreso ? "" : M(l.Monto))</td>
+                        </tr>
+                    }
+                    <tr class="fw-bold"><td>Totales</td><td></td><td class="app-numero">@M(Model.TotalIngresos)</td><td class="app-numero">@M(Model.TotalDeduccionesLey + Model.TotalDeduccionesInternas)</td></tr>
+                    <tr class="fw-bold" style="font-size:1.05rem;"><td>Neto a pagar</td><td></td><td></td><td class="app-numero">@M(Model.Neto)</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="app-tarjeta">
+        <div class="app-tarjeta-titulo"><i class="bi bi-building"></i> Aportes del empleador <small>no se descuentan al empleado</small></div>
+        <table class="table app-tabla">
+            <tbody>
+                @foreach (var l in Model.Lineas.Where(l => l.Tipo == nameof(TipoLinea.AportePatronal)).OrderBy(l => l.Orden))
+                {
+                    <tr><td>@l.Concepto</td><td class="app-numero">@M(l.Monto)</td></tr>
+                }
+                <tr class="fw-bold"><td>Costo total para la empresa</td><td class="app-numero">@M(Model.TotalIngresos + Model.TotalAportesPatronales)</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="app-tarjeta">
+        <div class="app-tarjeta-titulo"><i class="bi bi-list-ol"></i> Cómo se calculó</div>
+        <div class="app-tarjeta-cuerpo">
+            <ol class="mb-0" style="font-size:0.88rem; line-height:1.6;">
+                @foreach (var paso in CicloNominaService.Lista(Model.ExplicacionJson))
+                {
+                    <li>@paso</li>
+                }
+            </ol>
+        </div>
+    </div>
+</div>

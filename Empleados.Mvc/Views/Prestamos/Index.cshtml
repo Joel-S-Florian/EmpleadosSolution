@@ -1,0 +1,99 @@
+@model List<Prestamo>
+@{
+    ViewData["Title"] = "Préstamos y descuentos";
+    var nuevo = (PrestamoDto)ViewBag.Nuevo;
+}
+
+<div class="app-pagina">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <span class="app-icono"><i class="bi bi-piggy-bank"></i></span>
+            <div>
+                <h1>Préstamos y descuentos en cuotas</h1>
+                <p>La cuota se descuenta en cada nómina; el saldo baja cuando la nómina se marca como pagada.</p>
+            </div>
+        </div>
+    </div>
+
+    <partial name="~/Views/Shared/Components/_Alertas.cshtml" />
+
+    <form asp-action="Crear" method="post" class="app-tarjeta">
+        <div class="app-tarjeta-titulo"><i class="bi bi-plus-circle"></i> Nuevo préstamo o descuento</div>
+        <div class="app-tarjeta-cuerpo">
+            <div asp-validation-summary="All" class="app-resumen-error"></div>
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label for="EmpleadoId" class="app-etiqueta">Empleado</label>
+                    <select id="EmpleadoId" name="EmpleadoId" asp-items="ViewBag.Empleados" class="form-select" required>
+                        <option value="">Seleccione…</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="Concepto" class="app-etiqueta">Concepto</label>
+                    <input id="Concepto" name="Concepto" value="@nuevo.Concepto" class="form-control" placeholder="Préstamo, cooperativa…" maxlength="100" required />
+                </div>
+                <div class="col-md-2">
+                    <label for="MontoTotal" class="app-etiqueta">Monto total</label>
+                    <input id="MontoTotal" name="MontoTotal" type="number" step="0.01" min="0.01" value="@(nuevo.MontoTotal > 0 ? nuevo.MontoTotal.ToString("0.00") : "")" class="form-control" required />
+                </div>
+                <div class="col-md-2">
+                    <label for="MontoCuota" class="app-etiqueta">Cuota por pago</label>
+                    <input id="MontoCuota" name="MontoCuota" type="number" step="0.01" min="0.01" value="@(nuevo.MontoCuota > 0 ? nuevo.MontoCuota.ToString("0.00") : "")" class="form-control" required />
+                </div>
+                <div class="col-md-2">
+                    <label for="FechaInicio" class="app-etiqueta">Desde</label>
+                    <input id="FechaInicio" name="FechaInicio" type="date" value="@nuevo.FechaInicio.ToString("yyyy-MM-dd")" class="form-control" required />
+                </div>
+                <div class="col-md-2">
+                    <label for="Prioridad" class="app-etiqueta">Prioridad</label>
+                    <input id="Prioridad" name="Prioridad" type="number" min="0" value="@nuevo.Prioridad" class="form-control" title="Menor se descuenta primero" />
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check mt-2">
+                        <input id="SoloFinDeMes" name="SoloFinDeMes" type="checkbox" value="true" class="form-check-input" checked="@nuevo.SoloFinDeMes" />
+                        <label for="SoloFinDeMes" class="form-check-label">Descontar solo en el último pago del mes</label>
+                    </div>
+                </div>
+                <div class="col-md-3 ms-auto">
+                    <button type="submit" class="app-boton w-100 justify-content-center"><i class="bi bi-plus-lg"></i> Registrar</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="app-tarjeta">
+        <div class="table-responsive">
+            <table class="table table-hover app-tabla">
+                <thead>
+                    <tr><th>Empleado</th><th>Concepto</th><th class="app-numero">Total</th><th class="app-numero">Cuota</th><th class="app-numero">Saldo</th><th>Desde</th><th>Estado</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="8" class="app-ayuda">No hay préstamos registrados.</td></tr>
+                    }
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td>@p.Empleado?.Nombre @p.Empleado?.Apellido</td>
+                            <td>@p.Concepto @if (p.SoloFinDeMes) { <span class="app-ayuda">(fin de mes)</span> }</td>
+                            <td class="app-numero">@p.MontoTotal.ToString("N2")</td>
+                            <td class="app-numero">@p.MontoCuota.ToString("N2")</td>
+                            <td class="app-numero fw-semibold">@p.Saldo.ToString("N2")</td>
+                            <td>@p.FechaInicio.ToString("dd/MM/yyyy")</td>
+                            <td><span class="app-chip">@(p.Activo ? "Activo" : p.Saldo == 0 ? "Liquidado" : "Cancelado")</span></td>
+                            <td class="text-end">
+                                @if (p.Activo)
+                                {
+                                    <form asp-action="Cancelar" asp-route-id="@p.Id" method="post" class="d-inline">
+                                        <button type="submit" class="app-boton-sec py-1 px-2" onclick="return confirm('¿Dejar de descontar este préstamo? El saldo pendiente queda registrado.')">Cancelar</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

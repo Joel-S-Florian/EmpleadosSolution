@@ -1,0 +1,12 @@
+@model EstadoNomina
+@{
+    var (icono, color) = Model switch
+    {
+        EstadoNomina.Borrador => ("bi-pencil", "var(--text-muted)"),
+        EstadoNomina.Calculada => ("bi-calculator", "var(--accent)"),
+        EstadoNomina.Aprobada => ("bi-check2-circle", "var(--success)"),
+        EstadoNomina.Pagada => ("bi-cash-coin", "var(--success)"),
+        _ => ("bi-lock", "var(--text-secondary)")
+    };
+}
+<span class="app-chip" style="color:@color;"><i class="bi @icono"></i> @Model</span>

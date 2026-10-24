@@ -106,10 +106,11 @@ Otros sectores (zonas francas, hoteles, construcción, vigilantes, agrícola) ti
 - Calendario de feriados que aplica automáticamente las reglas de la Ley 139-97.
 - Cada incidencia aprobada afecta sola a la nómina del período.
 
-### Fase 3.3: Ciclo de nómina
+### Fase 3.3: Ciclo de nómina ✅ (24-oct-2026)
 - Crear el período, calcular, revisar diferencias contra la nómina anterior, aprobar (rol Admin o Nómina), pagar y cerrar.
 - Retroactivos y ajustes.
 - **Recibo de pago en PDF**, con la lista de cada ingreso y deducción.
+- **Hecho:** nóminas por período con novedades por recibo, aprobación solo por Admin y bloqueada si faltan datos de TSS, reapertura, pago (que baja el saldo de los préstamos en cuotas) y cierre. Comparación del neto con la nómina anterior, PDF con QuestPDF y endpoints en la API. Los retroactivos se registran como novedades (ingreso o deducción de ajuste) en la nómina siguiente.
 
 ### Fase 3.4: Pagos especiales
 - **Salario 13 (Regalía Pascual):** cálculo proporcional y nómina especial en diciembre, sin TSS ni ISR.

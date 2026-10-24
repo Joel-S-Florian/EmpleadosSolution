@@ -70,7 +70,8 @@ public record PeriodoNomina(DateTime Inicio, DateTime Fin, Frecuencia Frecuencia
 
 public record IngresoAdicional(string Concepto, decimal Monto, bool CotizaTss = true, bool GravaIsr = true);
 
-public record DeduccionInterna(string Concepto, decimal Monto, int Prioridad = 0);
+// Referencia: identifica de dónde sale la deducción (por ejemplo "PRESTAMO:12") y se copia a la línea del recibo
+public record DeduccionInterna(string Concepto, decimal Monto, int Prioridad = 0, string? Referencia = null);
 
 // Lo ya calculado en el mismo mes antes de este período (para la 2.ª quincena)
 public record AcumuladoMes
@@ -125,7 +126,8 @@ public record LineaRecibo(
     decimal Monto,
     decimal? Cantidad = null,
     bool CotizaTss = false,
-    bool GravaIsr = false);
+    bool GravaIsr = false,
+    string? Referencia = null);
 
 public record ReciboNomina
 {

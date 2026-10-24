@@ -33,6 +33,9 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
     public DbSet<TramoIsr> TramosIsr { get; set; }
     public DbSet<SalarioMinimo> SalariosMinimos { get; set; }
     public DbSet<Feriado> Feriados { get; set; }
+    public DbSet<NominaPeriodo> Nominas { get; set; }
+    public DbSet<ReciboPago> RecibosPago { get; set; }
+    public DbSet<Prestamo> Prestamos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -193,6 +196,86 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
             entity.HasKey(f => f.Id);
             entity.Property(f => f.Nombre).IsRequired().HasMaxLength(100);
             entity.HasIndex(f => f.Fecha).IsUnique();
+        });
+
+        modelBuilder.Entity<NominaPeriodo>(entity =>
+        {
+            entity.HasKey(n => n.Id);
+            entity.Property(n => n.Frecuencia).HasConversion<string>().HasMaxLength(20);
+            entity.Property(n => n.Estado).HasConversion<string>().HasMaxLength(20);
+            entity.Property(n => n.CreadaPor).HasMaxLength(256);
+            entity.Property(n => n.AprobadaPor).HasMaxLength(256);
+            entity.Property(n => n.PagadaPor).HasMaxLength(256);
+            foreach (var total in new[] { nameof(NominaPeriodo.TotalIngresos), nameof(NominaPeriodo.TotalDeducciones), nameof(NominaPeriodo.TotalNeto), nameof(NominaPeriodo.TotalAportesPatronales) })
+                entity.Property(total).HasPrecision(18, 2);
+            entity.HasIndex(n => new { n.EmpresaId, n.Anio, n.Mes, n.Frecuencia, n.Quincena }).IsUnique();
+            entity.HasOne<Empresa>().WithMany().HasForeignKey(n => n.EmpresaId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasQueryFilter(n => !FiltrarPorEmpresa || n.EmpresaId == EmpresaActualId);
+        });
+
+        modelBuilder.Entity<ReciboPago>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.NombreEmpleado).IsRequired().HasMaxLength(200);
+            entity.Property(r => r.Documento).HasMaxLength(20);
+            entity.Property(r => r.Nss).HasMaxLength(20);
+            entity.Property(r => r.Departamento).HasMaxLength(100);
+            entity.Property(r => r.Puesto).HasMaxLength(100);
+            entity.Property(r => r.Banco).HasMaxLength(150);
+            entity.Property(r => r.NumeroCuenta).HasMaxLength(30);
+            entity.Property(r => r.TipoSalario).HasConversion<string>().HasMaxLength(20);
+            foreach (var monto in new[]
+            {
+                nameof(ReciboPago.Salario), nameof(ReciboPago.TotalIngresos), nameof(ReciboPago.TotalDeduccionesLey),
+                nameof(ReciboPago.TotalDeduccionesInternas), nameof(ReciboPago.Neto), nameof(ReciboPago.TotalAportesPatronales),
+                nameof(ReciboPago.BaseTss), nameof(ReciboPago.BaseIsrMensual)
+            })
+                entity.Property(monto).HasPrecision(18, 2);
+            foreach (var cantidad in new[]
+            {
+                nameof(ReciboPago.HorasTrabajadas), nameof(ReciboPago.DiasAusenciaSinPago), nameof(ReciboPago.HorasExtra),
+                nameof(ReciboPago.HorasExtraExceso), nameof(ReciboPago.HorasNocturnas), nameof(ReciboPago.HorasFeriado)
+            })
+                entity.Property(cantidad).HasPrecision(9, 2);
+            entity.HasIndex(r => new { r.NominaId, r.EmpleadoId }).IsUnique();
+            entity.HasOne(r => r.Nomina).WithMany(n => n.Recibos).HasForeignKey(r => r.NominaId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(r => r.Empleado).WithMany().HasForeignKey(r => r.EmpleadoId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasMany(r => r.Lineas).WithOne().HasForeignKey(l => l.ReciboId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(r => r.Novedades).WithOne().HasForeignKey(n => n.ReciboId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasQueryFilter(r => !FiltrarPorEmpresa || r.EmpresaId == EmpresaActualId);
+        });
+
+        modelBuilder.Entity<LineaReciboPago>(entity =>
+        {
+            entity.ToTable("LineasReciboPago");
+            entity.HasKey(l => l.Id);
+            entity.Property(l => l.Tipo).IsRequired().HasMaxLength(30);
+            entity.Property(l => l.Codigo).IsRequired().HasMaxLength(30);
+            entity.Property(l => l.Concepto).IsRequired().HasMaxLength(150);
+            entity.Property(l => l.Monto).HasPrecision(18, 2);
+            entity.Property(l => l.Cantidad).HasPrecision(9, 2);
+            entity.HasOne<Prestamo>().WithMany().HasForeignKey(l => l.PrestamoId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<NovedadNomina>(entity =>
+        {
+            entity.ToTable("NovedadesNomina");
+            entity.HasKey(n => n.Id);
+            entity.Property(n => n.Tipo).HasConversion<string>().HasMaxLength(20);
+            entity.Property(n => n.Concepto).IsRequired().HasMaxLength(100);
+            entity.Property(n => n.Monto).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<Prestamo>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Concepto).IsRequired().HasMaxLength(100);
+            entity.Property(p => p.MontoTotal).HasPrecision(18, 2);
+            entity.Property(p => p.MontoCuota).HasPrecision(18, 2);
+            entity.Property(p => p.Saldo).HasPrecision(18, 2);
+            entity.HasOne(p => p.Empleado).WithMany().HasForeignKey(p => p.EmpleadoId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(p => new { p.EmpleadoId, p.Activo });
+            entity.HasQueryFilter(p => !FiltrarPorEmpresa || p.EmpresaId == EmpresaActualId);
         });
 
         DatosLegales.Sembrar(modelBuilder);

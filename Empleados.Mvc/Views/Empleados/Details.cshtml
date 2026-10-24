@@ -52,8 +52,7 @@
                 @{ Row("Dirección", Model.Direccion); }
                 @{ Row("Teléfono", Model.Telefono); }
                 @{ Row("Correo", Model.CorreoElectronico); }
-                @{ Row("Puesto", string.IsNullOrWhiteSpace(Model.Puesto) ? "—" : Model.Puesto); }
-                @{ Row("Puesto vinculado", Model.PuestoNav?.Nombre ?? "—"); }
+                @{ Row("Puesto", Model.PuestoNav?.Nombre ?? "—"); }
                 @{ Row("Salario", Model.Salario.ToString("C", new System.Globalization.CultureInfo("es-DO"))); }
                 @{ Row("Contratación", Model.FechaContratacion.ToString("dd/MM/yyyy")); }
                 @{ Row("Terminación", Model.FechaTerminacion?.ToString("dd/MM/yyyy") ?? "—"); }

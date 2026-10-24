@@ -87,7 +87,6 @@ public class NotificacionesTests
             Direccion = "Calle 1",
             Telefono = "600111222",
             CorreoElectronico = "carlos@test.com",
-            Puesto = "Dev",
             Salario = 40000,
             FechaContratacion = DateTime.Now,
             DepartamentoId = 1

@@ -9,7 +9,6 @@ public class EmpleadoDto
     public string Direccion { get; set; } = string.Empty;
     public string Telefono { get; set; } = string.Empty;
     public string CorreoElectronico { get; set; } = string.Empty;
-    public string Puesto { get; set; } = string.Empty;
     public decimal Salario { get; set; }
     public DateTime FechaContratacion { get; set; }
     public DateTime? FechaTerminacion { get; set; }
@@ -29,7 +28,6 @@ public class EmpleadoDto
         Direccion = e.Direccion,
         Telefono = e.Telefono,
         CorreoElectronico = e.CorreoElectronico,
-        Puesto = e.Puesto,
         Salario = e.Salario,
         FechaContratacion = e.FechaContratacion,
         FechaTerminacion = e.FechaTerminacion,

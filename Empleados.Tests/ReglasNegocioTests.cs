@@ -18,7 +18,7 @@ public class ReglasNegocioTests
         context.Empleados.Add(new Empleado
         {
             Id = 1, Nombre = "Ana", Apellido = "García", CorreoElectronico = "ana@test.com",
-            Telefono = "600111222", Direccion = "Calle 1", Puesto = "Dev", Salario = 40000,
+            Telefono = "600111222", Direccion = "Calle 1", Salario = 40000,
             FechaNacimiento = new DateTime(1990, 1, 1), FechaContratacion = new DateTime(2020, 1, 1),
             DepartamentoId = 1, Estado = EstadoEmpleado.Despedido
         });
@@ -29,7 +29,7 @@ public class ReglasNegocioTests
     private static ActualizarEmpleadoDto Dto(string correo = "nuevo@test.com", int departamentoId = 1) => new()
     {
         Nombre = "Luis", Apellido = "Pérez", CorreoElectronico = correo, Telefono = "600333444",
-        Direccion = "Calle 2", Puesto = "Dev", Salario = 45000,
+        Direccion = "Calle 2", Salario = 45000,
         FechaNacimiento = new DateTime(1991, 1, 1), FechaContratacion = new DateTime(2021, 1, 1),
         DepartamentoId = departamentoId
     };

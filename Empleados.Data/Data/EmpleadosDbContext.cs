@@ -31,7 +31,6 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
             entity.HasIndex(e => e.CorreoElectronico).IsUnique();
             entity.Property(e => e.Telefono).IsRequired().HasMaxLength(20);
             entity.Property(e => e.Direccion).IsRequired().HasMaxLength(255);
-            entity.Property(e => e.Puesto).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Salario).IsRequired().HasPrecision(18, 2);
             entity.Property(e => e.FotoRuta).HasMaxLength(500);
         });

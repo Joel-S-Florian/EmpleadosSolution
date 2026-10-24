@@ -97,7 +97,6 @@ public class PuestosTests
             Direccion = "Calle 1",
             Telefono = "600111222",
             CorreoElectronico = "juan2@test.com",
-            Puesto = "Dev",
             Salario = 40000,
             FechaContratacion = new DateTime(2020, 1, 1),
             DepartamentoId = 2, // RRHH

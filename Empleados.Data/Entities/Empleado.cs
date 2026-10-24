@@ -16,7 +16,6 @@ public class Empleado
     public string Direccion { get; set; } = string.Empty;
     public string Telefono { get; set; } = string.Empty;
     public string CorreoElectronico { get; set; } = string.Empty;
-    public string Puesto { get; set; } = string.Empty;
     public decimal Salario { get; set; }
     public DateTime FechaContratacion { get; set; }
     public DateTime? FechaTerminacion { get; set; }

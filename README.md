@@ -59,6 +59,8 @@ En producción usa la variable de entorno `Jwt__Key`. Sin esta clave la API no a
 
 Los orígenes permitidos por CORS se configuran en `Cors:AllowedOrigins` de `Empleados.Api/appsettings.json`.
 
+**Fotos de empleados:** la API y el MVC guardan y sirven las fotos (en `/uploads`) desde la misma carpeta, configurada en `Uploads:Path` de ambos `appsettings.json`. Por defecto es `../uploads`, la carpeta `uploads/` en la raíz de la solución, que no se versiona. En producción usa la misma ruta absoluta en las dos apps.
+
 ### 5. Aplicar migraciones a la base de datos
 ```bash
 dotnet ef database update --project Empleados.Data --startup-project Empleados.Api
@@ -100,9 +102,15 @@ Estos usuarios se crean al arrancar el MVC solo en desarrollo (contraseñas en `
 ```bash
 dotnet test
 ```
-*Nota: La suite de pruebas incluye 10 tests que validan agregaciones de reportes, integridad referencial de puestos y triggers de notificaciones.*
+*Nota: La suite de pruebas incluye 19 tests que validan agregaciones de reportes, integridad referencial de puestos, notificaciones, reglas de negocio (empleado despedido, correo y departamento) y la subida de fotos.*
+
+## Arquitectura
+
+La lógica de negocio vive en `Empleados.Data/Services` y la comparten la API y el MVC, así las reglas son las mismas en las dos aplicaciones. Los controladores solo traducen el resultado del servicio a HTTP (API) o a vistas (MVC).
 
 ## Endpoints de la API
+
+Todos requieren token JWT, salvo el login. Crear, editar o eliminar departamentos, puestos y empleados, y subir fotos, requiere rol **Admin**. Desactivar y despedir requiere **Admin** o **RRHH**.
 
 ### Empleados
 | Método | Endpoint | Descripción |

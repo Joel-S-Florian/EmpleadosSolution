@@ -63,7 +63,7 @@ public class EmpleadoService
             return Resultado<Empleado>.Fallo(error);
 
         var empleado = new Empleado { Estado = EstadoEmpleado.Activo };
-        await AplicarAsync(empleado, dto);
+        Aplicar(empleado, dto);
         _context.Empleados.Add(empleado);
         await _context.SaveChangesAsync();
 
@@ -83,7 +83,7 @@ public class EmpleadoService
         if (error != null)
             return error;
 
-        await AplicarAsync(empleado, dto);
+        Aplicar(empleado, dto);
         await _context.SaveChangesAsync();
         return Resultado.Exito("Empleado actualizado correctamente");
     }
@@ -158,7 +158,7 @@ public class EmpleadoService
         return null;
     }
 
-    private async Task AplicarAsync(Empleado empleado, CrearEmpleadoDto dto)
+    private static void Aplicar(Empleado empleado, CrearEmpleadoDto dto)
     {
         empleado.Nombre = dto.Nombre;
         empleado.Apellido = dto.Apellido;
@@ -170,8 +170,5 @@ public class EmpleadoService
         empleado.FechaContratacion = dto.FechaContratacion;
         empleado.DepartamentoId = dto.DepartamentoId;
         empleado.PuestoId = dto.PuestoId;
-        empleado.Puesto = dto.PuestoId.HasValue
-            ? (await _context.Puestos.FindAsync(dto.PuestoId.Value))!.Nombre
-            : dto.Puesto;
     }
 }

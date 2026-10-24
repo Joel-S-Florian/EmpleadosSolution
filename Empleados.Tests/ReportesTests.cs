@@ -28,28 +28,28 @@ public class ReportesTests
             new Empleado
             {
                 Id = 1, Nombre = "Juan", Apellido = "Perez", CorreoElectronico = "juan@rpt.com",
-                Telefono = "600111222", Direccion = "Calle 1", Puesto = "Dev", Salario = 40000,
+                Telefono = "600111222", Direccion = "Calle 1", Salario = 40000,
                 FechaNacimiento = new DateTime(1990, 1, 1), FechaContratacion = new DateTime(2020, 1, 1),
                 Estado = EstadoEmpleado.Activo, DepartamentoId = 1
             },
             new Empleado
             {
                 Id = 2, Nombre = "Ana", Apellido = "Garcia", CorreoElectronico = "ana@rpt.com",
-                Telefono = "600333444", Direccion = "Calle 2", Puesto = "Analista", Salario = 50000,
+                Telefono = "600333444", Direccion = "Calle 2", Salario = 50000,
                 FechaNacimiento = new DateTime(1992, 5, 15), FechaContratacion = new DateTime(2019, 6, 1),
                 Estado = EstadoEmpleado.Activo, DepartamentoId = 1
             },
             new Empleado
             {
                 Id = 3, Nombre = "Luis", Apellido = "Gomez", CorreoElectronico = "luis@rpt.com",
-                Telefono = "600555666", Direccion = "Calle 3", Puesto = "Soporte", Salario = 30000,
+                Telefono = "600555666", Direccion = "Calle 3", Salario = 30000,
                 FechaNacimiento = new DateTime(1995, 3, 10), FechaContratacion = new DateTime(2021, 1, 1),
                 Estado = EstadoEmpleado.Inactivo, DepartamentoId = 1
             },
             new Empleado
             {
                 Id = 4, Nombre = "Maria", Apellido = "Lopez", CorreoElectronico = "maria@rpt.com",
-                Telefono = "600777888", Direccion = "Calle 4", Puesto = "Reclutadora", Salario = 35000,
+                Telefono = "600777888", Direccion = "Calle 4", Salario = 35000,
                 FechaNacimiento = new DateTime(1993, 7, 20), FechaContratacion = new DateTime(2022, 2, 1),
                 Estado = EstadoEmpleado.Despedido, DepartamentoId = 2
             }

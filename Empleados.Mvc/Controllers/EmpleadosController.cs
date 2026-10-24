@@ -103,7 +103,6 @@ public class EmpleadosController : Controller
             Direccion = empleado.Direccion,
             Telefono = empleado.Telefono,
             CorreoElectronico = empleado.CorreoElectronico,
-            Puesto = empleado.Puesto,
             Salario = empleado.Salario,
             FechaContratacion = empleado.FechaContratacion,
             DepartamentoId = empleado.DepartamentoId,

@@ -28,10 +28,6 @@ public class CrearEmpleadoDto
     [StringLength(255)]
     public string CorreoElectronico { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "El puesto es obligatorio")]
-    [StringLength(100)]
-    public string Puesto { get; set; } = string.Empty;
-
     [Required(ErrorMessage = "El salario es obligatorio")]
     [Range(0, 999999.99, ErrorMessage = "El salario debe ser mayor a 0")]
     public decimal Salario { get; set; }

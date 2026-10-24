@@ -204,10 +204,7 @@ public class LiquidacionService
     public static List<LineaLiquidacion> Lineas(string json) =>
         JsonSerializer.Deserialize<List<LineaLiquidacion>>(json) ?? new List<LineaLiquidacion>();
 
-    public static string Texto(CausaTerminacion causa) =>
-        typeof(CausaTerminacion).GetField(causa.ToString())?
-            .GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false)
-            .Cast<System.ComponentModel.DataAnnotations.DisplayAttribute>().FirstOrDefault()?.GetName() ?? causa.ToString();
+    public static string Texto(CausaTerminacion causa) => Textos.De(causa);
 
     private static readonly JsonSerializerOptions OpcionesJson = new() { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
 

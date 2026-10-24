@@ -50,15 +50,29 @@ public class NotificacionService
         return Resultado.Exito("Notificación marcada como leída");
     }
 
+    // Usuarios de RRHH con acceso a la empresa; los del portal del empleado no reciben avisos internos
+    private async Task<List<string?>> DestinosAsync(int empresaId)
+    {
+        var delPortal = _context.Empleados.IgnoreQueryFilters().Where(e => e.UsuarioId != null).Select(e => e.UsuarioId);
+        return await _context.UsuariosEmpresas
+            .Where(u => u.EmpresaId == empresaId && !delPortal.Contains(u.UsuarioId))
+            .Select(u => (string?)u.UsuarioId)
+            .ToListAsync();
+    }
+
+    public async Task NotificarEmpresaAsync(int empresaId, string mensaje, TipoNotificacion tipo)
+    {
+        foreach (var destino in await DestinosAsync(empresaId))
+            _context.Notificaciones.Add(new Notificacion { Mensaje = mensaje, Tipo = tipo, FechaCreacion = DateTime.Now, UsuarioDestinoId = destino });
+        await _context.SaveChangesAsync();
+    }
+
     // Avisa a los usuarios con acceso a la empresa del empleado; si no hay ninguno, al usuario actual
     public async Task NotificarNuevoEmpleadoAsync(Empleado empleado, string? usuarioActualId)
     {
         try
         {
-            var destinos = await _context.UsuariosEmpresas
-                .Where(u => u.EmpresaId == empleado.EmpresaId)
-                .Select(u => (string?)u.UsuarioId)
-                .ToListAsync();
+            var destinos = await DestinosAsync(empleado.EmpresaId);
             if (destinos.Count == 0)
                 destinos.Add(usuarioActualId);
 

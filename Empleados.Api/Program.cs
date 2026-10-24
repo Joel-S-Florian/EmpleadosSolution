@@ -88,7 +88,9 @@ if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32
 // Registrar servicios. Las fotos van a la carpeta compartida con el MVC (Uploads:Path, relativa al proyecto)
 var carpetaUploads = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, builder.Configuration["Uploads:Path"] ?? "../uploads"));
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddServiciosEmpleados(carpetaUploads);
+var correo = builder.Configuration.GetSection("Correo").Get<OpcionesCorreo>() ?? new OpcionesCorreo();
+correo.CarpetaPrueba = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, correo.CarpetaPrueba));
+builder.Services.AddServiciosEmpleados(carpetaUploads, correo);
 
 // Configurar autenticación JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

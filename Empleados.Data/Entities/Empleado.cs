@@ -74,6 +74,9 @@ public class Empleado
     public string? NumeroCuenta { get; set; }
     public TipoCuenta? TipoCuenta { get; set; }
 
+    // Usuario del portal del empleado (rol Empleado)
+    public string? UsuarioId { get; set; }
+
     public int DepartamentoId { get; set; }
     public virtual Departamento? Departamento { get; set; }
 

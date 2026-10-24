@@ -1,0 +1,127 @@
+@using Empleados.Data.Services
+@model Empleado
+@{
+    ViewData["Title"] = "Mi portal";
+    var recibos = (List<ReciboPago>)ViewBag.Recibos;
+    var vacaciones = (SaldoVacaciones?)ViewBag.Vacaciones;
+    var solicitudes = (List<Incidencia>)ViewBag.Solicitudes;
+    var nueva = (IncidenciaDto)ViewBag.Nueva;
+}
+
+<div class="app-pagina">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <span class="app-icono"><i class="bi bi-person-badge"></i></span>
+            <div>
+                <h1>Hola, @Model.Nombre</h1>
+                <p>@Model.PuestoNav?.Nombre @(Model.Departamento != null ? "· " + Model.Departamento.Nombre : "") · en la empresa desde el @Model.FechaContratacion.ToString("dd/MM/yyyy")</p>
+            </div>
+        </div>
+        <a asp-action="CartaTrabajo" class="app-boton-sec"><i class="bi bi-file-earmark-text"></i> Carta de trabajo</a>
+    </div>
+
+    <partial name="~/Views/Shared/Components/_Alertas.cshtml" />
+
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="app-tarjeta h-100">
+                <div class="app-tarjeta-titulo"><i class="bi bi-receipt"></i> Mis recibos de pago</div>
+                <div class="table-responsive">
+                    <table class="table table-hover app-tabla mb-0">
+                        <thead><tr><th>Nómina</th><th>Pagada</th><th class="app-numero">Neto</th><th></th></tr></thead>
+                        <tbody>
+                            @if (!recibos.Any())
+                            {
+                                <tr><td colspan="4" class="app-ayuda">Todavía no hay recibos pagados.</td></tr>
+                            }
+                            @foreach (var r in recibos)
+                            {
+                                <tr>
+                                    <td>@r.Nomina!.Descripcion</td>
+                                    <td>@r.Nomina.FechaPago?.ToString("dd/MM/yyyy")</td>
+                                    <td class="app-numero fw-semibold">@r.Neto.ToString("N2")</td>
+                                    <td class="text-end"><a asp-action="Recibo" asp-route-id="@r.Id" class="app-boton-sec py-1 px-2" title="Descargar PDF" aria-label="Descargar recibo de @r.Nomina.Descripcion"><i class="bi bi-file-earmark-pdf"></i></a></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="app-tarjeta">
+                <div class="app-tarjeta-titulo"><i class="bi bi-sun"></i> Mis vacaciones</div>
+                <div class="app-tarjeta-cuerpo">
+                    @if (vacaciones == null || vacaciones.Derecho.AniosServicio == 0)
+                    {
+                        <div class="app-ayuda">Las vacaciones se ganan al cumplir un año de servicio@(vacaciones != null ? $" ({vacaciones.Derecho.Hasta.AddDays(1):dd/MM/yyyy})" : "").</div>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-wrap gap-3">
+                            <div><span class="app-ayuda d-block">Derecho</span><strong>@vacaciones.Derecho.Dias</strong> días</div>
+                            <div><span class="app-ayuda d-block">Tomados</span>@vacaciones.Tomados.ToString("0.##")</div>
+                            <div><span class="app-ayuda d-block">Por aprobar</span>@vacaciones.PorAprobar.ToString("0.##")</div>
+                            <div><span class="app-ayuda d-block">Disponibles</span><strong>@vacaciones.Disponibles.ToString("0.##")</strong></div>
+                            <div><span class="app-ayuda d-block">Hasta el</span>@vacaciones.Derecho.Hasta.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <form asp-action="Solicitar" method="post" class="app-tarjeta">
+                <div class="app-tarjeta-titulo"><i class="bi bi-calendar-plus"></i> Pedir vacaciones o permiso</div>
+                <div class="app-tarjeta-cuerpo">
+                    <div asp-validation-summary="All" class="app-resumen-error"></div>
+                    <div class="row g-2 align-items-end">
+                        <div class="col-12">
+                            <label for="Tipo" class="app-etiqueta">Tipo</label>
+                            <select id="Tipo" name="Tipo" class="form-select">
+                                @foreach (var t in PortalService.Solicitables)
+                                {
+                                    <option value="@((int)t)" selected="@(t == nueva.Tipo)">@t.Texto()</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label for="FechaInicio" class="app-etiqueta">Desde</label>
+                            <input id="FechaInicio" name="FechaInicio" type="date" value="@nueva.FechaInicio.ToString("yyyy-MM-dd")" class="form-control" required />
+                        </div>
+                        <div class="col-6">
+                            <label for="FechaFin" class="app-etiqueta">Hasta</label>
+                            <input id="FechaFin" name="FechaFin" type="date" value="@nueva.FechaFin.ToString("yyyy-MM-dd")" class="form-control" required />
+                        </div>
+                        <div class="col-md-9">
+                            <label for="Comentario" class="app-etiqueta">Comentario</label>
+                            <input id="Comentario" name="Comentario" value="@nueva.Comentario" class="form-control" maxlength="500" placeholder="Motivo, certificado médico…" />
+                        </div>
+                        <input type="hidden" name="Horas" value="0" />
+                        <div class="col-md-3">
+                            <button type="submit" class="app-boton w-100 justify-content-center"><i class="bi bi-send"></i> Enviar</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="app-tarjeta">
+                <div class="app-tarjeta-titulo"><i class="bi bi-list-check"></i> Mis solicitudes e incidencias</div>
+                <div class="app-tarjeta-cuerpo">
+                    @if (!solicitudes.Any())
+                    {
+                        <div class="app-ayuda">Sin solicitudes.</div>
+                    }
+                    <ul class="app-historial">
+                        @foreach (var i in solicitudes)
+                        {
+                            <li>
+                                <span class="fecha">@i.FechaInicio.ToString("dd/MM/yyyy")@(i.FechaFin > i.FechaInicio ? " – " + i.FechaFin.ToString("dd/MM/yyyy") : "")</span>
+                                <span><strong>@i.Tipo.Texto()</strong> · @(i.Tipo == TipoIncidencia.Retardo ? i.Horas.ToString("0.##") + " h" : i.Dias.ToString("0.##") + " días") · @i.Estado.Texto()@(i.MotivoRechazo != null ? ": " + i.MotivoRechazo : "")</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

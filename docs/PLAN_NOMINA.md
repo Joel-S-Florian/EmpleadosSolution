@@ -133,10 +133,12 @@ Otros sectores (zonas francas, hoteles, construcción, vigilantes, agrícola) ti
 - **Hecho:** Nómina → Archivos TSS y banco. **Autodeterminación mensual (AM)** en texto de ancho fijo (E/D/S, 312 o 366 posiciones con exentos) desde las nóminas aprobadas del mes, con regalía (01) y preaviso/cesantía (02) como exentos, tipo de ingreso 0001/0004 y observaciones por trabajador. **Resumen del mes** con AFP, SFS, SRL, INFOTEP, total a pagar a la TSS e ISR retenido (cifra para conciliar el IR-3). **Pago al banco** en CSV genérico (banco, cuenta, documento, monto) y lista de quien no tiene cuenta. **Planilla de personal** en CSV como base de la DGT-3.
 - **Pendiente:** (1) validar el archivo AM con el validador de estructura del SUIR: el layout se tomó de una implementación de referencia del instructivo v6.0, porque el instructivo oficial no estaba disponible en línea; (2) el formato exacto de **BHD** y Banreservas: hace falta la especificación que el banco entrega a sus clientes empresariales; (3) el archivo de novedades (NV) y la DGT-4.
 
-### Fase 3.7: Recibos digitales, envío y portal del empleado
+### Fase 3.7: Recibos digitales, envío y portal del empleado ✅ (24-oct-2026)
 - Envío automático del recibo por correo al pagar, con registro de entregado o fallido.
 - Portal del empleado (decisión D6): ver recibos, saldo de vacaciones, pedir permisos y descargar la carta de trabajo.
 - Notificaciones: nómina lista para aprobar, vacaciones por vencer, fin de período de prueba, cumpleaños.
+- **Hecho:** al marcar una nómina pagada se envía a cada empleado su recibo en PDF por correo (SMTP de la sección `Correo`; sin servidor configurado quedan como .eml en `../correos`), con registro de enviado o fallido y botón para reenviar. **Portal del empleado** (rol Empleado; el Admin da o quita el acceso desde la ficha, con contraseña temporal por correo): recibos pagados, saldo de vacaciones, solicitudes de vacaciones y permisos (llegan por aprobar a RRHH con aviso) y carta de trabajo en PDF. Un usuario del portal no entra a ninguna otra pantalla, y la API solo da token a Admin y RRHH. **Avisos:** nómina nueva lista para aprobar, y cada día cumpleaños, fin del período de prueba (3 meses) y vacaciones que vencen en 30 días.
+- **También:** página pública de inicio y acceso en español separados del sistema (sin la navegación interna).
 
 ### Fase 3.8: Reportes
 - Nómina por departamento, costo patronal total, acumulados anuales por empleado (para la declaración y para Navidad), resumen TSS e ISR del mes, ausentismo, rotación y vacaciones pendientes.

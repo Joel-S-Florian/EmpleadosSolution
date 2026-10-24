@@ -1,3 +1,4 @@
 ﻿@{
-    Layout = "_Layout";
+    // Sin sesión no se muestra la navegación del sistema
+    Layout = User.Identity?.IsAuthenticated == true ? "_Layout" : "_LayoutPublico";
 }

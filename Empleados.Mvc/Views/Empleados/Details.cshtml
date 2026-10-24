@@ -79,6 +79,21 @@
                         <a asp-controller="Liquidaciones" asp-action="Index" asp-route-empleadoId="@Model.Id" class="app-boton-sec"><i class="bi bi-door-open"></i> Liquidación</a>
                     }
                 }
+                @if (User.IsInRole("Admin"))
+                {
+                    if (Model.UsuarioId == null)
+                    {
+                        <form asp-action="CrearAccesoPortal" asp-route-id="@Model.Id" method="post" class="d-inline">
+                            <button type="submit" class="app-boton-sec" onclick="return confirm('Se creará un usuario del portal con el correo del empleado y una contraseña temporal. ¿Continuar?')"><i class="bi bi-person-badge"></i> Dar acceso al portal</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-action="RevocarAccesoPortal" asp-route-id="@Model.Id" method="post" class="d-inline">
+                            <button type="submit" class="app-boton-sec" onclick="return confirm('¿Quitar el acceso al portal de este empleado?')"><i class="bi bi-person-x"></i> Quitar acceso al portal</button>
+                        </form>
+                    }
+                }
             </div>
         </div>
 

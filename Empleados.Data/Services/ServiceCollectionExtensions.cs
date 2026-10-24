@@ -5,7 +5,7 @@ namespace Empleados.Data.Services;
 public static class ServiceCollectionExtensions
 {
     // Servicios de negocio compartidos por la API y el MVC
-    public static IServiceCollection AddServiciosEmpleados(this IServiceCollection services, string carpetaUploads)
+    public static IServiceCollection AddServiciosEmpleados(this IServiceCollection services, string carpetaUploads, OpcionesCorreo? correo = null)
     {
         services.AddHttpContextAccessor();
         services.AddScoped<ContextoUsuarioHttp>();
@@ -25,6 +25,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<BonificacionService>();
         services.AddScoped<LiquidacionService>();
         services.AddScoped<ArchivosService>();
+        services.AddSingleton(correo ?? new OpcionesCorreo());
+        services.AddSingleton<IEnviadorCorreo, EnviadorSmtp>();
+        services.AddScoped<RecibosCorreoService>();
+        services.AddScoped<PortalService>();
+        services.AddScoped<RecordatoriosService>();
         return services;
     }
 }

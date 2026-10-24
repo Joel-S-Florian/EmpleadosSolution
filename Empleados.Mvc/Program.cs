@@ -1,6 +1,8 @@
 using Empleados.Data.Data;
 using Empleados.Data.Entities;
 using Empleados.Data.Services;
+using Empleados.Mvc.Controllers;
+using Empleados.Mvc.Services;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options => options.Filters.Add<SoloPortalFilter>());
 
 // Configurar DbContext con Identity
 builder.Services.AddDbContext<EmpleadosDbContext>(options =>
@@ -31,7 +33,11 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 
 // Servicios de negocio. Las fotos van a la carpeta compartida con la API (Uploads:Path, relativa al proyecto)
 var carpetaUploads = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, builder.Configuration["Uploads:Path"] ?? "../uploads"));
-builder.Services.AddServiciosEmpleados(carpetaUploads);
+// Correo (sección "Correo"); sin Host, los correos quedan como .eml en la carpeta de prueba
+var correo = builder.Configuration.GetSection("Correo").Get<OpcionesCorreo>() ?? new OpcionesCorreo();
+correo.CarpetaPrueba = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, correo.CarpetaPrueba));
+builder.Services.AddServiciosEmpleados(carpetaUploads, correo);
+builder.Services.AddHostedService<RecordatoriosDiarios>();
 
 builder.Services.AddAuthorization(options =>
 {
@@ -73,7 +79,7 @@ using (var scope = app.Services.CreateScope())
     // Aplicar migraciones pendientes automáticamente
     await db.Database.MigrateAsync();
 
-    string[] roleNames = { "Admin", "RRHH" };
+    string[] roleNames = { "Admin", "RRHH", SoloPortalFilter.RolEmpleado };
     foreach (var roleName in roleNames)
     {
         if (!await roleManager.RoleExistsAsync(roleName))

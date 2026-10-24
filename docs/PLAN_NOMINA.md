@@ -113,10 +113,11 @@ Otros sectores (zonas francas, hoteles, construcción, vigilantes, agrícola) ti
 - **Recibo de pago en PDF**, con la lista de cada ingreso y deducción.
 - **Hecho:** nóminas por período con novedades por recibo, aprobación solo por Admin y bloqueada si faltan datos de TSS, reapertura, pago (que baja el saldo de los préstamos en cuotas) y cierre. Comparación del neto con la nómina anterior, PDF con QuestPDF y endpoints en la API. Los retroactivos se registran como novedades (ingreso o deducción de ajuste) en la nómina siguiente.
 
-### Fase 3.4: Pagos especiales
+### Fase 3.4: Pagos especiales ✅ (24-oct-2026)
 - **Salario 13 (Regalía Pascual):** cálculo proporcional y nómina especial en diciembre, sin TSS ni ISR.
 - **Bonificación:** se ingresan las utilidades del año, el sistema reparte el 10 % con el tope de 45 o 60 días y aplica INFOTEP 0.5 %.
 - Pago de vacaciones.
+- **Hecho:** Nómina → Navidad y bonificación. El Salario de Navidad es una nómina especial (todos los empleados activos) que usa lo registrado en las nóminas del año y estima los meses sin nómina; se aprueba, se paga y se imprime como cualquier nómina. La Bonificación muestra el reparto (proporcional al salario y al tiempo trabajado, con tope de 45 o 60 días) y se carga como ingreso en una nómina regular, con la retención del INFOTEP. Las vacaciones se pagan con el salario normal de la nómina; las no disfrutadas, en la liquidación (Fase 3.5). Reglas 17 a 20 de CASOS_NOMINA.md pendientes de validar.
 
 ### Fase 3.5: Terminaciones (prestaciones laborales)
 - Asistente según la causa (tabla 1.5): preaviso, cesantía y asistencia económica según antigüedad, con el salario promedio del último año ÷ 23.83, más vacaciones y Navidad proporcionales y deducciones pendientes.

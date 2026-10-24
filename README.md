@@ -104,7 +104,7 @@ Estos usuarios se crean al arrancar el MVC solo en desarrollo (contraseñas en `
 ```bash
 dotnet test
 ```
-*Nota: La suite de pruebas incluye 101 tests que validan los casos de nómina de [docs/CASOS_NOMINA.md](docs/CASOS_NOMINA.md), el motor de cálculo, reportes, integridad referencial, notificaciones, reglas de negocio, subida de fotos, aislamiento entre empresas, parámetros legales por vigencia, datos de nómina, historial de movimientos, feriados de la Ley 139-97, vacaciones e incidencias.*
+*Nota: La suite de pruebas incluye 112 tests que validan los casos de nómina de [docs/CASOS_NOMINA.md](docs/CASOS_NOMINA.md), el motor de cálculo, reportes, integridad referencial, notificaciones, reglas de negocio, subida de fotos, aislamiento entre empresas, parámetros legales por vigencia, datos de nómina, historial de movimientos, feriados de la Ley 139-97, vacaciones, incidencias, Salario de Navidad y bonificación.*
 
 **CI:** cada push a `master` y cada PR ejecutan en GitHub Actions (`.github/workflows/ci.yml`) la compilación, los tests y una revisión de que el modelo de EF coincide con las migraciones desde la API y desde el MVC.
 
@@ -129,6 +129,8 @@ En la pantalla **Nómina → Simulador** y en `POST /api/Nomina/simular` se prue
 - **Aprobada** (solo Admin): no se puede aprobar si algún recibo tiene errores, por ejemplo si falta la cédula o el NSS. La 2.ª quincena solo se calcula con la 1.ª aprobada, porque usa lo ya retenido. Una nómina aprobada se puede **reabrir** mientras no se haya pagado.
 - **Pagada:** ya no se modifica, y baja el saldo de los **préstamos en cuotas** (Nómina → Préstamos).
 - **Cerrada:** cierre del período.
+
+**Nómina → Navidad y bonificación** crea la nómina del **Salario de Navidad** (1/12 del salario ordinario del año, sin TSS ni ISR) y reparte la **Bonificación** (10 % de la utilidad con tope de 45 o 60 días), que se paga como ingreso en una nómina regular.
 
 **Nómina → Incidencias** registra faltas, retardos, permisos, licencias y vacaciones (también colectivas). Al aprobarse, las faltas, los retardos y los permisos sin goce se descuentan solos en la nómina del período. Las vacaciones se validan contra el saldo del año de servicio, visible en la ficha del empleado. En **Parámetros legales** se generan los feriados de cualquier año con los traslados de la Ley 139-97.
 
@@ -168,6 +170,8 @@ Todos requieren token JWT, salvo el login. Crear, editar o eliminar departamento
 | POST / DELETE | `/api/Incidencias/5/aprobar` · `rechazar?motivo=` · `/api/Incidencias/5` | Aprobar, rechazar o eliminar |
 | GET | `/api/Incidencias/vacaciones/5` | Saldo de vacaciones del empleado |
 | POST | `/api/Incidencias/colectivas` | Vacaciones colectivas |
+| POST | `/api/PagosEspeciales/salario-navidad?anio=` | Crea y calcula el Salario de Navidad |
+| GET / POST | `/api/PagosEspeciales/bonificacion?anioFiscal=&utilidad=` (`&nominaId=` al aplicar) | Reparto de la bonificación y su aplicación |
 
 ### Empleados
 | Método | Endpoint | Descripción |

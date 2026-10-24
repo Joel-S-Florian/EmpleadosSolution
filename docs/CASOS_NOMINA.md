@@ -36,6 +36,10 @@ Marca cada una con ✅ si es como lo haces, o anota cómo lo haces tú:
 14. **Qué se descuenta por defecto:** faltas, retardos (horas ÷ 8 = fracción de día) y permisos sin goce. Las licencias (médica, maternidad, paternidad, luto, matrimonio) se pagan, salvo que se marque "descontar". ¿Se descuenta la licencia médica cuando la cubre el subsidio de la SISALRIL?
 15. **Saldo de vacaciones:** 14 días al cumplir de 1 a 4 años y 18 desde los 5 años (art. 177). El saldo es el del año de servicio en curso; lo que no se tomó el año anterior no pasa al siguiente. ¿Se permite arrastrar días?
 16. **Incidencia aprobada después de aprobar la nómina:** no cambia esa nómina; el sistema avisa para registrar el descuento como novedad en la siguiente.
+17. **Salario de Navidad:** salario ordinario = salario menos ausencias; no incluye horas extra, comisiones ni bonificaciones. Los meses sin nómina en el sistema se estiman con el salario actual. ¿Se incluyen las comisiones?
+18. **Bonificación, reparto:** el 10 % de la utilidad se reparte en proporción al salario mensual y al tiempo trabajado en el ejercicio. Lo que excede el tope de un empleado no se redistribuye. ¿Es así como lo hacen?
+19. **Bonificación, tope:** 45 días de salario (menos de 3 años al cierre) o 60 días (3 años o más), proporcional al tiempo trabajado en el ejercicio. Los despedidos antes del pago no participan aquí.
+20. **Bonificación, impuestos:** grava ISR (se suma a los ingresos del mes en que se paga), no cotiza a la TSS y se retiene 0.5 % para el INFOTEP.
 
 ## Casos
 Todos son del mes de **octubre 2026** y de empresas con SRL de 1.20 %.

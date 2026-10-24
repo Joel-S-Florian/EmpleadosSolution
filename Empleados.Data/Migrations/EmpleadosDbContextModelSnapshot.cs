@@ -703,6 +703,11 @@ namespace Empleados.Data.Migrations
                     b.Property<int>("Quincena")
                         .HasColumnType("int");
 
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<decimal>("TotalAportesPatronales")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -721,7 +726,7 @@ namespace Empleados.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmpresaId", "Anio", "Mes", "Frecuencia", "Quincena")
+                    b.HasIndex("EmpresaId", "Tipo", "Anio", "Mes", "Frecuencia", "Quincena")
                         .IsUnique();
 
                     b.ToTable("Nominas");

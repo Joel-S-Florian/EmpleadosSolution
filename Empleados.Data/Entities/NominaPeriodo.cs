@@ -12,11 +12,19 @@ public enum EstadoNomina
     Cerrada
 }
 
-// Nómina de una empresa para un período (quincena o mes)
+public enum TipoNomina
+{
+    Regular,
+    // Regalía pascual (art. 219): todos los empleados, sin TSS ni ISR
+    [Display(Name = "Salario de Navidad")] SalarioNavidad
+}
+
+// Nómina de una empresa para un período (quincena o mes), o un pago especial del año
 public class NominaPeriodo
 {
     public int Id { get; set; }
     public int EmpresaId { get; set; }
+    public TipoNomina Tipo { get; set; }
     public int Anio { get; set; }
     public int Mes { get; set; }
     // 1 o 2 si es quincenal; 0 si es mensual
@@ -42,9 +50,11 @@ public class NominaPeriodo
 
     public virtual ICollection<ReciboPago> Recibos { get; set; } = new List<ReciboPago>();
 
-    public string Descripcion => Frecuencia == FrecuenciaPago.Mensual
-        ? $"Mensual {Mes:00}/{Anio}"
-        : $"{Quincena}.ª quincena {Mes:00}/{Anio}";
+    public string Descripcion => Tipo == TipoNomina.SalarioNavidad
+        ? $"Salario de Navidad {Anio}"
+        : Frecuencia == FrecuenciaPago.Mensual
+            ? $"Mensual {Mes:00}/{Anio}"
+            : $"{Quincena}.ª quincena {Mes:00}/{Anio}";
 
     public bool Editable => Estado is EstadoNomina.Borrador or EstadoNomina.Calculada;
 }

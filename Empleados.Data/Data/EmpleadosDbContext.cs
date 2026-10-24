@@ -202,6 +202,7 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
         modelBuilder.Entity<NominaPeriodo>(entity =>
         {
             entity.HasKey(n => n.Id);
+            entity.Property(n => n.Tipo).HasConversion<string>().HasMaxLength(20);
             entity.Property(n => n.Frecuencia).HasConversion<string>().HasMaxLength(20);
             entity.Property(n => n.Estado).HasConversion<string>().HasMaxLength(20);
             entity.Property(n => n.CreadaPor).HasMaxLength(256);
@@ -209,7 +210,7 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
             entity.Property(n => n.PagadaPor).HasMaxLength(256);
             foreach (var total in new[] { nameof(NominaPeriodo.TotalIngresos), nameof(NominaPeriodo.TotalDeducciones), nameof(NominaPeriodo.TotalNeto), nameof(NominaPeriodo.TotalAportesPatronales) })
                 entity.Property(total).HasPrecision(18, 2);
-            entity.HasIndex(n => new { n.EmpresaId, n.Anio, n.Mes, n.Frecuencia, n.Quincena }).IsUnique();
+            entity.HasIndex(n => new { n.EmpresaId, n.Tipo, n.Anio, n.Mes, n.Frecuencia, n.Quincena }).IsUnique();
             entity.HasOne<Empresa>().WithMany().HasForeignKey(n => n.EmpresaId).OnDelete(DeleteBehavior.Restrict);
             entity.HasQueryFilter(n => !FiltrarPorEmpresa || n.EmpresaId == EmpresaActualId);
         });

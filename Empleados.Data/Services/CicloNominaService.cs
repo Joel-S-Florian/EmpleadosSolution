@@ -244,19 +244,9 @@ public class CicloNominaService
         foreach (var empleado in empleados.Values.Where(e => nomina.Recibos.All(r => r.EmpleadoId != e.Id)))
             nomina.Recibos.Add(new ReciboPago { EmpresaId = nomina.EmpresaId, EmpleadoId = empleado.Id, NombreEmpleado = $"{empleado.Nombre} {empleado.Apellido}" });
 
-        // Salario ordinario registrado (salario menos ausencias) en los meses que las nóminas cubren completos
-        var registros = await _context.RecibosPago
-            .Where(r => r.Nomina!.EmpresaId == nomina.EmpresaId && r.Nomina.Tipo == TipoNomina.Regular && r.Nomina.Anio == nomina.Anio)
-            .Select(r => new
-            {
-                r.EmpleadoId, r.Nomina!.Mes, r.Nomina.FechaInicio, r.Nomina.FechaFin,
-                Monto = r.Lineas.Where(l => l.Codigo == Codigos.Salario || l.Codigo == Codigos.Ausencia).Sum(l => l.Monto)
-            })
-            .ToListAsync();
-        var registrado = registros.GroupBy(x => x.EmpleadoId).ToDictionary(g => g.Key, g => g
-            .GroupBy(x => x.Mes)
-            .Where(m => m.Sum(x => (x.FechaFin - x.FechaInicio).Days + 1) >= DateTime.DaysInMonth(nomina.Anio, m.Key))
-            .ToDictionary(m => m.Key, m => m.Sum(x => x.Monto)));
+        var registrado = (await SalarioOrdinarioRegistradoAsync(_context, nomina.EmpresaId, nomina.FechaInicio, nomina.FechaFin))
+            .GroupBy(x => x.Key.EmpleadoId)
+            .ToDictionary(g => g.Key, g => g.ToDictionary(x => x.Key.Mes, x => x.Value));
 
         foreach (var recibo in nomina.Recibos)
         {
@@ -279,6 +269,26 @@ public class CicloNominaService
         }
 
         return await GuardarCalculoAsync(nomina);
+    }
+
+    // Salario ordinario (salario menos ausencias) de las nóminas regulares, por empleado y mes,
+    // solo en los meses que las nóminas cubren completos
+    internal static async Task<Dictionary<(int EmpleadoId, int Anio, int Mes), decimal>> SalarioOrdinarioRegistradoAsync(
+        EmpleadosDbContext context, int empresaId, DateTime desde, DateTime hasta, int? empleadoId = null)
+    {
+        var registros = await context.RecibosPago
+            .Where(r => r.Nomina!.EmpresaId == empresaId && r.Nomina.Tipo == TipoNomina.Regular &&
+                        r.Nomina.FechaInicio >= desde && r.Nomina.FechaFin <= hasta && (empleadoId == null || r.EmpleadoId == empleadoId))
+            .Select(r => new
+            {
+                r.EmpleadoId, r.Nomina!.Anio, r.Nomina.Mes, r.Nomina.FechaInicio, r.Nomina.FechaFin,
+                Monto = r.Lineas.Where(l => l.Codigo == Codigos.Salario || l.Codigo == Codigos.Ausencia).Sum(l => l.Monto)
+            })
+            .ToListAsync();
+        return registros
+            .GroupBy(x => (x.EmpleadoId, x.Anio, x.Mes))
+            .Where(g => g.Sum(x => (x.FechaFin - x.FechaInicio).Days + 1) >= DateTime.DaysInMonth(g.Key.Anio, g.Key.Mes))
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.Monto));
     }
 
     private static void LimpiarRecibo(ReciboPago recibo)

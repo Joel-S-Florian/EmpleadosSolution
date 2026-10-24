@@ -40,6 +40,11 @@ Marca cada una con ✅ si es como lo haces, o anota cómo lo haces tú:
 18. **Bonificación, reparto:** el 10 % de la utilidad se reparte en proporción al salario mensual y al tiempo trabajado en el ejercicio. Lo que excede el tope de un empleado no se redistribuye. ¿Es así como lo hacen?
 19. **Bonificación, tope:** 45 días de salario (menos de 3 años al cierre) o 60 días (3 años o más), proporcional al tiempo trabajado en el ejercicio. Los despedidos antes del pago no participan aquí.
 20. **Bonificación, impuestos:** grava ISR (se suma a los ingresos del mes en que se paga), no cotiza a la TSS y se retiene 0.5 % para el INFOTEP.
+21. **Cesantía con fracción de año:** de 1 a 5 años, 21 días por año; desde 5 años, 23 días por **todos** los años. La fracción de más de 3 meses suma 6 días (3 a 6 meses) o 13 días (6 meses o más). ¿Coincide con la calculadora del Ministerio?
+22. **Salario promedio:** promedio del salario ordinario de los 12 meses completos antes del mes de salida (sin horas extra ni bonos). ¿Se incluyen las comisiones y las horas extra habituales?
+23. **Vacaciones al salir:** las pendientes del año de servicio ya cumplido más la proporción del año en curso según el art. 180 (6 días con 5 meses, hasta 12 con 11 meses), también para quien tiene más de 5 años. Todo se paga con el salario diario promedio.
+24. **Impuestos de la liquidación:** preaviso, cesantía, asistencia y Navidad no pagan ISR ni TSS. El sistema tampoco retiene sobre las vacaciones. ¿Se retiene algo sobre las vacaciones pagadas al salir?
+25. **Préstamos:** el saldo se descuenta de la liquidación hasta donde alcance; lo que no alcanza queda como aviso.
 
 ## Casos
 Todos son del mes de **octubre 2026** y de empresas con SRL de 1.20 %.

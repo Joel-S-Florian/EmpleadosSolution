@@ -18,14 +18,15 @@ public static class PagosEspeciales
     private static readonly CultureInfo Cultura = CultureInfo.GetCultureInfo("es-DO");
 
     // 1/12 del salario ordinario del año. Mes con nómina completa: lo registrado (salario menos ausencias);
-    // mes sin nómina: el salario mensual proporcional a los días en la empresa.
+    // mes sin nómina: el salario mensual proporcional a los días en la empresa. Con salida, cuenta hasta ese día.
     public static CalculoSalarioNavidad SalarioNavidad(int anio, DateTime ingreso, decimal salarioMensual, bool porHora,
-        IReadOnlyDictionary<int, decimal> registradoPorMes)
+        IReadOnlyDictionary<int, decimal> registradoPorMes, DateTime? salida = null)
     {
+        var ultimoMes = salida?.Year == anio ? salida.Value.Month : 12;
         var explicacion = new List<string>();
         var advertencias = new List<string>();
         decimal total = 0;
-        for (var mes = 1; mes <= 12; mes++)
+        for (var mes = 1; mes <= ultimoMes; mes++)
         {
             var nombre = Cultura.DateTimeFormat.GetAbbreviatedMonthName(mes);
             if (registradoPorMes.TryGetValue(mes, out var registrado))
@@ -36,7 +37,7 @@ public static class PagosEspeciales
             }
 
             var inicioMes = new DateTime(anio, mes, 1);
-            var finMes = inicioMes.AddMonths(1).AddDays(-1);
+            var finMes = mes == ultimoMes && salida?.Year == anio ? salida.Value.Date : inicioMes.AddMonths(1).AddDays(-1);
             if (ingreso.Date > finMes)
                 continue;
             if (porHora)

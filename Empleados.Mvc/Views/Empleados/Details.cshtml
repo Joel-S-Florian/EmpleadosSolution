@@ -74,6 +74,10 @@
                 @if (Model.Estado != EstadoEmpleado.Despedido)
                 {
                     <a asp-controller="Nomina" asp-action="Simulador" asp-route-empleadoId="@Model.Id" class="app-boton-sec"><i class="bi bi-calculator"></i> Simular nómina</a>
+                    @if (User.IsInRole("Admin") || User.IsInRole("RRHH"))
+                    {
+                        <a asp-controller="Liquidaciones" asp-action="Index" asp-route-empleadoId="@Model.Id" class="app-boton-sec"><i class="bi bi-door-open"></i> Liquidación</a>
+                    }
                 }
             </div>
         </div>

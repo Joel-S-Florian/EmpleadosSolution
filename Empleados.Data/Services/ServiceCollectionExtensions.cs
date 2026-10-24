@@ -23,6 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PrestamoService>();
         services.AddScoped<IncidenciaService>();
         services.AddScoped<BonificacionService>();
+        services.AddScoped<LiquidacionService>();
         return services;
     }
 }

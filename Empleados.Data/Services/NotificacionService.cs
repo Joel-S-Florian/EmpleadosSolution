@@ -50,12 +50,15 @@ public class NotificacionService
         return Resultado.Exito("Notificación marcada como leída");
     }
 
-    // Avisa a todos los usuarios; si no hay usuarios, al usuario actual
+    // Avisa a los usuarios con acceso a la empresa del empleado; si no hay ninguno, al usuario actual
     public async Task NotificarNuevoEmpleadoAsync(Empleado empleado, string? usuarioActualId)
     {
         try
         {
-            var destinos = await _context.Users.Select(u => (string?)u.Id).ToListAsync();
+            var destinos = await _context.UsuariosEmpresas
+                .Where(u => u.EmpresaId == empleado.EmpresaId)
+                .Select(u => (string?)u.UsuarioId)
+                .ToListAsync();
             if (destinos.Count == 0)
                 destinos.Add(usuarioActualId);
 

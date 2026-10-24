@@ -1,0 +1,8 @@
+@if (TempData["Success"] != null)
+{
+    <div class="app-alerta-ok" role="status"><i class="bi bi-check-circle"></i> @TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="app-alerta-error" role="alert"><i class="bi bi-exclamation-triangle"></i> @TempData["Error"]</div>
+}

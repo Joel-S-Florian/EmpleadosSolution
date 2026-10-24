@@ -14,10 +14,10 @@ public class ReglasNegocioTests
         var context = new EmpleadosDbContext(new DbContextOptionsBuilder<EmpleadosDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options);
-        context.Departamentos.Add(new Departamento { Id = 1, Nombre = "TI" });
+        context.Departamentos.Add(new Departamento { Id = 1, EmpresaId = 1, Nombre = "TI" });
         context.Empleados.Add(new Empleado
         {
-            Id = 1, Nombre = "Ana", Apellido = "García", CorreoElectronico = "ana@test.com",
+            Id = 1, EmpresaId = 1, Nombre = "Ana", Apellido = "García", CorreoElectronico = "ana@test.com",
             Telefono = "600111222", Direccion = "Calle 1", Salario = 40000,
             FechaNacimiento = new DateTime(1990, 1, 1), FechaContratacion = new DateTime(2020, 1, 1),
             DepartamentoId = 1, Estado = EstadoEmpleado.Despedido
@@ -50,7 +50,7 @@ public class ReglasNegocioTests
     {
         using var context = CrearContexto();
 
-        var resultado = await Servicios.Empleados(context).CrearAsync(Dto(correo: "ana@test.com"), null);
+        var resultado = await Servicios.Empleados(context).CrearAsync(Dto(correo: "ana@test.com"));
 
         Assert.Equal(TipoResultado.Invalido, resultado.Tipo);
         Assert.Equal(nameof(CrearEmpleadoDto.CorreoElectronico), resultado.Campo);
@@ -61,7 +61,7 @@ public class ReglasNegocioTests
     {
         using var context = CrearContexto();
 
-        var resultado = await Servicios.Empleados(context).CrearAsync(Dto(departamentoId: 99), null);
+        var resultado = await Servicios.Empleados(context).CrearAsync(Dto(departamentoId: 99));
 
         Assert.Equal(TipoResultado.Invalido, resultado.Tipo);
         Assert.Equal(nameof(CrearEmpleadoDto.DepartamentoId), resultado.Campo);
@@ -72,7 +72,7 @@ public class ReglasNegocioTests
     {
         using var context = CrearContexto();
 
-        var resultado = await new DepartamentoService(context).CrearAsync(new CrearDepartamentoDto { Nombre = "TI" });
+        var resultado = await Servicios.Departamentos(context).CrearAsync(new CrearDepartamentoDto { Nombre = "TI" });
 
         Assert.Equal(TipoResultado.Invalido, resultado.Tipo);
         Assert.Equal(1, await context.Departamentos.CountAsync());
@@ -85,7 +85,7 @@ public class ReglasNegocioTests
         (await context.Empleados.FindAsync(1))!.Estado = EstadoEmpleado.Activo;
         await context.SaveChangesAsync();
         var carpeta = Path.Combine(Path.GetTempPath(), "empleados-tests-" + Guid.NewGuid());
-        var servicio = new EmpleadoService(context, new NotificacionService(context), new AlmacenFotos(carpeta));
+        var servicio = Servicios.Empleados(context, fotos: new AlmacenFotos(carpeta));
 
         using var contenido = new MemoryStream(new byte[] { 1, 2, 3 });
         var resultado = await servicio.SubirFotoAsync(1, contenido, "foto.PNG", contenido.Length);

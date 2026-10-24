@@ -1,0 +1,61 @@
+@model EmpresaDto
+
+<div asp-validation-summary="ModelOnly" class="app-resumen-error"></div>
+<div class="row g-3">
+    <div class="col-md-4">
+        <label asp-for="Rnc" class="app-etiqueta">RNC *</label>
+        <input asp-for="Rnc" class="form-control" placeholder="9 dígitos" />
+        <span asp-validation-for="Rnc" class="app-error"></span>
+    </div>
+    <div class="col-md-8">
+        <label asp-for="RazonSocial" class="app-etiqueta">Razón social *</label>
+        <input asp-for="RazonSocial" class="form-control" />
+        <span asp-validation-for="RazonSocial" class="app-error"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="NombreComercial" class="app-etiqueta">Nombre comercial</label>
+        <input asp-for="NombreComercial" class="form-control" />
+        <span asp-validation-for="NombreComercial" class="app-error"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Tamano" class="app-etiqueta">Tamaño *</label>
+        <select asp-for="Tamano" asp-items="Html.GetEnumSelectList<TamanoEmpresa>()" class="form-select"></select>
+        <div class="app-ayuda">Define el salario mínimo aplicable</div>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="FrecuenciaPagoPredeterminada" class="app-etiqueta">Frecuencia de pago *</label>
+        <select asp-for="FrecuenciaPagoPredeterminada" asp-items="Html.GetEnumSelectList<FrecuenciaPago>()" class="form-select"></select>
+        <div class="app-ayuda">Por defecto para empleados nuevos</div>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="TasaRiesgoSrl" class="app-etiqueta">Tasa SRL (%) *</label>
+        <input asp-for="TasaRiesgoSrl" type="number" step="0.01" min="0" max="10" class="form-control" />
+        <span asp-validation-for="TasaRiesgoSrl" class="app-error"></span>
+        <div class="app-ayuda">La asignada por la TSS (1.10 – 1.30 aprox.)</div>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="MesCierreFiscal" class="app-etiqueta">Mes de cierre fiscal *</label>
+        <input asp-for="MesCierreFiscal" type="number" min="1" max="12" class="form-control" />
+        <span asp-validation-for="MesCierreFiscal" class="app-error"></span>
+        <div class="app-ayuda">Para la bonificación (art. 223)</div>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="CorreoElectronico" class="app-etiqueta">Correo</label>
+        <input asp-for="CorreoElectronico" class="form-control" />
+        <span asp-validation-for="CorreoElectronico" class="app-error"></span>
+    </div>
+    <div class="col-md-8">
+        <label asp-for="Direccion" class="app-etiqueta">Dirección</label>
+        <input asp-for="Direccion" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Telefono" class="app-etiqueta">Teléfono</label>
+        <input asp-for="Telefono" class="form-control" />
+    </div>
+    <div class="col-12">
+        <div class="form-check">
+            <input asp-for="Activa" class="form-check-input" />
+            <label asp-for="Activa" class="form-check-label">Empresa activa</label>
+        </div>
+    </div>
+</div>

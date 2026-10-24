@@ -4,7 +4,6 @@ using Empleados.Data.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Security.Claims;
 
 namespace Empleados.Mvc.Controllers;
 
@@ -50,6 +49,7 @@ public class EmpleadosController : Controller
         if (empleado == null)
             return NotFound();
 
+        ViewBag.Historial = await _empleados.HistorialAsync(id);
         return View(empleado);
     }
 
@@ -69,7 +69,7 @@ public class EmpleadosController : Controller
     {
         if (ModelState.IsValid)
         {
-            var resultado = await _empleados.CrearAsync(dto, User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var resultado = await _empleados.CrearAsync(dto);
             if (resultado.Ok)
             {
                 TempData["Success"] = resultado.Mensaje;
@@ -106,7 +106,21 @@ public class EmpleadosController : Controller
             Salario = empleado.Salario,
             FechaContratacion = empleado.FechaContratacion,
             DepartamentoId = empleado.DepartamentoId,
-            PuestoId = empleado.PuestoId
+            PuestoId = empleado.PuestoId,
+            TipoDocumento = empleado.TipoDocumento,
+            NumeroDocumento = empleado.NumeroDocumento,
+            Nss = empleado.Nss,
+            Sexo = empleado.Sexo,
+            Afp = empleado.Afp,
+            Ars = empleado.Ars,
+            DependientesSfs = empleado.DependientesSfs,
+            TipoContrato = empleado.TipoContrato,
+            FechaFinContrato = empleado.FechaFinContrato,
+            FrecuenciaPago = empleado.FrecuenciaPago,
+            TipoSalario = empleado.TipoSalario,
+            BancoId = empleado.BancoId,
+            NumeroCuenta = empleado.NumeroCuenta,
+            TipoCuenta = empleado.TipoCuenta
         };
         await CargarListasAsync(dto.DepartamentoId, dto.PuestoId);
         return View(dto);
@@ -181,5 +195,6 @@ public class EmpleadosController : Controller
         ViewBag.Departamentos = new SelectList(await _departamentos.ListarAsync(), "Id", "Nombre", departamentoId);
         var puestos = departamentoId > 0 ? await _puestos.ListarAsync(departamentoId) : new List<Puesto>();
         ViewBag.Puestos = new SelectList(puestos, "Id", "Nombre", puestoId);
+        ViewBag.Bancos = new SelectList(await _empleados.BancosAsync(), "Id", "Nombre");
     }
 }

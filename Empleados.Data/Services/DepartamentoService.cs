@@ -8,10 +8,12 @@ namespace Empleados.Data.Services;
 public class DepartamentoService
 {
     private readonly EmpleadosDbContext _context;
+    private readonly IContextoUsuario _contexto;
 
-    public DepartamentoService(EmpleadosDbContext context)
+    public DepartamentoService(EmpleadosDbContext context, IContextoUsuario contexto)
     {
         _context = context;
+        _contexto = contexto;
     }
 
     public Task<List<Departamento>> ListarAsync(bool conEmpleados = false)
@@ -22,15 +24,18 @@ public class DepartamentoService
         return query.OrderBy(d => d.Nombre).ToListAsync();
     }
 
-    public async Task<Departamento?> ObtenerAsync(int id) =>
-        await _context.Departamentos.FindAsync(id);
+    public Task<Departamento?> ObtenerAsync(int id) =>
+        _context.Departamentos.FirstOrDefaultAsync(d => d.Id == id);
 
+    // El departamento nuevo pertenece a la empresa seleccionada por el usuario
     public async Task<Resultado<Departamento>> CrearAsync(CrearDepartamentoDto dto)
     {
-        if (await _context.Departamentos.AnyAsync(d => d.Nombre == dto.Nombre))
+        if (_contexto.EmpresaId is not int empresaId)
+            return Resultado<Departamento>.Fallo(Resultado.Invalido("Seleccione una empresa antes de crear departamentos"));
+        if (await _context.Departamentos.AnyAsync(d => d.EmpresaId == empresaId && d.Nombre == dto.Nombre))
             return Resultado<Departamento>.Fallo(Resultado.Invalido("Ya existe un departamento con ese nombre", nameof(dto.Nombre)));
 
-        var departamento = new Departamento { Nombre = dto.Nombre, Descripcion = dto.Descripcion };
+        var departamento = new Departamento { EmpresaId = empresaId, Nombre = dto.Nombre, Descripcion = dto.Descripcion };
         _context.Departamentos.Add(departamento);
         await _context.SaveChangesAsync();
         return Resultado<Departamento>.Con(departamento, "Departamento creado correctamente");
@@ -38,11 +43,11 @@ public class DepartamentoService
 
     public async Task<Resultado> ActualizarAsync(int id, CrearDepartamentoDto dto)
     {
-        var departamento = await _context.Departamentos.FindAsync(id);
+        var departamento = await _context.Departamentos.FirstOrDefaultAsync(d => d.Id == id);
         if (departamento == null)
             return Resultado.NoEncontrado("Departamento no encontrado");
 
-        if (await _context.Departamentos.AnyAsync(d => d.Nombre == dto.Nombre && d.Id != id))
+        if (await _context.Departamentos.AnyAsync(d => d.EmpresaId == departamento.EmpresaId && d.Nombre == dto.Nombre && d.Id != id))
             return Resultado.Invalido("Ya existe otro departamento con ese nombre", nameof(dto.Nombre));
 
         departamento.Nombre = dto.Nombre;

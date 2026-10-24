@@ -1,4 +1,5 @@
 using Empleados.Data.Data;
+using Empleados.Data.Entities;
 using Empleados.Data.Services;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Identity;
@@ -46,6 +47,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Montos y fechas siempre en formato dominicano, sin depender de la cultura del servidor
+app.UseRequestLocalization("es-DO");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 Directory.CreateDirectory(carpetaUploads);
@@ -98,15 +101,31 @@ using (var scope = app.Services.CreateScope())
         await userManager.AddToRoleAsync(user, seed.Rol);
     }
 
-    // SeedData: si no hay departamentos o puestos, poblar datos de prueba (borra y reseed si se fuerza con arg --seed)
-    var forceSeed = args.Contains("--seed");
-    var hasData = await db.Departamentos.AnyAsync() && await db.Puestos.AnyAsync();
-    if (forceSeed || !hasData)
+    // SeedData (solo desarrollo): si no hay departamentos o puestos, poblar datos de prueba (borra y reseed si se fuerza con arg --seed)
+    if (app.Environment.IsDevelopment())
     {
-        if (forceSeed)
-            Console.WriteLine("Forzando SeedData --seed...");
-        await SeedData.InitializeAsync(db);
-        Console.WriteLine("SeedData completado.");
+        var forceSeed = args.Contains("--seed");
+        var hasData = await db.Departamentos.AnyAsync() && await db.Puestos.AnyAsync();
+        if (forceSeed || !hasData)
+        {
+            if (forceSeed)
+                Console.WriteLine("Forzando SeedData --seed...");
+            await SeedData.InitializeAsync(db);
+            Console.WriteLine("SeedData completado.");
+        }
+
+        // Los usuarios de prueba sin empresa reciben acceso a la primera
+        var primeraEmpresa = await db.Empresas.OrderBy(e => e.Id).Select(e => (int?)e.Id).FirstOrDefaultAsync();
+        if (primeraEmpresa.HasValue)
+        {
+            foreach (var seed in seedUsers)
+            {
+                var user = await userManager.FindByEmailAsync(seed.Email);
+                if (user != null && !await db.UsuariosEmpresas.AnyAsync(u => u.UsuarioId == user.Id))
+                    db.UsuariosEmpresas.Add(new UsuarioEmpresa { UsuarioId = user.Id, EmpresaId = primeraEmpresa.Value });
+            }
+            await db.SaveChangesAsync();
+        }
     }
 }
 

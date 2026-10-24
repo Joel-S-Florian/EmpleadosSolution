@@ -79,6 +79,7 @@ public class EmpleadosControllerTests
 
         // El resultado es un objeto anónimo con items, totalCount, etc.
         var response = okResult.Value;
+        Assert.NotNull(response);
         var itemsProperty = response.GetType().GetProperty("items");
         var items = itemsProperty?.GetValue(response) as List<EmpleadoDto>;
 

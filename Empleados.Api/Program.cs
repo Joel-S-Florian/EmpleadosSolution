@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,26 +26,15 @@ builder.Services.AddSwaggerGen(c =>
     // Configurar Swagger para usar JWT
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Ingresa el token JWT con el formato: Bearer {token}",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        Description = "Pega solo el token JWT (sin el prefijo Bearer)",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
     });
 
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
     });
 });
 
@@ -56,21 +45,30 @@ builder.Services.AddDbContext<EmpleadosDbContext>(options =>
 // ========================================
 // AGREGAR IDENTITY (para autenticación)
 // ========================================
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+// AddIdentityCore (sin cookies) para que el esquema por defecto sea JWT
+builder.Services.AddIdentityCore<IdentityUser>()
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<EmpleadosDbContext>()
     .AddDefaultTokenProviders();
 
-// CORS
+// CORS: solo los orígenes configurados en Cors:AllowedOrigins
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        builder =>
+    options.AddPolicy("Frontend",
+        policy =>
         {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
         });
 });
+
+// La clave JWT viene de user-secrets (desarrollo) o variables de entorno (producción)
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32)
+    throw new InvalidOperationException(
+        "Falta Jwt:Key (mínimo 32 caracteres). En desarrollo: dotnet user-secrets set \"Jwt:Key\" \"<clave>\" --project Empleados.Api");
 
 // Registrar servicios
 builder.Services.AddScoped<AuthService>();
@@ -87,8 +85,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "EmpleadosApi",
             ValidAudience = builder.Configuration["Jwt:Audience"] ?? "EmpleadosApiClient",
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "miClaveSecretaSuperSegura1234567890123456"))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
 
@@ -106,7 +103,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseCors("AllowAll");
+app.UseCors("Frontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

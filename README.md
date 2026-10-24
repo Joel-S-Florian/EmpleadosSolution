@@ -1,15 +1,16 @@
 # Sistema de Gestión de Empleados - ASP.NET Core
 
-Sistema completo para la gestión de recursos humanos desarrollado con ASP.NET Core 8. Implementa una arquitectura de tres capas con dos aplicaciones independientes (Web API y Web MVC) que comparten la misma base de datos a través de una Class Library. 
+Sistema completo para la gestión de recursos humanos desarrollado con ASP.NET Core 10. Implementa una arquitectura de tres capas con dos aplicaciones independientes (Web API y Web MVC) que comparten la misma base de datos a través de una Class Library. 
 
 El proyecto ha sido elevado a un estándar empresarial, incluyendo un rediseño completo de la interfaz con soporte nativo para modo claro/oscuro, accesibilidad WCAG AA, integridad referencial estricta y un conjunto robusto de pruebas unitarias.
 
 ## Requisitos Previos
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- Herramienta EF Core: `dotnet tool install -g dotnet-ef` (o `dotnet tool update -g dotnet-ef`)
 - [SQL Server Express](https://www.microsoft.com/es-es/sql-server/sql-server-downloads) o LocalDB
 - [SQL Server Management Studio (SSMS)](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) (opcional)
-- [Visual Studio 2022](https://visualstudio.microsoft.com/es/) o VS Code con las cargas de trabajo:
+- [Visual Studio 2026](https://visualstudio.microsoft.com/es/) (o VS Code con C# Dev Kit) con las cargas de trabajo:
   - ASP.NET and web development
   - .NET desktop development
   - Data storage and processing
@@ -49,12 +50,21 @@ Asegúrate de que `appsettings.json` en ambos proyectos (Api y Mvc) tenga la con
 }
 ```
 
-### 4. Aplicar migraciones a la base de datos
+### 4. Configurar la clave JWT de la API
+La clave no se guarda en el repositorio. En desarrollo va en *user-secrets* (mínimo 32 caracteres):
+```bash
+dotnet user-secrets set "Jwt:Key" "una-clave-larga-y-aleatoria-de-al-menos-32-caracteres" --project Empleados.Api
+```
+En producción usa la variable de entorno `Jwt__Key`. Sin esta clave la API no arranca.
+
+Los orígenes permitidos por CORS se configuran en `Cors:AllowedOrigins` de `Empleados.Api/appsettings.json`.
+
+### 5. Aplicar migraciones a la base de datos
 ```bash
 dotnet ef database update --project Empleados.Data --startup-project Empleados.Api
 ```
 
-### 5. Compilar el proyecto
+### 6. Compilar el proyecto
 ```bash
 dotnet build
 ```
@@ -82,21 +92,15 @@ dotnet run --project Empleados.Mvc
 | Rol | Usuario | Contraseña |
 |-----|---------|------------|
 | Admin | admin@mvc.com | Admin123 |
-| RRHH | rrhh@mvc.com | RRHH123 |
+| RRHH | rrhh@mvc.com | Rrhh1234 |
 
-**Usuarios de Prueba (Seed API - Roles Cruzados):**
-| Email | Contraseña | Roles en Proyectos/Deptos |
-|-------|------------|---------------------------|
-| demo@demo.com | demo123 | Owner (Depto 1), Editor (Depto 2), Viewer (Depto 3) |
-| ana@demo.com | ana123 | Owner (Depto 2), Editor (Depto 1) |
-| luis@demo.com | luis123 | Owner (Depto 3), Viewer (Depto 1) |
-| joel@demo.com | joel123 | Editor (Depto 1 y 2), Viewer (Depto 3) |
+Estos usuarios se crean al arrancar el MVC solo en desarrollo (contraseñas en `SeedUsers` de `Empleados.Mvc/appsettings.Development.json`). Las mismas credenciales sirven para `/api/Auth/login`. Las contraseñas nuevas deben tener al menos 8 caracteres, con mayúscula, minúscula y número.
 
 ## Ejecutar Pruebas Unitarias
 ```bash
 dotnet test
 ```
-*Nota: La suite de pruebas incluye 11 tests que validan agregaciones de reportes, integridad referencial de puestos y triggers de notificaciones.*
+*Nota: La suite de pruebas incluye 10 tests que validan agregaciones de reportes, integridad referencial de puestos y triggers de notificaciones.*
 
 ## Endpoints de la API
 
@@ -133,13 +137,14 @@ dotnet test
 
 ## Tecnologías Utilizadas
 
-- **.NET 8** (LTS)
+- **.NET 10** (LTS, soporte hasta noviembre de 2028)
 - **ASP.NET Core Web API** y **ASP.NET Core MVC**
 - **Entity Framework Core** (Code First, LINQ optimizado con GroupJoin)
 - **SQL Server** (LocalDB / Express)
 - **ASP.NET Core Identity** y **JWT Bearer**
 - **xUnit** con In-Memory Database para pruebas
 - **Bootstrap 5** + **Bootstrap Icons** (sin emojis, diseño minimalista)
+- **Swagger/OpenAPI** (Swashbuckle) para documentar la API
 - **CSS Design Tokens** (Soporte nativo Modo Claro/Oscuro con persistencia)
 
 ## Funcionalidades Avanzadas Implementadas

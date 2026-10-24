@@ -1,0 +1,53 @@
+@model EmpresaDto
+@{
+    ViewData["Title"] = "Editar empresa";
+    var asignados = (HashSet<string>)ViewBag.Asignados;
+}
+
+<div class="app-pagina-angosta">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <a asp-action="Index" class="app-icono" aria-label="Volver"><i class="bi bi-arrow-left"></i></a>
+            <div>
+                <h1>@Model.RazonSocial</h1>
+                <p>RNC @Model.Rnc</p>
+            </div>
+        </div>
+    </div>
+
+    <partial name="~/Views/Shared/Components/_Alertas.cshtml" />
+
+    <form asp-action="Edit" asp-route-id="@ViewContext.RouteData.Values["id"]">
+        <div class="app-tarjeta">
+            <div class="app-tarjeta-titulo"><i class="bi bi-building"></i> Datos del empleador</div>
+            <div class="app-tarjeta-cuerpo">
+                <partial name="_FormEmpresa" model="Model" />
+            </div>
+        </div>
+
+        <div class="app-tarjeta">
+            <div class="app-tarjeta-titulo"><i class="bi bi-people"></i> Usuarios con acceso <small>Solo verán los datos de las empresas marcadas</small></div>
+            <div class="app-tarjeta-cuerpo">
+                <div class="row g-2">
+                    @foreach (var usuario in ViewBag.Usuarios)
+                    {
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="usuarioIds" value="@usuario.Id" id="u-@usuario.Id" checked="@asignados.Contains((string)usuario.Id)" />
+                                <label class="form-check-label" for="u-@usuario.Id">@usuario.Email</label>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="app-acciones">
+                    <a asp-action="Index" class="app-boton-sec">Cancelar</a>
+                    <button type="submit" class="app-boton"><i class="bi bi-check-lg"></i> Guardar cambios</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

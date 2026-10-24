@@ -104,7 +104,7 @@ Estos usuarios se crean al arrancar el MVC solo en desarrollo (contraseñas en `
 ```bash
 dotnet test
 ```
-*Nota: La suite de pruebas incluye 19 tests que validan agregaciones de reportes, integridad referencial de puestos, notificaciones, reglas de negocio (empleado despedido, correo y departamento) y la subida de fotos.*
+*Nota: La suite de pruebas incluye 39 tests que validan reportes, integridad referencial, notificaciones, reglas de negocio, subida de fotos, aislamiento entre empresas, parámetros legales por vigencia, datos de nómina e historial de movimientos.*
 
 **CI:** cada push a `master` y cada PR ejecutan en GitHub Actions (`.github/workflows/ci.yml`) la compilación, los tests y una revisión de que el modelo de EF coincide con las migraciones desde la API y desde el MVC.
 
@@ -112,9 +112,31 @@ dotnet test
 
 La lógica de negocio vive en `Empleados.Data/Services` y la comparten la API y el MVC, así las reglas son las mismas en las dos aplicaciones. Los controladores solo traducen el resultado del servicio a HTTP (API) o a vistas (MVC).
 
+El sistema evoluciona hacia una nómina para República Dominicana; el plan por fases está en [docs/PLAN_NOMINA.md](docs/PLAN_NOMINA.md).
+
+### Multiempresa
+- Cada departamento, puesto y empleado pertenece a una **empresa** (empleador con su RNC).
+- Cada usuario solo ve las empresas que tiene asignadas (pantalla **Empresas**, solo para Admin). Un filtro global de EF Core aplica esta regla a todas las consultas.
+- **MVC:** la empresa se elige en el selector de la barra superior.
+- **API:** la empresa se envía en la cabecera `X-Empresa-Id`. Si no se envía, se usa la primera empresa asignada; si se pide una no asignada, no se devuelven datos. `GET /api/Empresas` lista las empresas del usuario.
+
+### Parámetros legales
+Las tasas de TSS (AFP, SFS y SRL) y sus topes, la escala de ISR, los salarios mínimos por tamaño de empresa, los feriados y los valores del Código de Trabajo se guardan **con fecha de vigencia** (pantalla **Parámetros legales**). Cuando cambia la ley se registra una vigencia nueva y los valores anteriores no se modifican. Los valores iniciales de 2026 salen de fuentes secundarias y deben verificarse con la DGII, la TSS y el Ministerio de Trabajo.
+
+### Datos de nómina del empleado
+Documento (cédula o pasaporte), NSS, AFP, ARS, dependientes del SFS, tipo de contrato, frecuencia de pago (por defecto la de la empresa), tipo de salario y cuenta bancaria. Al crear o editar un empleado se valida que el salario no sea menor que el mínimo vigente para el tamaño de la empresa. Cada alta y cada cambio de salario, puesto, departamento, frecuencia o estado queda en el **historial de movimientos**.
+
 ## Endpoints de la API
 
 Todos requieren token JWT, salvo el login. Crear, editar o eliminar departamentos, puestos y empleados, y subir fotos, requiere rol **Admin**. Desactivar y despedir requiere **Admin** o **RRHH**.
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/Empresas` | Empresas del usuario y empresa actual |
+| GET | `/api/Parametros?fecha=2026-03-01` | Parámetros legales vigentes en una fecha |
+| GET | `/api/Parametros/isr?fecha=…` | Escala anual de ISR vigente |
+| GET | `/api/Parametros/salarios-minimos` | Salarios mínimos por tamaño de empresa |
+| GET | `/api/Parametros/feriados/2026` | Feriados del año |
 
 ### Empleados
 | Método | Endpoint | Descripción |

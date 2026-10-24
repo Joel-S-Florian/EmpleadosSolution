@@ -57,6 +57,13 @@
                 @{ Row("Contratación", Model.FechaContratacion.ToString("dd/MM/yyyy")); }
                 @{ Row("Terminación", Model.FechaTerminacion?.ToString("dd/MM/yyyy") ?? "—"); }
                 @{ Row("Departamento", Model.Departamento?.Nombre ?? "—"); }
+                @{ Row(Model.TipoDocumento.Texto(), Model.NumeroDocumento ?? "— (pendiente)"); }
+                @{ Row("NSS", Model.Nss ?? "— (pendiente)"); }
+                @{ Row("AFP / ARS", $"{Model.Afp ?? "—"} / {Model.Ars ?? "—"}"); }
+                @{ Row("Dependientes SFS", Model.DependientesSfs.ToString()); }
+                @{ Row("Contrato", Model.TipoContrato.Texto() + (Model.FechaFinContrato.HasValue ? $" (hasta {Model.FechaFinContrato:dd/MM/yyyy})" : "")); }
+                @{ Row("Pago", $"{Model.FrecuenciaPago.Texto()} · {Model.TipoSalario.Texto()}"); }
+                @{ Row("Banco", Model.Banco == null ? "Sin cuenta" : $"{Model.Banco.Nombre} · {Model.TipoCuenta?.Texto()} {Model.NumeroCuenta}"); }
             </div>
             <div style="padding: var(--space-lg) var(--space-xl); border-top:1px solid var(--border-color); background: var(--bg-muted); display:flex; gap:0.5rem; flex-wrap:wrap;">
                 <a asp-action="Index" style="display:inline-flex; align-items:center; gap:0.4rem; background: var(--bg-surface); color: var(--text-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.5rem 0.9rem; font-weight:500; text-decoration:none;"><i class="bi bi-arrow-left"></i> Volver</a>
@@ -103,6 +110,36 @@
                     }
                 </div>
             </div>
+        </div>
+    </div>
+
+    @{ var historial = (List<MovimientoEmpleado>)ViewBag.Historial; }
+    <div class="app-tarjeta mt-4">
+        <div class="app-tarjeta-titulo"><i class="bi bi-clock-history"></i> Historial de movimientos</div>
+        <div class="app-tarjeta-cuerpo">
+            @if (!historial.Any())
+            {
+                <div class="app-ayuda">Sin movimientos registrados. El historial empieza a registrarse a partir de esta versión.</div>
+            }
+            <ul class="app-historial">
+                @foreach (var m in historial)
+                {
+                    <li>
+                        <span class="fecha">@m.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
+                        <span>
+                            <strong>@m.Tipo.Texto()</strong>
+                            @if (m.ValorAnterior != null || m.ValorNuevo != null)
+                            {
+                                <span>: @(m.ValorAnterior ?? "—") → @(m.ValorNuevo ?? "—")</span>
+                            }
+                            @if (m.UsuarioNombre != null)
+                            {
+                                <span class="app-ayuda d-block">por @m.UsuarioNombre</span>
+                            }
+                        </span>
+                    </li>
+                }
+            </ul>
         </div>
     </div>
 </div>

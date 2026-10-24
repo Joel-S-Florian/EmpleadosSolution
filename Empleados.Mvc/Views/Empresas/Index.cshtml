@@ -1,0 +1,61 @@
+@model List<Empresa>
+@{
+    ViewData["Title"] = "Empresas";
+}
+
+<div class="app-pagina">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <span class="app-icono"><i class="bi bi-buildings"></i></span>
+            <div>
+                <h1>Empresas</h1>
+                <p>Empleadores registrados · @Model.Count empresas</p>
+            </div>
+        </div>
+        <a asp-action="Create" class="app-boton"><i class="bi bi-plus-lg"></i> Nueva empresa</a>
+    </div>
+
+    <partial name="~/Views/Shared/Components/_Alertas.cshtml" />
+
+    <div class="app-tarjeta">
+        <div class="table-responsive">
+            <table class="table table-hover app-tabla">
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th>RNC</th>
+                        <th>Tamaño</th>
+                        <th>Frecuencia</th>
+                        <th class="app-numero">SRL</th>
+                        <th class="text-center">Usuarios</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var empresa in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@empresa.RazonSocial</div>
+                                @if (!string.IsNullOrEmpty(empresa.NombreComercial))
+                                {
+                                    <div class="app-ayuda">@empresa.NombreComercial</div>
+                                }
+                            </td>
+                            <td>@empresa.Rnc</td>
+                            <td>@empresa.Tamano.Texto()</td>
+                            <td>@empresa.FrecuenciaPagoPredeterminada</td>
+                            <td class="app-numero">@empresa.TasaRiesgoSrl.ToString("0.00") %</td>
+                            <td class="text-center"><span class="app-chip">@empresa.Usuarios.Count</span></td>
+                            <td class="text-center"><span class="app-chip">@(empresa.Activa ? "Activa" : "Inactiva")</span></td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@empresa.Id" class="app-boton-sec" title="Editar"><i class="bi bi-pencil"></i> Editar</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

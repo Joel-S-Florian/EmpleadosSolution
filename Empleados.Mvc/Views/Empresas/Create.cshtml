@@ -1,0 +1,30 @@
+@model EmpresaDto
+@{
+    ViewData["Title"] = "Nueva empresa";
+}
+
+<div class="app-pagina-angosta">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <a asp-action="Index" class="app-icono" aria-label="Volver"><i class="bi bi-arrow-left"></i></a>
+            <div>
+                <h1>Nueva empresa</h1>
+                <p>Tendrás acceso a ella al crearla; luego puedes dar acceso a otros usuarios</p>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Create" class="app-tarjeta">
+        <div class="app-tarjeta-cuerpo">
+            <partial name="_FormEmpresa" model="Model" />
+            <div class="app-acciones">
+                <a asp-action="Index" class="app-boton-sec">Cancelar</a>
+                <button type="submit" class="app-boton"><i class="bi bi-check-lg"></i> Guardar</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

@@ -8,11 +8,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+// Enums como texto en el JSON ("Quincenal" en vez de 0)
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 // Configurar Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -34,9 +37,19 @@ builder.Services.AddSwaggerGen(c =>
         BearerFormat = "JWT"
     });
 
+    // Empresa con la que se trabaja (si se omite, la primera a la que tiene acceso el usuario)
+    c.AddSecurityDefinition("Empresa", new OpenApiSecurityScheme
+    {
+        Description = "Id de la empresa (ver GET api/Empresas)",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header,
+        Name = ContextoUsuarioHttp.CabeceraEmpresa
+    });
+
     c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
-        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = [],
+        [new OpenApiSecuritySchemeReference("Empresa", document)] = []
     });
 });
 
@@ -105,6 +118,8 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// Montos y fechas siempre en formato dominicano, sin depender de la cultura del servidor
+app.UseRequestLocalization("es-DO");
 app.UseHttpsRedirection();
 Directory.CreateDirectory(carpetaUploads);
 app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(carpetaUploads), RequestPath = AlmacenFotos.RutaPublica });

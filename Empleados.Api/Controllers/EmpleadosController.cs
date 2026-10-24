@@ -2,7 +2,6 @@ using Empleados.Data.DTOs;
 using Empleados.Data.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Empleados.Api.Controllers;
 
@@ -58,7 +57,7 @@ public class EmpleadosController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var resultado = await _empleados.CrearAsync(dto, User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var resultado = await _empleados.CrearAsync(dto);
         if (!resultado.Ok)
             return this.Error(resultado);
 

@@ -22,6 +22,130 @@ namespace Empleados.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Empleados.Data.Entities.Banco", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("Bancos");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Codigo = "BHD",
+                            Nombre = "Banco BHD"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Codigo = "BANRESERVAS",
+                            Nombre = "Banco de Reservas (Banreservas)"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Codigo = "POPULAR",
+                            Nombre = "Banco Popular Dominicano"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Codigo = "SCOTIABANK",
+                            Nombre = "Scotiabank"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Codigo = "BANESCO",
+                            Nombre = "Banesco"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Codigo = "SANTACRUZ",
+                            Nombre = "Banco Santa Cruz"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Codigo = "PROMERICA",
+                            Nombre = "Banco Promerica"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Codigo = "CARIBE",
+                            Nombre = "Banco Caribe"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Codigo = "BDI",
+                            Nombre = "Banco BDI"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Codigo = "VIMENCA",
+                            Nombre = "Banco Vimenca"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Codigo = "LOPEZDEHARO",
+                            Nombre = "Banco López de Haro"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Codigo = "LAFISE",
+                            Nombre = "Banco Lafise"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Codigo = "ADEMI",
+                            Nombre = "Banco Ademi"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Codigo = "CITI",
+                            Nombre = "Citibank"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Codigo = "APAP",
+                            Nombre = "Asociación Popular de Ahorros y Préstamos"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Codigo = "CIBAO",
+                            Nombre = "Asociación Cibao de Ahorros y Préstamos"
+                        });
+                });
+
             modelBuilder.Entity("Empleados.Data.Entities.Departamento", b =>
                 {
                     b.Property<int>("Id")
@@ -34,12 +158,17 @@ namespace Empleados.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.ToTable("Departamentos");
                 });
@@ -52,10 +181,21 @@ namespace Empleados.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Afp")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Apellido")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Ars")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("BancoId")
+                        .HasColumnType("int");
 
                     b.Property<string>("CorreoElectronico")
                         .IsRequired()
@@ -65,15 +205,24 @@ namespace Empleados.Data.Migrations
                     b.Property<int>("DepartamentoId")
                         .HasColumnType("int");
 
+                    b.Property<int>("DependientesSfs")
+                        .HasColumnType("int");
+
                     b.Property<string>("Direccion")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Estado")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("FechaContratacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaFinContrato")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("FechaNacimiento")
@@ -86,10 +235,27 @@ namespace Empleados.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("FrecuenciaPago")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Nss")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("NumeroCuenta")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("NumeroDocumento")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int?>("PuestoId")
                         .HasColumnType("int");
@@ -98,21 +264,255 @@ namespace Empleados.Data.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("Sexo")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TipoContrato")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TipoCuenta")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TipoDocumento")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TipoSalario")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CorreoElectronico")
-                        .IsUnique();
+                    b.HasIndex("BancoId");
 
                     b.HasIndex("DepartamentoId");
 
                     b.HasIndex("PuestoId");
 
+                    b.HasIndex("EmpresaId", "CorreoElectronico")
+                        .IsUnique();
+
+                    b.HasIndex("EmpresaId", "NumeroDocumento")
+                        .IsUnique()
+                        .HasFilter("[NumeroDocumento] IS NOT NULL");
+
                     b.ToTable("Empleados");
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.Empresa", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("CorreoElectronico")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Direccion")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FrecuenciaPagoPredeterminada")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("MesCierreFiscal")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NombreComercial")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("RazonSocial")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Rnc")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar(11)");
+
+                    b.Property<string>("Tamano")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("TasaRiesgoSrl")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Rnc")
+                        .IsUnique();
+
+                    b.ToTable("Empresas");
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.Feriado", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Fecha")
+                        .IsUnique();
+
+                    b.ToTable("Feriados");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Fecha = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Año Nuevo"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Fecha = new DateTime(2026, 1, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Día de los Santos Reyes (trasladado)"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Fecha = new DateTime(2026, 1, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Día de la Altagracia"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Fecha = new DateTime(2026, 1, 26, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Día de Duarte"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Fecha = new DateTime(2026, 2, 27, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Día de la Independencia"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Fecha = new DateTime(2026, 4, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Viernes Santo"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Fecha = new DateTime(2026, 5, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Día del Trabajo (trasladado)"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Fecha = new DateTime(2026, 6, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Corpus Christi"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Fecha = new DateTime(2026, 8, 16, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Día de la Restauración"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Fecha = new DateTime(2026, 9, 24, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Día de las Mercedes"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Fecha = new DateTime(2026, 11, 9, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Día de la Constitución (trasladado)"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Fecha = new DateTime(2026, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Navidad"
+                        });
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.MovimientoEmpleado", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EmpleadoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("UsuarioId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UsuarioNombre")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("ValorAnterior")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ValorNuevo")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpleadoId", "Fecha");
+
+                    b.ToTable("MovimientosEmpleados");
                 });
 
             modelBuilder.Entity("Empleados.Data.Entities.Notificacion", b =>
@@ -150,6 +550,216 @@ namespace Empleados.Data.Migrations
                     b.ToTable("Notificaciones");
                 });
 
+            modelBuilder.Entity("Empleados.Data.Entities.ParametroLegal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Clave")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Fuente")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<DateTime>("VigenteDesde")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Clave", "VigenteDesde")
+                        .IsUnique();
+
+                    b.ToTable("ParametrosLegales");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Clave = "TSS.AFP.Empleado",
+                            Fuente = "TSS 2026 (Ley 87-01, Res. 01-2025)",
+                            Valor = 2.87m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Clave = "TSS.AFP.Empleador",
+                            Fuente = "TSS 2026 (Ley 87-01, Res. 01-2025)",
+                            Valor = 7.10m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Clave = "TSS.SFS.Empleado",
+                            Fuente = "TSS 2026 (Ley 87-01, Res. 01-2025)",
+                            Valor = 3.04m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Clave = "TSS.SFS.Empleador",
+                            Fuente = "TSS 2026 (Ley 87-01, Res. 01-2025)",
+                            Valor = 7.09m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Clave = "TSS.SalarioMinimoCotizable",
+                            Fuente = "TSS 2026 (Ley 87-01, Res. 01-2025)",
+                            Valor = 23223m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Clave = "TSS.TopeAFP.SalariosMinimos",
+                            Fuente = "TSS 2026 (Ley 87-01, Res. 01-2025)",
+                            Valor = 20m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Clave = "TSS.TopeSFS.SalariosMinimos",
+                            Fuente = "TSS 2026 (Ley 87-01, Res. 01-2025)",
+                            Valor = 10m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Clave = "TSS.TopeSRL.SalariosMinimos",
+                            Fuente = "TSS 2026 (Ley 87-01, Res. 01-2025)",
+                            Valor = 4m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Clave = "INFOTEP.Empleador",
+                            Fuente = "Ley 116-80 (INFOTEP)",
+                            Valor = 1.00m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Clave = "INFOTEP.EmpleadoBonificacion",
+                            Fuente = "Ley 116-80 (INFOTEP)",
+                            Valor = 0.50m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Clave = "Laboral.DivisorSalarioDiario",
+                            Fuente = "Código de Trabajo, Ley 16-92",
+                            Valor = 23.83m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Clave = "Laboral.HorasJornadaDiaria",
+                            Fuente = "Código de Trabajo, Ley 16-92",
+                            Valor = 8m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Clave = "Laboral.HorasJornadaSemanal",
+                            Fuente = "Código de Trabajo, Ley 16-92",
+                            Valor = 44m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Clave = "Laboral.UmbralHorasExtraExceso",
+                            Fuente = "Código de Trabajo, Ley 16-92, art. 203",
+                            Valor = 68m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Clave = "Laboral.RecargoHoraExtra",
+                            Fuente = "Código de Trabajo, Ley 16-92, art. 203",
+                            Valor = 35m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Clave = "Laboral.RecargoHoraExtraExceso",
+                            Fuente = "Código de Trabajo, Ley 16-92, art. 203",
+                            Valor = 100m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Clave = "Laboral.RecargoNocturno",
+                            Fuente = "Código de Trabajo, Ley 16-92, art. 204",
+                            Valor = 15m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Clave = "Laboral.RecargoFeriado",
+                            Fuente = "Código de Trabajo, Ley 16-92",
+                            Valor = 100m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Clave = "Laboral.VacacionesDias.Hasta5Anios",
+                            Fuente = "Código de Trabajo, Ley 16-92, art. 177",
+                            Valor = 14m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Clave = "Laboral.VacacionesDias.Mas5Anios",
+                            Fuente = "Código de Trabajo, Ley 16-92, art. 177",
+                            Valor = 18m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 21,
+                            Clave = "Laboral.LicenciaPaternidadDias",
+                            Fuente = "Código de Trabajo, Ley 16-92, art. 54",
+                            Valor = 2m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 22,
+                            Clave = "Laboral.LicenciaMaternidadSemanas",
+                            Fuente = "Res. CNSS 418-02 / Convenio 183 OIT",
+                            Valor = 14m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
+                });
+
             modelBuilder.Entity("Empleados.Data.Entities.Puesto", b =>
                 {
                     b.Property<int>("Id")
@@ -165,6 +775,9 @@ namespace Empleados.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -174,7 +787,151 @@ namespace Empleados.Data.Migrations
 
                     b.HasIndex("DepartamentoId");
 
+                    b.HasIndex("EmpresaId");
+
                     b.ToTable("Puestos");
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.SalarioMinimo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Monto")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Tamano")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("VigenteDesde")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Tamano", "VigenteDesde")
+                        .IsUnique();
+
+                    b.ToTable("SalariosMinimos");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Monto = 29988.00m,
+                            Tamano = "Grande",
+                            VigenteDesde = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Monto = 27489.60m,
+                            Tamano = "Mediana",
+                            VigenteDesde = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Monto = 18421.20m,
+                            Tamano = "Pequena",
+                            VigenteDesde = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Monto = 16993.20m,
+                            Tamano = "Micro",
+                            VigenteDesde = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.TramoIsr", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CuotaFija")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Desde")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("Hasta")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Tasa")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTime>("VigenteDesde")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TramosIsr");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CuotaFija = 0m,
+                            Desde = 0m,
+                            Hasta = 416220m,
+                            Tasa = 0m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CuotaFija = 0m,
+                            Desde = 416220m,
+                            Hasta = 624329m,
+                            Tasa = 15m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CuotaFija = 31216m,
+                            Desde = 624329m,
+                            Hasta = 867123m,
+                            Tasa = 20m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CuotaFija = 79776m,
+                            Desde = 867123m,
+                            Tasa = 25m,
+                            VigenteDesde = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.UsuarioEmpresa", b =>
+                {
+                    b.Property<string>("UsuarioId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UsuarioId", "EmpresaId");
+
+                    b.HasIndex("EmpresaId");
+
+                    b.ToTable("UsuariosEmpresas");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -375,11 +1132,31 @@ namespace Empleados.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Empleados.Data.Entities.Departamento", b =>
+                {
+                    b.HasOne("Empleados.Data.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Empleados.Data.Entities.Empleado", b =>
                 {
+                    b.HasOne("Empleados.Data.Entities.Banco", "Banco")
+                        .WithMany()
+                        .HasForeignKey("BancoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Empleados.Data.Entities.Departamento", "Departamento")
                         .WithMany("Empleados")
                         .HasForeignKey("DepartamentoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Empleados.Data.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -388,9 +1165,22 @@ namespace Empleados.Data.Migrations
                         .HasForeignKey("PuestoId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.Navigation("Banco");
+
                     b.Navigation("Departamento");
 
                     b.Navigation("PuestoNav");
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.MovimientoEmpleado", b =>
+                {
+                    b.HasOne("Empleados.Data.Entities.Empleado", "Empleado")
+                        .WithMany()
+                        .HasForeignKey("EmpleadoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Empleado");
                 });
 
             modelBuilder.Entity("Empleados.Data.Entities.Puesto", b =>
@@ -401,7 +1191,30 @@ namespace Empleados.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Empleados.Data.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Departamento");
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.UsuarioEmpresa", b =>
+                {
+                    b.HasOne("Empleados.Data.Entities.Empresa", "Empresa")
+                        .WithMany("Usuarios")
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -460,6 +1273,11 @@ namespace Empleados.Data.Migrations
                     b.Navigation("Empleados");
 
                     b.Navigation("Puestos");
+                });
+
+            modelBuilder.Entity("Empleados.Data.Entities.Empresa", b =>
+                {
+                    b.Navigation("Usuarios");
                 });
 
             modelBuilder.Entity("Empleados.Data.Entities.Puesto", b =>

@@ -1,0 +1,28 @@
+@model List<Empresa>
+@{
+    var actualId = ViewBag.EmpresaActualId as int?;
+    var actual = Model.FirstOrDefault(e => e.Id == actualId);
+}
+@if (Model.Count == 0)
+{
+    <span class="app-chip" title="Pida a un administrador que le asigne una empresa"><i class="bi bi-building-x"></i> Sin empresa asignada</span>
+}
+else if (Model.Count == 1)
+{
+    <span class="app-chip d-none d-md-inline-flex" title="RNC @actual?.Rnc"><i class="bi bi-building"></i> @(actual?.NombreComercial ?? actual?.RazonSocial)</span>
+}
+else
+{
+    <form asp-controller="EmpresaActual" asp-action="Seleccionar" method="post" class="app-selector-empresa">
+        <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+        <label for="selector-empresa" class="visually-hidden">Empresa</label>
+        <i class="bi bi-building d-none d-md-inline" aria-hidden="true"></i>
+        <select id="selector-empresa" name="empresaId" class="form-select" onchange="this.form.submit()">
+            @foreach (var empresa in Model)
+            {
+                <option value="@empresa.Id" selected="@(empresa.Id == actualId)">@(empresa.NombreComercial ?? empresa.RazonSocial)</option>
+            }
+        </select>
+        <noscript><button type="submit" class="app-boton-sec">Cambiar</button></noscript>
+    </form>
+}

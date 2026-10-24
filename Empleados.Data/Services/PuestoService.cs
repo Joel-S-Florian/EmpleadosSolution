@@ -31,7 +31,13 @@ public class PuestoService
         if (error != null)
             return Resultado<Puesto>.Fallo(error);
 
-        var puesto = new Puesto { Nombre = dto.Nombre, Descripcion = dto.Descripcion, DepartamentoId = dto.DepartamentoId };
+        var puesto = new Puesto
+        {
+            EmpresaId = await EmpresaDelDepartamentoAsync(dto.DepartamentoId),
+            Nombre = dto.Nombre,
+            Descripcion = dto.Descripcion,
+            DepartamentoId = dto.DepartamentoId
+        };
         _context.Puestos.Add(puesto);
         await _context.SaveChangesAsync();
         await _context.Entry(puesto).Reference(p => p.Departamento).LoadAsync();
@@ -40,7 +46,7 @@ public class PuestoService
 
     public async Task<Resultado> ActualizarAsync(int id, CrearPuestoDto dto)
     {
-        var puesto = await _context.Puestos.FindAsync(id);
+        var puesto = await _context.Puestos.FirstOrDefaultAsync(p => p.Id == id);
         if (puesto == null)
             return Resultado.NoEncontrado("Puesto no encontrado");
 
@@ -48,6 +54,7 @@ public class PuestoService
         if (error != null)
             return error;
 
+        puesto.EmpresaId = await EmpresaDelDepartamentoAsync(dto.DepartamentoId);
         puesto.Nombre = dto.Nombre;
         puesto.Descripcion = dto.Descripcion;
         puesto.DepartamentoId = dto.DepartamentoId;
@@ -69,6 +76,10 @@ public class PuestoService
         return Resultado.Exito("Puesto eliminado correctamente");
     }
 
+    private Task<int> EmpresaDelDepartamentoAsync(int departamentoId) =>
+        _context.Departamentos.Where(d => d.Id == departamentoId).Select(d => d.EmpresaId).FirstAsync();
+
+    // El departamento se busca con el filtro de empresa: uno de otra empresa "no existe"
     private async Task<Resultado?> ValidarAsync(CrearPuestoDto dto, int? id)
     {
         if (!await _context.Departamentos.AnyAsync(d => d.Id == dto.DepartamentoId))

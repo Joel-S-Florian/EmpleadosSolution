@@ -78,7 +78,7 @@
                 var controlador = ViewContext.RouteData.Values["controller"]?.ToString();
                 string Activo(params string[] controladores) => controladores.Contains(controlador) ? "active" : "";
                 var gestionaNomina = User.IsInRole("Admin") || User.IsInRole("RRHH");
-                var enNomina = new[] { "Nominas", "Prestamos", "Incidencias", "PagosEspeciales", "Liquidaciones", "Nomina" }.Contains(controlador);
+                var enNomina = new[] { "Nominas", "Prestamos", "Incidencias", "PagosEspeciales", "Liquidaciones", "Archivos", "Nomina" }.Contains(controlador);
             }
             <nav class="sidebar-nav">
                 <a class="nav-link @Activo("Home")" asp-controller="Home" asp-action="Index"><i class="bi bi-house"></i> Inicio</a>
@@ -91,6 +91,7 @@
                         <a class="nav-link nav-sub @Activo("Incidencias")" asp-controller="Incidencias" asp-action="Index">Incidencias y vacaciones</a>
                         <a class="nav-link nav-sub @Activo("PagosEspeciales")" asp-controller="PagosEspeciales" asp-action="Index">Navidad y bonificación</a>
                         <a class="nav-link nav-sub @Activo("Liquidaciones")" asp-controller="Liquidaciones" asp-action="Index">Liquidaciones</a>
+                        <a class="nav-link nav-sub @Activo("Archivos")" asp-controller="Archivos" asp-action="Index">Archivos TSS y banco</a>
                         <a class="nav-link nav-sub @Activo("Prestamos")" asp-controller="Prestamos" asp-action="Index">Préstamos</a>
                         <a class="nav-link nav-sub @Activo("Nomina")" asp-controller="Nomina" asp-action="Simulador">Simulador</a>
                     </details>

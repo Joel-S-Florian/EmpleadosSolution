@@ -1,0 +1,118 @@
+@using Empleados.Data.Services
+@model ReporteTss?
+@{
+    ViewData["Title"] = "Archivos TSS y banco";
+    var anio = (int)ViewBag.Anio;
+    var mes = (int)ViewBag.Mes;
+}
+
+<div class="app-pagina">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <span class="app-icono"><i class="bi bi-file-earmark-arrow-down"></i></span>
+            <div>
+                <h1>Archivos TSS y banco</h1>
+                <p>Autodeterminación mensual para el SUIR, pago de nómina al banco y planilla de personal.</p>
+            </div>
+        </div>
+    </div>
+
+    <partial name="~/Views/Shared/Components/_Alertas.cshtml" />
+
+    <div class="app-tarjeta">
+        <div class="app-tarjeta-titulo"><i class="bi bi-shield-check"></i> TSS: autodeterminación mensual (AM) <small>con lo de las nóminas aprobadas del mes</small></div>
+        <div class="app-tarjeta-cuerpo">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label for="anio" class="app-etiqueta">Año</label>
+                    <input id="anio" name="anio" type="number" min="2020" max="2100" value="@anio" class="form-control" required />
+                </div>
+                <div class="col-md-2">
+                    <label for="mes" class="app-etiqueta">Mes</label>
+                    <input id="mes" name="mes" type="number" min="1" max="12" value="@mes" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="app-boton-sec w-100 justify-content-center"><i class="bi bi-eye"></i> Revisar</button>
+                </div>
+            </form>
+            <div class="app-ayuda mt-2">Se sube en el SUIR Plus (Gestión de archivos). Antes del primer envío real, páselo por el validador de estructura de la TSS.</div>
+        </div>
+
+        @if (Model != null)
+        {
+            <div class="app-tarjeta-cuerpo pt-0">
+                @foreach (var a in Model.Avisos)
+                {
+                    <div class="alert alert-warning py-2">@a</div>
+                }
+                <div class="d-flex flex-wrap gap-3 mb-3">
+                    @foreach (var t in Model.Totales)
+                    {
+                        <div><span class="app-ayuda d-block">@t.Key</span><strong>@t.Value.ToString("N2")</strong></div>
+                    }
+                </div>
+                @if (Model.Contenido != null)
+                {
+                    <a asp-action="Tss" asp-route-anio="@Model.Anio" asp-route-mes="@Model.Mes" class="app-boton"><i class="bi bi-download"></i> Descargar @Model.NombreArchivo</a>
+                }
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover app-tabla">
+                    <thead>
+                        <tr><th>Trabajador</th><th>Documento</th><th class="app-numero">Salario TSS</th><th class="app-numero">Otras rem. ISR</th><th class="app-numero">Exentos</th><th class="app-numero">AFP</th><th class="app-numero">SFS</th><th class="app-numero">ISR</th><th>Ingreso</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var f in Model.Filas)
+                        {
+                            <tr>
+                                <td>
+                                    @f.Nombre
+                                    @foreach (var a in f.Avisos) { <span class="app-ayuda d-block text-danger">@a</span> }
+                                </td>
+                                <td>@(f.Trabajador == null ? "—" : $"{f.Trabajador.TipoDocumento} {f.Trabajador.Documento}")</td>
+                                <td class="app-numero">@f.Trabajador?.SalarioSs.ToString("N2")</td>
+                                <td class="app-numero">@f.Trabajador?.OtrasRemuneraciones.ToString("N2")</td>
+                                <td class="app-numero">@((f.Trabajador?.Regalia + f.Trabajador?.Prestaciones)?.ToString("N2"))</td>
+                                <td class="app-numero">@f.Afp.ToString("N2")</td>
+                                <td class="app-numero">@f.Sfs.ToString("N2")</td>
+                                <td class="app-numero">@f.Isr.ToString("N2")</td>
+                                <td>@(f.Trabajador?.TipoIngreso == "0004" ? "Mes incompleto" : "Normal")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="app-tarjeta">
+        <div class="app-tarjeta-titulo"><i class="bi bi-bank"></i> Pago de nómina al banco <small>CSV con banco, cuenta y monto de cada recibo</small></div>
+        <div class="app-tarjeta-cuerpo">
+            <form asp-action="Dispersion" method="get" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label for="nominaId" class="app-etiqueta">Nómina aprobada</label>
+                    <select id="nominaId" name="nominaId" asp-items="ViewBag.Nominas" class="form-select" required>
+                        <option value="">Seleccione…</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="bancoId" class="app-etiqueta">Banco</label>
+                    <select id="bancoId" name="bancoId" asp-items="ViewBag.Bancos" class="form-select">
+                        <option value="">Todos los bancos</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="app-boton w-100 justify-content-center"><i class="bi bi-download"></i> Descargar</button>
+                </div>
+            </form>
+            <div class="app-ayuda mt-2">Formato genérico para la carga de pagos. El formato exacto de BHD (y luego Banreservas) se agrega cuando el banco entregue su especificación.</div>
+        </div>
+    </div>
+
+    <div class="app-tarjeta">
+        <div class="app-tarjeta-titulo"><i class="bi bi-people"></i> Planilla de personal <small>base para la DGT-3 del Ministerio de Trabajo</small></div>
+        <div class="app-tarjeta-cuerpo">
+            <a asp-action="Planilla" class="app-boton-sec"><i class="bi bi-download"></i> Descargar planilla (CSV)</a>
+        </div>
+    </div>
+</div>

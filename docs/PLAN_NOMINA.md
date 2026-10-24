@@ -125,11 +125,13 @@ Otros sectores (zonas francas, hoteles, construcción, vigilantes, agrícola) ti
 - Se comparan los resultados con la calculadora oficial del Ministerio de Trabajo.
 - **Hecho:** Nómina → Liquidaciones (y botón en la ficha del empleado). Calcula según la causa, con el salario promedio de los últimos 12 meses (de las nóminas, o el salario actual donde no hay nómina; se puede indicar a mano), las vacaciones pendientes según el saldo más la proporción del año en curso (art. 180) y la Navidad hasta la salida (salvo que ya se haya pagado). Descuenta los saldos de préstamos. Queda en borrador; al marcarla pagada (solo Admin) el empleado sale de la empresa en la fecha de salida y los préstamos se saldan. PDF con la hoja de prestaciones y el recibo de descargo. **Pendiente:** comparar casos con la calculadora del Ministerio (reglas 21 a 25 de CASOS_NOMINA.md).
 
-### Fase 3.6: Archivos legales y pago por banco
+### Fase 3.6: Archivos legales y pago por banco ✅ parcial (24-oct-2026)
 - TSS: archivo de autodeterminación mensual y de novedades, con el layout v24 y validación previa.
 - DGII: conciliación con el IR-3.
 - **Dispersión bancaria:** un formato por banco (encabezado y detalle; propio banco, ACH o LBTR). Se empieza con uno (decisión D4).
 - Planilla de personal para el Ministerio de Trabajo (DGT-3 y DGT-4).
+- **Hecho:** Nómina → Archivos TSS y banco. **Autodeterminación mensual (AM)** en texto de ancho fijo (E/D/S, 312 o 366 posiciones con exentos) desde las nóminas aprobadas del mes, con regalía (01) y preaviso/cesantía (02) como exentos, tipo de ingreso 0001/0004 y observaciones por trabajador. **Resumen del mes** con AFP, SFS, SRL, INFOTEP, total a pagar a la TSS e ISR retenido (cifra para conciliar el IR-3). **Pago al banco** en CSV genérico (banco, cuenta, documento, monto) y lista de quien no tiene cuenta. **Planilla de personal** en CSV como base de la DGT-3.
+- **Pendiente:** (1) validar el archivo AM con el validador de estructura del SUIR: el layout se tomó de una implementación de referencia del instructivo v6.0, porque el instructivo oficial no estaba disponible en línea; (2) el formato exacto de **BHD** y Banreservas: hace falta la especificación que el banco entrega a sus clientes empresariales; (3) el archivo de novedades (NV) y la DGT-4.
 
 ### Fase 3.7: Recibos digitales, envío y portal del empleado
 - Envío automático del recibo por correo al pagar, con registro de entregado o fallido.

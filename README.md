@@ -27,7 +27,7 @@ EmpleadosSolution/
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/EmpleadosSolution.git
+git clone https://github.com/Joel-S-Florian/EmpleadosSolution.git
 cd EmpleadosSolution
 ```
 
@@ -50,13 +50,25 @@ dotnet restore
 }
 ```
 
-### 4. Aplicar migraciones a la base de datos
+### 4. Configurar la clave JWT de la API
+
+La clave no se guarda en el repositorio. En desarrollo va en *user-secrets* (mínimo 32 caracteres):
+
+```bash
+dotnet user-secrets set "Jwt:Key" "una-clave-larga-y-aleatoria-de-al-menos-32-caracteres" --project Empleados.Api
+```
+
+En producción usa la variable de entorno `Jwt__Key`. Sin esta clave la API no arranca.
+
+Los orígenes permitidos por CORS se configuran en `Cors:AllowedOrigins` de `Empleados.Api/appsettings.json`.
+
+### 5. Aplicar migraciones a la base de datos
 
 ```bash
 dotnet ef database update --project Empleados.Data --startup-project Empleados.Api
 ```
 
-### 5. Compilar el proyecto
+### 6. Compilar el proyecto
 
 ```bash
 dotnet build
@@ -87,7 +99,9 @@ La aplicación MVC estará disponible en:
 | Rol | Usuario | Contraseña |
 |-----|---------|------------|
 | **Admin** | admin@mvc.com | Admin123 |
-| **RRHH** | rrhh@mvc.com | RRHH123 |
+| **RRHH** | rrhh@mvc.com | Rrhh1234 |
+
+Estos usuarios se crean al arrancar el MVC solo en desarrollo (contraseñas en `SeedUsers` de `Empleados.Mvc/appsettings.Development.json`). Las contraseñas nuevas deben tener al menos 8 caracteres, con mayúscula, minúscula y número.
 
 ## Ejecutar Pruebas Unitarias
 

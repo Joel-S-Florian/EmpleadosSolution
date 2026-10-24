@@ -56,21 +56,30 @@ builder.Services.AddDbContext<EmpleadosDbContext>(options =>
 // ========================================
 // AGREGAR IDENTITY (para autenticación)
 // ========================================
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+// AddIdentityCore (sin cookies) para que el esquema por defecto sea JWT
+builder.Services.AddIdentityCore<IdentityUser>()
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<EmpleadosDbContext>()
     .AddDefaultTokenProviders();
 
-// CORS
+// CORS: solo los orígenes configurados en Cors:AllowedOrigins
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        builder =>
+    options.AddPolicy("Frontend",
+        policy =>
         {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
         });
 });
+
+// La clave JWT viene de user-secrets (desarrollo) o variables de entorno (producción)
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32)
+    throw new InvalidOperationException(
+        "Falta Jwt:Key (mínimo 32 caracteres). En desarrollo: dotnet user-secrets set \"Jwt:Key\" \"<clave>\" --project Empleados.Api");
 
 // Registrar servicios
 builder.Services.AddScoped<AuthService>();
@@ -87,8 +96,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "EmpleadosApi",
             ValidAudience = builder.Configuration["Jwt:Audience"] ?? "EmpleadosApiClient",
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "miClaveSecretaSuperSegura1234567890123456"))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
 
@@ -106,7 +114,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseCors("AllowAll");
+app.UseCors("Frontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

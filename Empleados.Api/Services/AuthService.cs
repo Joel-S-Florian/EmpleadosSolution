@@ -42,15 +42,15 @@ public class AuthService
 
     private string GenerarToken(IdentityUser usuario, string rol)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-            _configuration["Jwt:Key"] ?? "miClaveSecretaSuperSegura1234567890123456"));
+        // Jwt:Key se valida al arrancar en Program.cs
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
-            new Claim(ClaimTypes.Name, usuario.UserName ?? usuario.Email),
-            new Claim(ClaimTypes.Email, usuario.Email),
+            new Claim(ClaimTypes.Name, usuario.UserName ?? usuario.Email ?? string.Empty),
+            new Claim(ClaimTypes.Email, usuario.Email ?? string.Empty),
             new Claim(ClaimTypes.Role, rol)
         };
 

@@ -15,11 +15,11 @@ builder.Services.AddDbContext<EmpleadosDbContext>(options =>
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
-    options.Password.RequireDigit = false;
-    options.Password.RequiredLength = 4;
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
     options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<EmpleadosDbContext>();
@@ -69,32 +69,23 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    var adminEmail = "admin@mvc.com";
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    if (adminUser == null)
+    // Usuarios de prueba: solo se crean si su contraseña está configurada (appsettings.Development.json)
+    var seedUsers = new[]
     {
-        adminUser = new IdentityUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            EmailConfirmed = true
-        };
-        await userManager.CreateAsync(adminUser, "Admin123");
-        await userManager.AddToRoleAsync(adminUser, "Admin");
-    }
+        (Email: "admin@mvc.com", Rol: "Admin", Password: app.Configuration["SeedUsers:AdminPassword"]),
+        (Email: "rrhh@mvc.com", Rol: "RRHH", Password: app.Configuration["SeedUsers:RrhhPassword"])
+    };
+    foreach (var seed in seedUsers)
+    {
+        if (string.IsNullOrEmpty(seed.Password) || await userManager.FindByEmailAsync(seed.Email) != null)
+            continue;
 
-    var rrhhEmail = "rrhh@mvc.com";
-    var rrhhUser = await userManager.FindByEmailAsync(rrhhEmail);
-    if (rrhhUser == null)
-    {
-        rrhhUser = new IdentityUser
-        {
-            UserName = rrhhEmail,
-            Email = rrhhEmail,
-            EmailConfirmed = true
-        };
-        await userManager.CreateAsync(rrhhUser, "RRHH123");
-        await userManager.AddToRoleAsync(rrhhUser, "RRHH");
+        var user = new IdentityUser { UserName = seed.Email, Email = seed.Email, EmailConfirmed = true };
+        var result = await userManager.CreateAsync(user, seed.Password);
+        if (!result.Succeeded)
+            throw new InvalidOperationException(
+                $"No se pudo crear {seed.Email}: {string.Join("; ", result.Errors.Select(e => e.Description))}");
+        await userManager.AddToRoleAsync(user, seed.Rol);
     }
 
     // SeedData: si no hay departamentos o puestos, poblar datos de prueba (borra y reseed si se fuerza con arg --seed)

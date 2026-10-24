@@ -1,0 +1,91 @@
+@model List<NominaPeriodo>
+@{
+    ViewData["Title"] = "Nóminas";
+    var nueva = (CrearNominaDto)ViewBag.Nueva;
+}
+
+<div class="app-pagina">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <span class="app-icono"><i class="bi bi-cash-stack"></i></span>
+            <div>
+                <h1>Nóminas</h1>
+                <p>Una nómina por período y frecuencia. Se calcula con las novedades de cada empleado y los parámetros legales vigentes.</p>
+            </div>
+        </div>
+    </div>
+
+    <partial name="~/Views/Shared/Components/_Alertas.cshtml" />
+
+    <form asp-action="Crear" method="post" class="app-tarjeta">
+        <div class="app-tarjeta-titulo"><i class="bi bi-plus-circle"></i> Nueva nómina</div>
+        <div class="app-tarjeta-cuerpo">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label for="Anio" class="app-etiqueta">Año</label>
+                    <input id="Anio" name="Anio" type="number" value="@nueva.Anio" class="form-control" required />
+                </div>
+                <div class="col-md-2">
+                    <label for="Mes" class="app-etiqueta">Mes</label>
+                    <input id="Mes" name="Mes" type="number" min="1" max="12" value="@nueva.Mes" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <label for="Frecuencia" class="app-etiqueta">Frecuencia</label>
+                    <select id="Frecuencia" name="Frecuencia" asp-items="Html.GetEnumSelectList<FrecuenciaPago>()" class="form-select"></select>
+                </div>
+                <div class="col-md-2">
+                    <label for="Quincena" class="app-etiqueta">Quincena</label>
+                    <select id="Quincena" name="Quincena" class="form-select">
+                        <option value="1" selected="@(nueva.Quincena == 1)">1.ª (1 al 15)</option>
+                        <option value="2" selected="@(nueva.Quincena == 2)">2.ª (16 al fin)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="app-boton w-100 justify-content-center"><i class="bi bi-calculator"></i> Crear y calcular</button>
+                </div>
+            </div>
+            <div class="app-ayuda mt-2">Incluye a los empleados activos con esa frecuencia de pago. La 2.ª quincena necesita la 1.ª aprobada.</div>
+        </div>
+    </form>
+
+    <div class="app-tarjeta">
+        <div class="table-responsive">
+            <table class="table table-hover app-tabla">
+                <thead>
+                    <tr>
+                        <th>Período</th>
+                        <th>Estado</th>
+                        <th class="text-center">Recibos</th>
+                        <th class="app-numero">Ingresos</th>
+                        <th class="app-numero">Deducciones</th>
+                        <th class="app-numero">Neto</th>
+                        <th class="app-numero">Aportes empleador</th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="8" class="app-ayuda">Todavía no hay nóminas. Cree la primera arriba.</td></tr>
+                    }
+                    @foreach (var n in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@n.Descripcion</div>
+                                <div class="app-ayuda">@n.FechaInicio.ToString("dd/MM") al @n.FechaFin.ToString("dd/MM/yyyy")</div>
+                            </td>
+                            <td><partial name="_EstadoNomina" model="n.Estado" /></td>
+                            <td class="text-center">@n.Recibos.Count</td>
+                            <td class="app-numero">@n.TotalIngresos.ToString("N2")</td>
+                            <td class="app-numero">@n.TotalDeducciones.ToString("N2")</td>
+                            <td class="app-numero fw-semibold">@n.TotalNeto.ToString("N2")</td>
+                            <td class="app-numero">@n.TotalAportesPatronales.ToString("N2")</td>
+                            <td class="text-end"><a asp-action="Detalle" asp-route-id="@n.Id" class="app-boton-sec">Abrir</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -36,39 +36,17 @@ public class NominaService
             return Resultado<SimulacionNomina>.Fallo(Resultado.NoEncontrado("Empleado no encontrado"));
         var empresa = await _context.Empresas.FirstAsync(e => e.Id == empleado.EmpresaId);
 
-        var periodo = empleado.FrecuenciaPago == FrecuenciaPago.Mensual
-            ? PeriodoNomina.Mensual(dto.Anio, dto.Mes)
-            : PeriodoNomina.Quincenal(dto.Anio, dto.Mes, dto.Quincena);
+        var periodo = Periodo(empleado.FrecuenciaPago, dto.Anio, dto.Mes, dto.Quincena);
 
         var (parametros, faltante) = await ParametrosAsync(periodo.Fin, empresa.TasaRiesgoSrl);
         if (parametros == null)
             return Resultado<SimulacionNomina>.Fallo(Resultado.Invalido(faltante!));
 
-        var ingresos = new List<IngresoAdicional>();
-        foreach (var i in dto.OtrosIngresos.Where(i => !string.IsNullOrWhiteSpace(i.Concepto) || i.Monto != 0))
-        {
-            if (string.IsNullOrWhiteSpace(i.Concepto))
-                return Resultado<SimulacionNomina>.Fallo(Resultado.Invalido("Indique el concepto de cada ingreso adicional"));
-            ingresos.Add(new IngresoAdicional(i.Concepto.Trim(), i.Monto, i.CotizaTss, i.GravaIsr));
-        }
-        var deducciones = new List<DeduccionInterna>();
-        foreach (var d in dto.Deducciones.Where(d => !string.IsNullOrWhiteSpace(d.Concepto) || d.Monto != 0))
-        {
-            if (string.IsNullOrWhiteSpace(d.Concepto))
-                return Resultado<SimulacionNomina>.Fallo(Resultado.Invalido("Indique el concepto de cada deducción"));
-            deducciones.Add(new DeduccionInterna(d.Concepto.Trim(), d.Monto, d.Prioridad));
-        }
+        var (ingresos, deducciones, error) = Convertir(dto.OtrosIngresos, dto.Deducciones);
+        if (error != null)
+            return Resultado<SimulacionNomina>.Fallo(Resultado.Invalido(error));
 
-        var salarioBase = new EntradaNomina
-        {
-            Periodo = periodo,
-            Modalidad = empleado.TipoSalario == TipoSalario.PorHora ? ModalidadSalario.PorHora : ModalidadSalario.FijoMensual,
-            Salario = empleado.Salario,
-            FechaIngreso = empleado.FechaContratacion,
-            FechaSalida = empleado.Estado == EstadoEmpleado.Despedido ? empleado.FechaTerminacion : null,
-            DependientesSfs = empleado.DependientesSfs,
-            HorasTrabajadas = dto.HorasTrabajadas
-        };
+        var salarioBase = EntradaBase(empleado, periodo) with { HorasTrabajadas = dto.HorasTrabajadas };
         var entrada = salarioBase with
         {
             DiasAusenciaSinPago = dto.DiasAusenciaSinPago,
@@ -101,6 +79,52 @@ public class NominaService
         {
             return Resultado<SimulacionNomina>.Fallo(Resultado.Invalido(ex.Message));
         }
+    }
+
+    // Datos del empleado que usa el motor (sin novedades del período)
+    internal static EntradaNomina EntradaBase(Empleado empleado, PeriodoNomina periodo) => new()
+    {
+        Periodo = periodo,
+        Modalidad = empleado.TipoSalario == TipoSalario.PorHora ? ModalidadSalario.PorHora : ModalidadSalario.FijoMensual,
+        Salario = empleado.Salario,
+        FechaIngreso = empleado.FechaContratacion,
+        FechaSalida = empleado.Estado == EstadoEmpleado.Despedido ? empleado.FechaTerminacion : null,
+        DependientesSfs = empleado.DependientesSfs
+    };
+
+    // Filas sin concepto ni monto se ignoran; con monto pero sin concepto son un error
+    internal static (List<IngresoAdicional> Ingresos, List<DeduccionInterna> Deducciones, string? Error) Convertir(
+        IEnumerable<IngresoSimuladoDto> otrosIngresos, IEnumerable<DeduccionSimuladaDto> deduccionesDto)
+    {
+        var ingresos = new List<IngresoAdicional>();
+        foreach (var i in otrosIngresos.Where(i => !string.IsNullOrWhiteSpace(i.Concepto) || i.Monto != 0))
+        {
+            if (string.IsNullOrWhiteSpace(i.Concepto))
+                return (ingresos, new(), "Indique el concepto de cada ingreso adicional");
+            ingresos.Add(new IngresoAdicional(i.Concepto.Trim(), i.Monto, i.CotizaTss, i.GravaIsr));
+        }
+        var deducciones = new List<DeduccionInterna>();
+        foreach (var d in deduccionesDto.Where(d => !string.IsNullOrWhiteSpace(d.Concepto) || d.Monto != 0))
+        {
+            if (string.IsNullOrWhiteSpace(d.Concepto))
+                return (ingresos, deducciones, "Indique el concepto de cada deducción");
+            deducciones.Add(new DeduccionInterna(d.Concepto.Trim(), d.Monto, d.Prioridad));
+        }
+        return (ingresos, deducciones, null);
+    }
+
+    internal static PeriodoNomina Periodo(FrecuenciaPago frecuencia, int anio, int mes, int quincena) =>
+        frecuencia == FrecuenciaPago.Mensual ? PeriodoNomina.Mensual(anio, mes) : PeriodoNomina.Quincenal(anio, mes, quincena);
+
+    // Datos que faltan para la TSS: impiden aprobar una nómina real
+    internal static List<string> DatosFaltantes(Empleado empleado)
+    {
+        var faltan = new List<string>();
+        if (string.IsNullOrEmpty(empleado.NumeroDocumento))
+            faltan.Add("Falta la cédula o el pasaporte del empleado (obligatorio para la nómina real y la TSS)");
+        if (string.IsNullOrEmpty(empleado.Nss))
+            faltan.Add("Falta el NSS del empleado (obligatorio para la TSS)");
+        return faltan;
     }
 
     // Parámetros vigentes al cierre del período; si falta uno obligatorio, devuelve cuál
@@ -143,11 +167,7 @@ public class NominaService
 
     private async Task<List<string>> AdvertenciasAsync(Empleado empleado, Empresa empresa, PeriodoNomina periodo)
     {
-        var advertencias = new List<string>();
-        if (string.IsNullOrEmpty(empleado.NumeroDocumento))
-            advertencias.Add("Falta la cédula o el pasaporte del empleado (obligatorio para la nómina real y la TSS)");
-        if (string.IsNullOrEmpty(empleado.Nss))
-            advertencias.Add("Falta el NSS del empleado (obligatorio para la TSS)");
+        var advertencias = DatosFaltantes(empleado);
         if (empleado.Estado == EstadoEmpleado.Inactivo)
             advertencias.Add("El empleado está inactivo");
         if (empleado.TipoSalario == TipoSalario.FijoMensual)

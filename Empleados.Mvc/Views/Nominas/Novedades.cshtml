@@ -1,0 +1,85 @@
+@model NovedadesReciboDto
+@{
+    var recibo = (ReciboPago)ViewBag.Recibo;
+    ViewData["Title"] = "Novedades " + recibo.NombreEmpleado;
+}
+
+<div class="app-pagina-angosta">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <a asp-action="Detalle" asp-route-id="@recibo.NominaId" class="app-icono" aria-label="Volver"><i class="bi bi-arrow-left"></i></a>
+            <div>
+                <h1>Novedades de @recibo.NombreEmpleado</h1>
+                <p>Nómina @recibo.Nomina!.Descripcion · al guardar se recalcula la nómina</p>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Novedades" asp-route-id="@recibo.Id" method="post" class="app-tarjeta">
+        <div class="app-tarjeta-cuerpo">
+            <div asp-validation-summary="All" class="app-resumen-error"></div>
+            <div class="row g-2">
+                @if (recibo.TipoSalario == TipoSalario.PorHora)
+                {
+                    <div class="col-md-4">
+                        <label asp-for="HorasTrabajadas" class="app-etiqueta">Horas trabajadas</label>
+                        <input asp-for="HorasTrabajadas" type="number" step="0.5" min="0" class="form-control" />
+                    </div>
+                }
+                else
+                {
+                    <div class="col-md-4">
+                        <label asp-for="DiasAusenciaSinPago" class="app-etiqueta">Días de ausencia sin pago</label>
+                        <input asp-for="DiasAusenciaSinPago" type="number" step="0.5" min="0" class="form-control" />
+                    </div>
+                }
+                <div class="col-md-4">
+                    <label asp-for="HorasExtra" class="app-etiqueta">Horas extra (35 %)</label>
+                    <input asp-for="HorasExtra" type="number" step="0.5" min="0" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="HorasExtraExceso" class="app-etiqueta">Horas extra sobre 68 h/sem (100 %)</label>
+                    <input asp-for="HorasExtraExceso" type="number" step="0.5" min="0" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="HorasNocturnas" class="app-etiqueta">Horas nocturnas (15 %)</label>
+                    <input asp-for="HorasNocturnas" type="number" step="0.5" min="0" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="HorasFeriado" class="app-etiqueta">Horas en feriado o descanso (100 %)</label>
+                    <input asp-for="HorasFeriado" type="number" step="0.5" min="0" class="form-control" />
+                </div>
+            </div>
+
+            <div class="fw-semibold mt-4 mb-1">Otros ingresos de este período</div>
+            <div class="app-ayuda mb-2">Bonos, comisiones, ajustes de períodos anteriores. Marque si cotizan a la TSS y si gravan ISR.</div>
+            @for (var i = 0; i < Model.OtrosIngresos.Count; i++)
+            {
+                <div class="row g-1 mb-1 align-items-center">
+                    <div class="col-6"><input asp-for="OtrosIngresos[i].Concepto" class="form-control" placeholder="Concepto" aria-label="Concepto del ingreso @(i + 1)" /></div>
+                    <div class="col-3"><input asp-for="OtrosIngresos[i].Monto" type="number" step="0.01" min="0" class="form-control" aria-label="Monto del ingreso @(i + 1)" /></div>
+                    <div class="col-3 small">
+                        <label class="me-2"><input asp-for="OtrosIngresos[i].CotizaTss" /> TSS</label>
+                        <label><input asp-for="OtrosIngresos[i].GravaIsr" /> ISR</label>
+                    </div>
+                </div>
+            }
+
+            <div class="fw-semibold mt-4 mb-1">Deducciones de este período</div>
+            <div class="app-ayuda mb-2">Descuentos puntuales. Los préstamos en cuotas se agregan solos desde <a asp-controller="Prestamos" asp-action="Index">Préstamos</a>.</div>
+            @for (var i = 0; i < Model.Deducciones.Count; i++)
+            {
+                <div class="row g-1 mb-1">
+                    <div class="col-6"><input asp-for="Deducciones[i].Concepto" class="form-control" placeholder="Concepto" aria-label="Concepto de la deducción @(i + 1)" /></div>
+                    <div class="col-3"><input asp-for="Deducciones[i].Monto" type="number" step="0.01" min="0" class="form-control" aria-label="Monto de la deducción @(i + 1)" /></div>
+                    <div class="col-3"><input asp-for="Deducciones[i].Prioridad" type="number" min="0" class="form-control" title="Orden en que se descuenta (menor primero)" aria-label="Prioridad de la deducción @(i + 1)" /></div>
+                </div>
+            }
+
+            <div class="app-acciones">
+                <a asp-action="Detalle" asp-route-id="@recibo.NominaId" class="app-boton-sec">Cancelar</a>
+                <button type="submit" class="app-boton"><i class="bi bi-check-lg"></i> Guardar y recalcular</button>
+            </div>
+        </div>
+    </form>
+</div>

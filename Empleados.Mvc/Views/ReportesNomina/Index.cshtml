@@ -1,0 +1,107 @@
+@using Empleados.Data.Services
+@model TablaReporte
+@{
+    ViewData["Title"] = "Reportes de nómina";
+    var tipo = (TipoReporte)ViewBag.Tipo;
+    var anio = (int)ViewBag.Anio;
+    var mes = (int?)ViewBag.Mes;
+    var usaMes = tipo is TipoReporte.CostoPorDepartamento or TipoReporte.Ausentismo;
+    var usaAnio = tipo != TipoReporte.VacacionesPendientes;
+}
+
+<div class="app-pagina">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <span class="app-icono"><i class="bi bi-bar-chart-line"></i></span>
+            <div>
+                <h1>Reportes de nómina</h1>
+                <p>Costo por departamento, acumulados del año, ausentismo, rotación y vacaciones pendientes.</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-route-tipo="@tipo" asp-route-anio="@anio" asp-route-mes="@mes" asp-route-formato="csv" class="app-boton-sec"><i class="bi bi-file-earmark-spreadsheet"></i> Excel (CSV)</a>
+            <a asp-route-tipo="@tipo" asp-route-anio="@anio" asp-route-mes="@mes" asp-route-formato="pdf" class="app-boton-sec"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+        </div>
+    </div>
+
+    <form method="get" class="app-tarjeta">
+        <div class="app-tarjeta-cuerpo row g-2 align-items-end">
+            <div class="col-md-5">
+                <label for="tipo" class="app-etiqueta">Reporte</label>
+                <select id="tipo" name="tipo" class="form-select" onchange="this.form.submit()">
+                    @foreach (var t in Enum.GetValues<TipoReporte>())
+                    {
+                        <option value="@t" selected="@(t == tipo)">@Textos.De(t)</option>
+                    }
+                </select>
+            </div>
+            @if (usaAnio)
+            {
+                <div class="col-md-2">
+                    <label for="anio" class="app-etiqueta">Año</label>
+                    <input id="anio" name="anio" type="number" min="2020" max="2100" value="@anio" class="form-control" />
+                </div>
+            }
+            @if (usaMes)
+            {
+                <div class="col-md-2">
+                    <label for="mes" class="app-etiqueta">Mes (opcional)</label>
+                    <select id="mes" name="mes" class="form-select">
+                        <option value="">Todo el año</option>
+                        @for (var m = 1; m <= 12; m++)
+                        {
+                            <option value="@m" selected="@(m == mes)">@(new DateTime(2000, m, 1).ToString("MMMM"))</option>
+                        }
+                    </select>
+                </div>
+            }
+            <div class="col-md-3">
+                <button type="submit" class="app-boton w-100 justify-content-center"><i class="bi bi-arrow-repeat"></i> Ver</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="app-tarjeta">
+        <div class="app-tarjeta-titulo">@Model.Titulo <small>@Model.Subtitulo</small></div>
+        <div class="table-responsive">
+            <table class="table table-hover app-tabla">
+                <thead>
+                    <tr>
+                        @foreach (var c in Model.Columnas)
+                        {
+                            <th class="@(c.Numerica ? "app-numero" : "")">@c.Titulo</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Filas.Any())
+                    {
+                        <tr><td colspan="@Model.Columnas.Count" class="app-ayuda">Sin datos para este período (los reportes usan las nóminas aprobadas).</td></tr>
+                    }
+                    @foreach (var fila in Model.Filas)
+                    {
+                        <tr>
+                            @for (var i = 0; i < fila.Length; i++)
+                            {
+                                <td class="@(fila[i] is decimal ? "app-numero" : "")">@ReportesNominaService.Celda(fila[i], Model.Columnas[i])</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+                @if (Model.Totales is { } totales)
+                {
+                    <tfoot>
+                        <tr class="fw-semibold">
+                            @for (var i = 0; i < totales.Length; i++)
+                            {
+                                <td class="@(totales[i] is decimal ? "app-numero" : "")">@ReportesNominaService.Celda(totales[i], Model.Columnas[i])</td>
+                            }
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+    </div>
+
+    <p class="app-ayuda">El resumen de aportes a la TSS y del ISR del mes está en <a asp-controller="Archivos" asp-action="Index">Archivos TSS y banco</a>.</p>
+</div>

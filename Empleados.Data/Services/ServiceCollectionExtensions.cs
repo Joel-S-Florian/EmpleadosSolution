@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RecibosCorreoService>();
         services.AddScoped<PortalService>();
         services.AddScoped<RecordatoriosService>();
+        services.AddScoped<ReportesNominaService>();
         return services;
     }
 }

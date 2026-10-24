@@ -22,4 +22,13 @@ public class ReportesController : ControllerBase
     {
         return Ok(await _reportes.PorDepartamentoAsync());
     }
+
+    // GET: api/Reportes/nomina/CostoPorDepartamento?anio=2026&mes=10
+    [Authorize(Roles = "Admin,RRHH")]
+    [HttpGet("nomina/{tipo}")]
+    public async Task<IActionResult> GetReporteNomina(TipoReporte tipo, [FromQuery] int? anio, [FromQuery] int? mes, [FromServices] ReportesNominaService reportes)
+    {
+        var tabla = await reportes.GenerarAsync(tipo, anio ?? DateTime.Today.Year, mes);
+        return Ok(new { tabla.Titulo, tabla.Subtitulo, Columnas = tabla.Columnas.Select(c => c.Titulo), tabla.Filas, tabla.Totales });
+    }
 }

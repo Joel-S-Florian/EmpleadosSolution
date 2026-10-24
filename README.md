@@ -4,10 +4,11 @@ Sistema completo para la gestión de empleados desarrollado con ASP.NET Core, im
 
 ## Requisitos Previos
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- Herramienta EF Core: `dotnet tool install -g dotnet-ef` (o `dotnet tool update -g dotnet-ef`)
 - [SQL Server Express](https://www.microsoft.com/es-es/sql-server/sql-server-downloads) o LocalDB
 - [SQL Server Management Studio (SSMS)](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) (opcional)
-- [Visual Studio 2022](https://visualstudio.microsoft.com/es/) con las cargas de trabajo:
+- [Visual Studio 2026](https://visualstudio.microsoft.com/es/) (o VS Code con C# Dev Kit) con las cargas de trabajo:
   - ASP.NET and web development
   - .NET desktop development
   - Data storage and processing
@@ -146,7 +147,7 @@ dotnet test
 
 ## Tecnologías Utilizadas
 
-- **.NET 8** (LTS)
+- **.NET 10** (LTS, soporte hasta noviembre de 2028)
 - **ASP.NET Core MVC** - Interfaz web
 - **ASP.NET Core Web API** - API REST
 - **Entity Framework Core** - ORM (Code First)

@@ -15,6 +15,8 @@ builder.Services.AddDbContext<EmpleadosDbContext>(options =>
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
+    // AddDefaultIdentity fija 128; 0 deja el tamaño de las migraciones (nvarchar(450)) igual que la API
+    options.Stores.MaxLengthForKeys = 0;
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 8;
     options.Password.RequireNonAlphanumeric = false;

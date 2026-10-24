@@ -1,4 +1,4 @@
-﻿@model Empleado
+﻿@model CrearEmpleadoDto
 @{
     ViewData["Title"] = "Nuevo empleado";
 }
@@ -66,18 +66,12 @@
                     <span asp-validation-for="DepartamentoId" style="color: var(--danger); font-size:0.8rem;"></span>
                 </div>
                 <div class="col-md-6">
-                    <label asp-for="PuestoId" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Puesto vinculado</label>
+                    <label asp-for="PuestoId" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Puesto</label>
                     <select asp-for="PuestoId" class="form-select" id="PuestoId" asp-items="ViewBag.Puestos" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;">
                         <option value="">Seleccione puesto</option>
                     </select>
                     <span asp-validation-for="PuestoId" style="color: var(--danger); font-size:0.8rem;"></span>
                     <div style="font-size:0.75rem; color: var(--text-muted); margin-top:0.25rem;">Se filtra automáticamente según departamento</div>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="Puesto" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Puesto (texto libre)</label>
-                    <input asp-for="Puesto" class="form-control" placeholder="Ej: Desarrollador" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;" />
-                    <span asp-validation-for="Puesto" style="color: var(--danger); font-size:0.8rem;"></span>
-                    <div style="font-size:0.75rem; color: var(--text-muted); margin-top:0.25rem;">Opcional si selecciona puesto vinculado</div>
                 </div>
                 <div class="col-md-3">
                     <label asp-for="Salario" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Salario *</label>
@@ -129,13 +123,6 @@
         }
         document.getElementById('DepartamentoId')?.addEventListener('change', function () {
             cargarPuestos(this.value, null);
-        });
-        document.getElementById('PuestoId')?.addEventListener('change', function() {
-            if (this.value) {
-                const text = this.options[this.selectedIndex]?.text;
-                const puestoInput = document.querySelector('input[name="Puesto"]');
-                if (puestoInput && text && !text.includes('No hay puestos')) puestoInput.value = text;
-            }
         });
         (function() {
             const dept = document.getElementById('DepartamentoId');

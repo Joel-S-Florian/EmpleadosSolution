@@ -42,7 +42,6 @@ public class EmpleadosControllerTests
                 CorreoElectronico = "juan@test.com",
                 Telefono = "600111222",
                 Direccion = "Calle Falsa 123",
-                Puesto = "Desarrollador",
                 Salario = 40000,
                 FechaNacimiento = new DateTime(1990, 1, 1),
                 FechaContratacion = new DateTime(2020, 1, 1),
@@ -57,7 +56,6 @@ public class EmpleadosControllerTests
                 CorreoElectronico = "ana@test.com",
                 Telefono = "600333444",
                 Direccion = "Calle Verdadera 456",
-                Puesto = "Analista",
                 Salario = 45000,
                 FechaNacimiento = new DateTime(1992, 5, 15),
                 FechaContratacion = new DateTime(2019, 6, 1),
@@ -69,7 +67,7 @@ public class EmpleadosControllerTests
         await context.SaveChangesAsync();
 
         // Usar el nombre completo para especificar el controlador de la API
-        var controller = new Empleados.Api.Controllers.EmpleadosController(context);
+        var controller = new Empleados.Api.Controllers.EmpleadosController(Servicios.Empleados(context));
 
         // Act: Llamar al método GetEmpleados
         var result = await controller.GetEmpleados();

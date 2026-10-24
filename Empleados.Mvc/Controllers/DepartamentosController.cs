@@ -1,28 +1,25 @@
-﻿using Empleados.Data.Data;
+using Empleados.Data.DTOs;
 using Empleados.Data.Entities;
+using Empleados.Data.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Empleados.Mvc.Controllers;
 
 [Authorize(Roles = "Admin")]
 public class DepartamentosController : Controller
 {
-    private readonly EmpleadosDbContext _context;
+    private readonly DepartamentoService _departamentos;
 
-    public DepartamentosController(EmpleadosDbContext context)
+    public DepartamentosController(DepartamentoService departamentos)
     {
-        _context = context;
+        _departamentos = departamentos;
     }
 
     // GET: Departamentos
     public async Task<IActionResult> Index()
     {
-        var departamentos = await _context.Departamentos
-            .Include(d => d.Empleados)
-            .ToListAsync();
-        return View(departamentos);
+        return View(await _departamentos.ListarAsync(conEmpleados: true));
     }
 
     // GET: Departamentos/Create
@@ -38,10 +35,13 @@ public class DepartamentosController : Controller
     {
         if (ModelState.IsValid)
         {
-            _context.Add(departamento);
-            await _context.SaveChangesAsync();
-            TempData["Success"] = "Departamento creado correctamente";
-            return RedirectToAction(nameof(Index));
+            var resultado = await _departamentos.CrearAsync(ADto(departamento));
+            if (resultado.Ok)
+            {
+                TempData["Success"] = resultado.Mensaje;
+                return RedirectToAction(nameof(Index));
+            }
+            ModelState.AgregarError(resultado);
         }
         return View(departamento);
     }
@@ -49,7 +49,7 @@ public class DepartamentosController : Controller
     // GET: Departamentos/Edit/5
     public async Task<IActionResult> Edit(int id)
     {
-        var departamento = await _context.Departamentos.FindAsync(id);
+        var departamento = await _departamentos.ObtenerAsync(id);
         if (departamento == null)
             return NotFound();
         return View(departamento);
@@ -65,19 +65,15 @@ public class DepartamentosController : Controller
 
         if (ModelState.IsValid)
         {
-            try
+            var resultado = await _departamentos.ActualizarAsync(id, ADto(departamento));
+            if (resultado.Tipo == TipoResultado.NoEncontrado)
+                return NotFound();
+            if (resultado.Ok)
             {
-                _context.Update(departamento);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Departamento actualizado correctamente";
+                TempData["Success"] = resultado.Mensaje;
+                return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Departamentos.Any(d => d.Id == id))
-                    return NotFound();
-                throw;
-            }
-            return RedirectToAction(nameof(Index));
+            ModelState.AgregarError(resultado);
         }
         return View(departamento);
     }
@@ -87,29 +83,13 @@ public class DepartamentosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
-        var departamento = await _context.Departamentos
-            .Include(d => d.Empleados)
-            .Include(d => d.Puestos)
-            .FirstOrDefaultAsync(d => d.Id == id);
-
-        if (departamento == null)
+        var resultado = await _departamentos.EliminarAsync(id);
+        if (resultado.Tipo == TipoResultado.NoEncontrado)
             return NotFound();
 
-        // Regla de negocio: No permitir eliminar departamento con empleados o puestos asociados
-        if (departamento.Empleados.Any())
-        {
-            TempData["Error"] = "No se puede eliminar un departamento con empleados asociados";
-            return RedirectToAction(nameof(Index));
-        }
-        if (departamento.Puestos.Any())
-        {
-            TempData["Error"] = "No se puede eliminar un departamento que tiene puestos asociados";
-            return RedirectToAction(nameof(Index));
-        }
-
-        _context.Departamentos.Remove(departamento);
-        await _context.SaveChangesAsync();
-        TempData["Success"] = "Departamento eliminado correctamente";
+        TempData[resultado.Ok ? "Success" : "Error"] = resultado.Mensaje;
         return RedirectToAction(nameof(Index));
     }
+
+    private static CrearDepartamentoDto ADto(Departamento d) => new() { Nombre = d.Nombre, Descripcion = d.Descripcion };
 }

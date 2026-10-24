@@ -1,9 +1,7 @@
-﻿using Empleados.Data.Data;
 using Empleados.Data.DTOs;
-using Empleados.Data.Entities;
+using Empleados.Data.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Empleados.Api.Controllers;
 
@@ -12,102 +10,63 @@ namespace Empleados.Api.Controllers;
 [Route("api/[controller]")]
 public class DepartamentosController : ControllerBase
 {
-    private readonly EmpleadosDbContext _context;
+    private readonly DepartamentoService _departamentos;
 
-    public DepartamentosController(EmpleadosDbContext context)
+    public DepartamentosController(DepartamentoService departamentos)
     {
-        _context = context;
+        _departamentos = departamentos;
     }
 
     // GET: api/Departamentos
     [HttpGet]
     public async Task<IActionResult> GetDepartamentos()
     {
-        var departamentos = await _context.Departamentos.ToListAsync();
-        return Ok(departamentos);
+        return Ok(await _departamentos.ListarAsync());
     }
 
     // GET: api/Departamentos/5
     [HttpGet("{id}")]
     public async Task<IActionResult> GetDepartamento(int id)
     {
-        var departamento = await _context.Departamentos.FindAsync(id);
+        var departamento = await _departamentos.ObtenerAsync(id);
         if (departamento == null)
             return NotFound(new { mensaje = "Departamento no encontrado" });
         return Ok(departamento);
     }
 
     // POST: api/Departamentos
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> CrearDepartamento([FromBody] CrearDepartamentoDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        // Verificar que no exista un departamento con el mismo nombre
-        var existe = await _context.Departamentos
-            .AnyAsync(d => d.Nombre == dto.Nombre);
-        if (existe)
-            return BadRequest(new { mensaje = "Ya existe un departamento con ese nombre" });
+        var resultado = await _departamentos.CrearAsync(dto);
+        if (!resultado.Ok)
+            return this.Error(resultado);
 
-        var departamento = new Departamento
-        {
-            Nombre = dto.Nombre,
-            Descripcion = dto.Descripcion
-        };
-
-        _context.Departamentos.Add(departamento);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetDepartamento), new { id = departamento.Id }, departamento);
+        return CreatedAtAction(nameof(GetDepartamento), new { id = resultado.Valor!.Id }, resultado.Valor);
     }
 
     // PUT: api/Departamentos/5
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> ActualizarDepartamento(int id, [FromBody] CrearDepartamentoDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var departamento = await _context.Departamentos.FindAsync(id);
-        if (departamento == null)
-            return NotFound(new { mensaje = "Departamento no encontrado" });
-
-        // Verificar que no exista otro departamento con el mismo nombre
-        var existe = await _context.Departamentos
-            .AnyAsync(d => d.Nombre == dto.Nombre && d.Id != id);
-        if (existe)
-            return BadRequest(new { mensaje = "Ya existe otro departamento con ese nombre" });
-
-        departamento.Nombre = dto.Nombre;
-        departamento.Descripcion = dto.Descripcion;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new { mensaje = "Departamento actualizado correctamente" });
+        var resultado = await _departamentos.ActualizarAsync(id, dto);
+        return resultado.Ok ? Ok(new { mensaje = resultado.Mensaje }) : this.Error(resultado);
     }
 
     // DELETE: api/Departamentos/5
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> EliminarDepartamento(int id)
     {
-        var departamento = await _context.Departamentos
-            .Include(d => d.Empleados)
-            .Include(d => d.Puestos)
-            .FirstOrDefaultAsync(d => d.Id == id);
-
-        if (departamento == null)
-            return NotFound(new { mensaje = "Departamento no encontrado" });
-
-        // Regla de negocio: No permitir eliminar departamento con empleados o puestos asociados
-        if (departamento.Empleados.Any())
-            return BadRequest(new { mensaje = "No se puede eliminar un departamento que tiene empleados asociados" });
-        if (departamento.Puestos.Any())
-            return BadRequest(new { mensaje = "No se puede eliminar un departamento que tiene puestos asociados" });
-
-        _context.Departamentos.Remove(departamento);
-        await _context.SaveChangesAsync();
-
-        return Ok(new { mensaje = "Departamento eliminado correctamente" });
+        var resultado = await _departamentos.EliminarAsync(id);
+        return resultado.Ok ? Ok(new { mensaje = resultado.Mensaje }) : this.Error(resultado);
     }
 }

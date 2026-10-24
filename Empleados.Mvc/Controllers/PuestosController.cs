@@ -1,31 +1,29 @@
-using Empleados.Data.Data;
+using Empleados.Data.DTOs;
 using Empleados.Data.Entities;
+using Empleados.Data.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace Empleados.Mvc.Controllers;
 
 [Authorize(Roles = "Admin,RRHH")]
 public class PuestosController : Controller
 {
-    private readonly EmpleadosDbContext _context;
+    private readonly PuestoService _puestos;
+    private readonly DepartamentoService _departamentos;
 
-    public PuestosController(EmpleadosDbContext context)
+    public PuestosController(PuestoService puestos, DepartamentoService departamentos)
     {
-        _context = context;
+        _puestos = puestos;
+        _departamentos = departamentos;
     }
 
     // GET: Puestos
     public async Task<IActionResult> Index(int? departamentoId)
     {
-        var query = _context.Puestos.Include(p => p.Departamento).AsQueryable();
-        if (departamentoId.HasValue)
-            query = query.Where(p => p.DepartamentoId == departamentoId.Value);
-
-        var puestos = await query.OrderBy(p => p.Nombre).ToListAsync();
-        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre", departamentoId);
+        var puestos = await _puestos.ListarAsync(departamentoId);
+        await CargarDepartamentosAsync(departamentoId);
         ViewBag.FiltroDepartamentoId = departamentoId;
         return View(puestos);
     }
@@ -33,7 +31,7 @@ public class PuestosController : Controller
     // GET: Puestos/Details/5
     public async Task<IActionResult> Details(int id)
     {
-        var puesto = await _context.Puestos.Include(p => p.Departamento).FirstOrDefaultAsync(p => p.Id == id);
+        var puesto = await _puestos.ObtenerAsync(id);
         if (puesto == null) return NotFound();
         return View(puesto);
     }
@@ -42,7 +40,7 @@ public class PuestosController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create()
     {
-        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre");
+        await CargarDepartamentosAsync(null);
         return View();
     }
 
@@ -52,27 +50,17 @@ public class PuestosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind("Nombre,Descripcion,DepartamentoId")] Puesto puesto)
     {
-        // Validar existencia del departamento antes de crear puesto
-        var deptExists = await _context.Departamentos.AnyAsync(d => d.Id == puesto.DepartamentoId);
-        if (!deptExists)
-            ModelState.AddModelError("DepartamentoId", "El departamento no existe");
-
         if (ModelState.IsValid)
         {
-            var duplicate = await _context.Puestos.AnyAsync(p => p.Nombre == puesto.Nombre && p.DepartamentoId == puesto.DepartamentoId);
-            if (duplicate)
+            var resultado = await _puestos.CrearAsync(ADto(puesto));
+            if (resultado.Ok)
             {
-                ModelState.AddModelError("Nombre", "Ya existe un puesto con ese nombre en el departamento");
-            }
-            else
-            {
-                _context.Add(puesto);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Puesto creado correctamente";
+                TempData["Success"] = resultado.Mensaje;
                 return RedirectToAction(nameof(Index));
             }
+            ModelState.AgregarError(resultado);
         }
-        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre", puesto.DepartamentoId);
+        await CargarDepartamentosAsync(puesto.DepartamentoId);
         return View(puesto);
     }
 
@@ -80,9 +68,9 @@ public class PuestosController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Edit(int id)
     {
-        var puesto = await _context.Puestos.FindAsync(id);
+        var puesto = await _puestos.ObtenerAsync(id);
         if (puesto == null) return NotFound();
-        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre", puesto.DepartamentoId);
+        await CargarDepartamentosAsync(puesto.DepartamentoId);
         return View(puesto);
     }
 
@@ -94,34 +82,18 @@ public class PuestosController : Controller
     {
         if (id != puesto.Id) return NotFound();
 
-        var deptExists = await _context.Departamentos.AnyAsync(d => d.Id == puesto.DepartamentoId);
-        if (!deptExists)
-            ModelState.AddModelError("DepartamentoId", "El departamento no existe");
-
         if (ModelState.IsValid)
         {
-            var duplicate = await _context.Puestos.AnyAsync(p => p.Nombre == puesto.Nombre && p.DepartamentoId == puesto.DepartamentoId && p.Id != id);
-            if (duplicate)
+            var resultado = await _puestos.ActualizarAsync(id, ADto(puesto));
+            if (resultado.Tipo == TipoResultado.NoEncontrado) return NotFound();
+            if (resultado.Ok)
             {
-                ModelState.AddModelError("Nombre", "Ya existe otro puesto con ese nombre en el departamento");
-            }
-            else
-            {
-                try
-                {
-                    _context.Update(puesto);
-                    await _context.SaveChangesAsync();
-                    TempData["Success"] = "Puesto actualizado correctamente";
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!await _context.Puestos.AnyAsync(p => p.Id == id)) return NotFound();
-                    throw;
-                }
+                TempData["Success"] = resultado.Mensaje;
                 return RedirectToAction(nameof(Index));
             }
+            ModelState.AgregarError(resultado);
         }
-        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre", puesto.DepartamentoId);
+        await CargarDepartamentosAsync(puesto.DepartamentoId);
         return View(puesto);
     }
 
@@ -131,28 +103,24 @@ public class PuestosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
-        var puesto = await _context.Puestos.Include(p => p.Empleados).FirstOrDefaultAsync(p => p.Id == id);
-        if (puesto == null) return NotFound();
-        if (puesto.Empleados.Any())
-        {
-            TempData["Error"] = "No se puede eliminar un puesto que tiene empleados asociados";
-            return RedirectToAction(nameof(Index));
-        }
-        _context.Puestos.Remove(puesto);
-        await _context.SaveChangesAsync();
-        TempData["Success"] = "Puesto eliminado correctamente";
+        var resultado = await _puestos.EliminarAsync(id);
+        if (resultado.Tipo == TipoResultado.NoEncontrado) return NotFound();
+
+        TempData[resultado.Ok ? "Success" : "Error"] = resultado.Mensaje;
         return RedirectToAction(nameof(Index));
     }
 
-    // GET: Puestos/GetByDepartamento?departamentoId=1 - para JS dinámico en Empleados Create/Edit
-    [AllowAnonymous] // permite polling sin rol específico, pero requiere autenticación base
+    // GET: Puestos/GetByDepartamento?departamentoId=1 - para el select dinámico de Empleados Create/Edit
     [HttpGet]
     public async Task<IActionResult> GetByDepartamento(int departamentoId)
     {
-        var puestos = await _context.Puestos
-            .Where(p => p.DepartamentoId == departamentoId)
-            .Select(p => new { id = p.Id, nombre = p.Nombre })
-            .ToListAsync();
-        return Json(puestos);
+        var puestos = await _puestos.ListarAsync(departamentoId);
+        return Json(puestos.Select(p => new { id = p.Id, nombre = p.Nombre }));
     }
+
+    private async Task CargarDepartamentosAsync(int? seleccionado) =>
+        ViewBag.Departamentos = new SelectList(await _departamentos.ListarAsync(), "Id", "Nombre", seleccionado);
+
+    private static CrearPuestoDto ADto(Puesto p) =>
+        new() { Nombre = p.Nombre, Descripcion = p.Descripcion, DepartamentoId = p.DepartamentoId };
 }

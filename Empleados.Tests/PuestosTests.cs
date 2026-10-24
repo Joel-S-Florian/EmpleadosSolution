@@ -19,7 +19,7 @@ public class PuestosTests
         var options = CreateOptions(Guid.NewGuid().ToString());
         using var context = new EmpleadosDbContext(options);
 
-        var controller = new Empleados.Api.Controllers.PuestosController(context);
+        var controller = new Empleados.Api.Controllers.PuestosController(Servicios.Puestos(context));
         var dto = new CrearPuestoDto { Nombre = "Tester", Descripcion = "QA", DepartamentoId = 999 };
 
         var result = await controller.CrearPuesto(dto);
@@ -36,7 +36,7 @@ public class PuestosTests
         context.Departamentos.Add(new Departamento { Id = 1, Nombre = "TI" });
         await context.SaveChangesAsync();
 
-        var controller = new Empleados.Api.Controllers.PuestosController(context);
+        var controller = new Empleados.Api.Controllers.PuestosController(Servicios.Puestos(context));
 
         var dto1 = new CrearPuestoDto { Nombre = "Dev", Descripcion = "Dev desc", DepartamentoId = 1 };
         var result1 = await controller.CrearPuesto(dto1);
@@ -62,7 +62,7 @@ public class PuestosTests
             new Puesto { Id = 3, Nombre = "Reclutador", DepartamentoId = 2 });
         await context.SaveChangesAsync();
 
-        var controller = new Empleados.Api.Controllers.PuestosController(context);
+        var controller = new Empleados.Api.Controllers.PuestosController(Servicios.Puestos(context));
 
         var resultAll = await controller.GetPuestos(null) as OkObjectResult;
         var all = Assert.IsAssignableFrom<List<PuestoDto>>(resultAll!.Value);
@@ -85,7 +85,10 @@ public class PuestosTests
         context.Puestos.Add(new Puesto { Id = 10, Nombre = "Dev", DepartamentoId = 1 });
         await context.SaveChangesAsync();
 
-        var controller = new Empleados.Api.Controllers.EmpleadosController(context);
+        var controller = new Empleados.Api.Controllers.EmpleadosController(Servicios.Empleados(context))
+        {
+            ControllerContext = new ControllerContext { HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext() }
+        };
         var dto = new CrearEmpleadoDto
         {
             Nombre = "Juan",
@@ -94,7 +97,6 @@ public class PuestosTests
             Direccion = "Calle 1",
             Telefono = "600111222",
             CorreoElectronico = "juan2@test.com",
-            Puesto = "Dev",
             Salario = 40000,
             FechaContratacion = new DateTime(2020, 1, 1),
             DepartamentoId = 2, // RRHH

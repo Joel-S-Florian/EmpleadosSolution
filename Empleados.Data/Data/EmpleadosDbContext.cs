@@ -36,6 +36,7 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
     public DbSet<NominaPeriodo> Nominas { get; set; }
     public DbSet<ReciboPago> RecibosPago { get; set; }
     public DbSet<Prestamo> Prestamos { get; set; }
+    public DbSet<Incidencia> Incidencias { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -233,7 +234,7 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
                 entity.Property(monto).HasPrecision(18, 2);
             foreach (var cantidad in new[]
             {
-                nameof(ReciboPago.HorasTrabajadas), nameof(ReciboPago.DiasAusenciaSinPago), nameof(ReciboPago.HorasExtra),
+                nameof(ReciboPago.HorasTrabajadas), nameof(ReciboPago.DiasAusenciaSinPago), nameof(ReciboPago.DiasIncidencias), nameof(ReciboPago.HorasExtra),
                 nameof(ReciboPago.HorasExtraExceso), nameof(ReciboPago.HorasNocturnas), nameof(ReciboPago.HorasFeriado)
             })
                 entity.Property(cantidad).HasPrecision(9, 2);
@@ -276,6 +277,22 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
             entity.HasOne(p => p.Empleado).WithMany().HasForeignKey(p => p.EmpleadoId).OnDelete(DeleteBehavior.Restrict);
             entity.HasIndex(p => new { p.EmpleadoId, p.Activo });
             entity.HasQueryFilter(p => !FiltrarPorEmpresa || p.EmpresaId == EmpresaActualId);
+        });
+
+        modelBuilder.Entity<Incidencia>(entity =>
+        {
+            entity.HasKey(i => i.Id);
+            entity.Property(i => i.Tipo).HasConversion<string>().HasMaxLength(30);
+            entity.Property(i => i.Estado).HasConversion<string>().HasMaxLength(20);
+            entity.Property(i => i.Dias).HasPrecision(9, 2);
+            entity.Property(i => i.Horas).HasPrecision(9, 2);
+            entity.Property(i => i.Comentario).HasMaxLength(500);
+            entity.Property(i => i.MotivoRechazo).HasMaxLength(500);
+            entity.Property(i => i.CreadaPor).HasMaxLength(256);
+            entity.Property(i => i.RevisadaPor).HasMaxLength(256);
+            entity.HasOne(i => i.Empleado).WithMany().HasForeignKey(i => i.EmpleadoId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(i => new { i.EmpleadoId, i.FechaInicio });
+            entity.HasQueryFilter(i => !FiltrarPorEmpresa || i.EmpresaId == EmpresaActualId);
         });
 
         DatosLegales.Sembrar(modelBuilder);

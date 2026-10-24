@@ -66,3 +66,40 @@ public class PrestamoDto
     // Descontar solo en el último pago del mes
     public bool SoloFinDeMes { get; set; }
 }
+
+public class IncidenciaDto
+{
+    [Required(ErrorMessage = "Seleccione un empleado")]
+    public int EmpleadoId { get; set; }
+
+    public TipoIncidencia Tipo { get; set; }
+
+    public DateTime FechaInicio { get; set; } = DateTime.Today;
+    public DateTime FechaFin { get; set; } = DateTime.Today;
+
+    // Vacío: se cuentan los días laborables entre las fechas
+    [Range(0.5, 366, ErrorMessage = "Los días deben estar entre 0.5 y 366")]
+    public decimal? Dias { get; set; }
+
+    // Solo retardos
+    [Range(0, 24, ErrorMessage = "Las horas deben estar entre 0 y 24")]
+    public decimal Horas { get; set; }
+
+    // Vacío: según el tipo (faltas, retardos y permisos sin goce se descuentan)
+    public bool? Descontar { get; set; }
+
+    [StringLength(500)]
+    public string? Comentario { get; set; }
+}
+
+public class VacacionesColectivasDto
+{
+    public DateTime FechaInicio { get; set; } = DateTime.Today;
+    public DateTime FechaFin { get; set; } = DateTime.Today;
+
+    // Vacío: todos los empleados activos de la empresa
+    public int? DepartamentoId { get; set; }
+
+    [StringLength(500)]
+    public string? Comentario { get; set; }
+}

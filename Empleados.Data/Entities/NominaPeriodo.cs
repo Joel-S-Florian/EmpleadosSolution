@@ -73,6 +73,8 @@ public class ReciboPago
     // Novedades del período (se escriben antes de calcular)
     public decimal HorasTrabajadas { get; set; }
     public decimal DiasAusenciaSinPago { get; set; }
+    // Días que descuentan las incidencias aprobadas (se recalcula; no se edita)
+    public decimal DiasIncidencias { get; set; }
     public decimal HorasExtra { get; set; }
     public decimal HorasExtraExceso { get; set; }
     public decimal HorasNocturnas { get; set; }

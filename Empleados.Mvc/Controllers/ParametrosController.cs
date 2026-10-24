@@ -61,6 +61,15 @@ public class ParametrosController : Controller
         return RedirectToAction(nameof(Index), new { anio = fecha.Year });
     }
 
+    // POST: Parametros/GenerarFeriados?anio=2027
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GenerarFeriados(int anio)
+    {
+        Avisar(await _parametros.GenerarFeriadosAsync(anio));
+        return RedirectToAction(nameof(Index), new { anio });
+    }
+
     // POST: Parametros/EliminarFeriado/5
     [HttpPost]
     [ValidateAntiForgeryToken]

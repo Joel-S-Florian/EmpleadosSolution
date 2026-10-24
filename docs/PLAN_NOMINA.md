@@ -100,11 +100,12 @@ Otros sectores (zonas francas, hoteles, construcción, vigilantes, agrícola) ti
 - **Entregable:** una librería probada con unos 30 casos golden, como salario en el tope del SFS, ingreso a mitad de quincena, ISR en cada tramo, o salario mínimo con horas extra.
 - **Hecho:** proyecto `Empleados.Nomina`, 12 casos golden y 20 pruebas de reglas, simulador (MVC y API) y [CASOS_NOMINA.md](CASOS_NOMINA.md) con las reglas a confirmar. Las deducciones internas se reciben como líneas del período; guardarlas como préstamos en cuotas pasa a la Fase 3.3, porque las cuotas se descuentan al cerrar una nómina. Los embargos y las pensiones alimenticias quedan pendientes de definir su prelación legal.
 
-### Fase 3.2: Incidencias y asistencia
+### Fase 3.2: Incidencias y asistencia ✅ (24-oct-2026)
 - Faltas, retardos, permisos con o sin goce de sueldo, licencias (médica, maternidad, paternidad, luto, matrimonio).
 - Vacaciones: saldo por antigüedad, solicitud y aprobación, vacaciones colectivas.
 - Calendario de feriados que aplica automáticamente las reglas de la Ley 139-97.
 - Cada incidencia aprobada afecta sola a la nómina del período.
+- **Hecho:** incidencias con aprobación o rechazo (Nómina → Incidencias y API), días laborables calculados sin fines de semana ni feriados, saldo de vacaciones por año de servicio (en la ficha del empleado), vacaciones colectivas por empresa o departamento, botón para generar los feriados de cualquier año y descuento automático en la nómina (los retardos en horas; las que cruzan dos quincenas se reparten). Reglas 13 a 16 de CASOS_NOMINA.md pendientes de validar.
 
 ### Fase 3.3: Ciclo de nómina ✅ (24-oct-2026)
 - Crear el período, calcular, revisar diferencias contra la nómina anterior, aprobar (rol Admin o Nómina), pagar y cerrar.

@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: true
+      # Solo para que la API arranque al revisar migraciones; no firma nada real
+      Jwt__Key: clave-de-ci-solo-para-revisar-migraciones-0000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restaurar
+        run: dotnet restore EmpleadosSolution.slnx
+
+      - name: Compilar
+        run: dotnet build EmpleadosSolution.slnx --no-restore -c Release
+
+      - name: Tests
+        run: dotnet test EmpleadosSolution.slnx --no-build --configuration Release
+
+      # EF 9+ falla al migrar si el modelo no coincide con las migraciones; se revisa desde los dos hosts
+      - name: Modelo sin migraciones pendientes
+        run: |
+          dotnet tool install -g dotnet-ef --version 10.0.13
+          dotnet ef migrations has-pending-model-changes --project Empleados.Data --startup-project Empleados.Api --no-build --configuration Release
+          dotnet ef migrations has-pending-model-changes --project Empleados.Data --startup-project Empleados.Mvc --no-build --configuration Release

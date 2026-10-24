@@ -1,4 +1,6 @@
 using Empleados.Data.Data;
+using Empleados.Data.Services;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +28,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<EmpleadosDbContext>();
 
+// Servicios de negocio. Las fotos van a la carpeta compartida con la API (Uploads:Path, relativa al proyecto)
+var carpetaUploads = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, builder.Configuration["Uploads:Path"] ?? "../uploads"));
+builder.Services.AddServiciosEmpleados(carpetaUploads);
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
@@ -42,6 +48,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+Directory.CreateDirectory(carpetaUploads);
+app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(carpetaUploads), RequestPath = AlmacenFotos.RutaPublica });
 app.UseRouting();
 
 app.UseAuthentication();

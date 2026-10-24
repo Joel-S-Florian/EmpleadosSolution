@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 # Fotos subidas por usuarios (no versionar)
 **/wwwroot/uploads/
+/uploads/

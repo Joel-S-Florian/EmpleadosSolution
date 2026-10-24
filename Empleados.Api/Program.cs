@@ -1,5 +1,7 @@
 using Empleados.Api.Services;
 using Empleados.Data.Data;
+using Empleados.Data.Services;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -70,8 +72,10 @@ if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32
     throw new InvalidOperationException(
         "Falta Jwt:Key (mínimo 32 caracteres). En desarrollo: dotnet user-secrets set \"Jwt:Key\" \"<clave>\" --project Empleados.Api");
 
-// Registrar servicios
+// Registrar servicios. Las fotos van a la carpeta compartida con el MVC (Uploads:Path, relativa al proyecto)
+var carpetaUploads = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, builder.Configuration["Uploads:Path"] ?? "../uploads"));
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddServiciosEmpleados(carpetaUploads);
 
 // Configurar autenticación JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -102,7 +106,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+Directory.CreateDirectory(carpetaUploads);
+app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(carpetaUploads), RequestPath = AlmacenFotos.RutaPublica });
 app.UseCors("Frontend");
 
 app.UseAuthentication();

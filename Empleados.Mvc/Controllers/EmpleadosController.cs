@@ -1,20 +1,25 @@
-﻿using Empleados.Data.Data;
+using Empleados.Data.DTOs;
 using Empleados.Data.Entities;
+using Empleados.Data.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Empleados.Mvc.Controllers;
 
 [Authorize(Roles = "Admin,RRHH")]
 public class EmpleadosController : Controller
 {
-    private readonly EmpleadosDbContext _context;
+    private readonly EmpleadoService _empleados;
+    private readonly DepartamentoService _departamentos;
+    private readonly PuestoService _puestos;
 
-    public EmpleadosController(EmpleadosDbContext context)
+    public EmpleadosController(EmpleadoService empleados, DepartamentoService departamentos, PuestoService puestos)
     {
-        _context = context;
+        _empleados = empleados;
+        _departamentos = departamentos;
+        _puestos = puestos;
     }
 
     // GET: Empleados
@@ -25,189 +30,110 @@ public class EmpleadosController : Controller
         int page = 1,
         int pageSize = 10)
     {
-        var query = _context.Empleados
-            .Include(e => e.Departamento)
-            .Include(e => e.PuestoNav)
-            .AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(nombre))
-            query = query.Where(e => e.Nombre.Contains(nombre));
-
-        if (!string.IsNullOrWhiteSpace(apellido))
-            query = query.Where(e => e.Apellido.Contains(apellido));
-
-        if (fechaContratacion.HasValue)
-            query = query.Where(e => e.FechaContratacion.Date == fechaContratacion.Value.Date);
-
-        var totalCount = await query.CountAsync();
-        var items = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        var resultado = await _empleados.ListarAsync(nombre, apellido, fechaContratacion, page, pageSize);
 
         ViewBag.Nombre = nombre;
         ViewBag.Apellido = apellido;
         ViewBag.FechaContratacion = fechaContratacion?.ToString("yyyy-MM-dd");
-        ViewBag.CurrentPage = page;
-        ViewBag.PageSize = pageSize;
-        ViewBag.TotalCount = totalCount;
-        ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+        ViewBag.CurrentPage = resultado.Page;
+        ViewBag.PageSize = resultado.PageSize;
+        ViewBag.TotalCount = resultado.TotalCount;
+        ViewBag.TotalPages = resultado.TotalPages;
 
-        return View(items);
+        return View(resultado.Items);
     }
 
     // GET: Empleados/Details/5
     public async Task<IActionResult> Details(int id)
     {
-        var empleado = await _context.Empleados
-            .Include(e => e.Departamento)
-            .Include(e => e.PuestoNav)
-            .FirstOrDefaultAsync(e => e.Id == id);
-
+        var empleado = await _empleados.ObtenerAsync(id);
         if (empleado == null)
             return NotFound();
 
         return View(empleado);
     }
 
-     // GET: Empleados/Create
+    // GET: Empleados/Create
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create()
     {
-        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre");
-        ViewBag.Puestos = new SelectList(Enumerable.Empty<Puesto>(), "Id", "Nombre");
-        return View();
+        await CargarListasAsync(null, null);
+        return View(new CrearEmpleadoDto());
     }
 
     // POST: Empleados/Create
     [Authorize(Roles = "Admin")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Nombre,Apellido,FechaNacimiento,Direccion,Telefono,CorreoElectronico,Puesto,Salario,FechaContratacion,DepartamentoId,PuestoId")] Empleado empleado)
+    public async Task<IActionResult> Create(CrearEmpleadoDto dto)
     {
-        // Validar integridad referencial Puesto - Departamento
-        if (empleado.PuestoId.HasValue)
-        {
-            var puesto = await _context.Puestos.FindAsync(empleado.PuestoId.Value);
-            if (puesto == null)
-                ModelState.AddModelError("PuestoId", "El puesto no existe");
-            else if (puesto.DepartamentoId != empleado.DepartamentoId)
-                ModelState.AddModelError("PuestoId", "El puesto no pertenece al departamento seleccionado");
-            else
-                empleado.Puesto = puesto.Nombre;
-        }
-
         if (ModelState.IsValid)
         {
-            empleado.Estado = EstadoEmpleado.Activo;
-            _context.Add(empleado);
-            await _context.SaveChangesAsync();
-            // Trigger notificación interna
-            try
+            var resultado = await _empleados.CrearAsync(dto, User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (resultado.Ok)
             {
-                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                var userIds = await _context.Users.Select(u => u.Id).ToListAsync();
-                if (userIds.Any())
-                {
-                    foreach (var uid in userIds)
-                    {
-                        _context.Notificaciones.Add(new Notificacion
-                        {
-                            Mensaje = $"Nuevo empleado registrado: {empleado.Nombre} {empleado.Apellido}",
-                            Tipo = TipoNotificacion.Success,
-                            Leida = false,
-                            FechaCreacion = DateTime.Now,
-                            UsuarioDestinoId = uid
-                        });
-                    }
-                }
-                else
-                {
-                    _context.Notificaciones.Add(new Notificacion
-                    {
-                        Mensaje = $"Nuevo empleado registrado: {empleado.Nombre} {empleado.Apellido}",
-                        Tipo = TipoNotificacion.Success,
-                        Leida = false,
-                        FechaCreacion = DateTime.Now,
-                        UsuarioDestinoId = userId
-                    });
-                }
-                await _context.SaveChangesAsync();
+                TempData["Success"] = resultado.Mensaje;
+                return RedirectToAction(nameof(Index));
             }
-            catch { }
-            return RedirectToAction(nameof(Index));
+            ModelState.AgregarError(resultado);
         }
-        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre", empleado.DepartamentoId);
-        var puestosFiltrados = await _context.Puestos.Where(p => p.DepartamentoId == empleado.DepartamentoId).ToListAsync();
-        ViewBag.Puestos = new SelectList(puestosFiltrados, "Id", "Nombre", empleado.PuestoId);
-        return View(empleado);
+
+        await CargarListasAsync(dto.DepartamentoId, dto.PuestoId);
+        return View(dto);
     }
 
     // GET: Empleados/Edit/5
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Edit(int id)
     {
-        var empleado = await _context.Empleados.FindAsync(id);
+        var empleado = await _empleados.ObtenerAsync(id);
         if (empleado == null)
             return NotFound();
+        if (empleado.Estado == EstadoEmpleado.Despedido)
+        {
+            TempData["Error"] = "No se puede modificar un empleado despedido";
+            return RedirectToAction(nameof(Details), new { id });
+        }
 
-        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre", empleado.DepartamentoId);
-        var puestos = await _context.Puestos.Where(p => p.DepartamentoId == empleado.DepartamentoId).ToListAsync();
-        ViewBag.Puestos = new SelectList(puestos, "Id", "Nombre", empleado.PuestoId);
-        return View(empleado);
+        var dto = new ActualizarEmpleadoDto
+        {
+            Nombre = empleado.Nombre,
+            Apellido = empleado.Apellido,
+            FechaNacimiento = empleado.FechaNacimiento,
+            Direccion = empleado.Direccion,
+            Telefono = empleado.Telefono,
+            CorreoElectronico = empleado.CorreoElectronico,
+            Puesto = empleado.Puesto,
+            Salario = empleado.Salario,
+            FechaContratacion = empleado.FechaContratacion,
+            DepartamentoId = empleado.DepartamentoId,
+            PuestoId = empleado.PuestoId
+        };
+        await CargarListasAsync(dto.DepartamentoId, dto.PuestoId);
+        return View(dto);
     }
 
     // POST: Empleados/Edit/5
     [Authorize(Roles = "Admin")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,FechaNacimiento,Direccion,Telefono,CorreoElectronico,Puesto,Salario,FechaContratacion,DepartamentoId,PuestoId,Estado,FotoRuta")] Empleado empleado)
+    public async Task<IActionResult> Edit(int id, ActualizarEmpleadoDto dto)
     {
-        if (id != empleado.Id)
-            return NotFound();
-
-        if (empleado.PuestoId.HasValue)
-        {
-            var puesto = await _context.Puestos.FindAsync(empleado.PuestoId.Value);
-            if (puesto == null)
-                ModelState.AddModelError("PuestoId", "El puesto no existe");
-            else if (puesto.DepartamentoId != empleado.DepartamentoId)
-                ModelState.AddModelError("PuestoId", "El puesto no pertenece al departamento seleccionado");
-            else
-                empleado.Puesto = puesto.Nombre;
-        }
-
         if (ModelState.IsValid)
         {
-            try
+            var resultado = await _empleados.ActualizarAsync(id, dto);
+            if (resultado.Tipo == TipoResultado.NoEncontrado)
+                return NotFound();
+            if (resultado.Ok)
             {
-                var existing = await _context.Empleados.FindAsync(id);
-                if (existing == null) return NotFound();
-                existing.Nombre = empleado.Nombre;
-                existing.Apellido = empleado.Apellido;
-                existing.FechaNacimiento = empleado.FechaNacimiento;
-                existing.Direccion = empleado.Direccion;
-                existing.Telefono = empleado.Telefono;
-                existing.CorreoElectronico = empleado.CorreoElectronico;
-                existing.Puesto = empleado.Puesto;
-                existing.PuestoId = empleado.PuestoId;
-                existing.Salario = empleado.Salario;
-                existing.FechaContratacion = empleado.FechaContratacion;
-                existing.DepartamentoId = empleado.DepartamentoId;
-                await _context.SaveChangesAsync();
+                TempData["Success"] = resultado.Mensaje;
+                return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Empleados.Any(e => e.Id == id))
-                    return NotFound();
-                throw;
-            }
-            return RedirectToAction(nameof(Index));
+            ModelState.AgregarError(resultado);
         }
-        ViewBag.Departamentos = new SelectList(await _context.Departamentos.ToListAsync(), "Id", "Nombre", empleado.DepartamentoId);
-        var puestosFiltrados = await _context.Puestos.Where(p => p.DepartamentoId == empleado.DepartamentoId).ToListAsync();
-        ViewBag.Puestos = new SelectList(puestosFiltrados, "Id", "Nombre", empleado.PuestoId);
-        return View(empleado);
+
+        await CargarListasAsync(dto.DepartamentoId, dto.PuestoId);
+        return View(dto);
     }
 
     // POST: Empleados/Desactivar/5
@@ -215,19 +141,11 @@ public class EmpleadosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Desactivar(int id)
     {
-        var empleado = await _context.Empleados.FindAsync(id);
-        if (empleado == null)
+        var resultado = await _empleados.DesactivarAsync(id);
+        if (resultado.Tipo == TipoResultado.NoEncontrado)
             return NotFound();
 
-        if (empleado.Estado == EstadoEmpleado.Despedido)
-        {
-            TempData["Error"] = "No se puede desactivar un empleado despedido";
-            return RedirectToAction(nameof(Index));
-        }
-
-        empleado.Estado = EstadoEmpleado.Inactivo;
-        await _context.SaveChangesAsync();
-        TempData["Success"] = "Empleado desactivado correctamente";
+        TempData[resultado.Ok ? "Success" : "Error"] = resultado.Mensaje;
         return RedirectToAction(nameof(Index));
     }
 
@@ -236,20 +154,11 @@ public class EmpleadosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Despedir(int id)
     {
-        var empleado = await _context.Empleados.FindAsync(id);
-        if (empleado == null)
+        var resultado = await _empleados.DespedirAsync(id);
+        if (resultado.Tipo == TipoResultado.NoEncontrado)
             return NotFound();
 
-        if (empleado.Estado == EstadoEmpleado.Despedido)
-        {
-            TempData["Error"] = "El empleado ya está despedido";
-            return RedirectToAction(nameof(Index));
-        }
-
-        empleado.Estado = EstadoEmpleado.Despedido;
-        empleado.FechaTerminacion = DateTime.Now;
-        await _context.SaveChangesAsync();
-        TempData["Success"] = "Empleado despedido correctamente";
+        TempData[resultado.Ok ? "Success" : "Error"] = resultado.Mensaje;
         return RedirectToAction(nameof(Index));
     }
 
@@ -257,55 +166,21 @@ public class EmpleadosController : Controller
     [Authorize(Roles = "Admin")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SubirFoto(int id, IFormFile foto)
+    public async Task<IActionResult> SubirFoto(int id, IFormFile? foto)
     {
-        var empleado = await _context.Empleados.FindAsync(id);
-        if (empleado == null)
+        using var contenido = foto?.OpenReadStream();
+        var resultado = await _empleados.SubirFotoAsync(id, contenido, foto?.FileName, foto?.Length ?? 0);
+        if (resultado.Tipo == TipoResultado.NoEncontrado)
             return NotFound();
 
-        if (foto == null || foto.Length == 0)
-        {
-            TempData["Error"] = "Debe seleccionar una imagen";
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
-        // Validar tipo de archivo
-        var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-        var extension = Path.GetExtension(foto.FileName).ToLowerInvariant();
-        if (!extensionesPermitidas.Contains(extension))
-        {
-            TempData["Error"] = "Solo se permiten archivos de imagen (jpg, jpeg, png, gif)";
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
-        // Validar tamaño (máximo 5MB)
-        if (foto.Length > 5 * 1024 * 1024)
-        {
-            TempData["Error"] = "La imagen no puede superar los 5MB";
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
-        // Crear directorio si no existe
-        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "empleados");
-        if (!Directory.Exists(uploadsFolder))
-            Directory.CreateDirectory(uploadsFolder);
-
-        // Generar nombre único
-        var nombreArchivo = $"{id}_{DateTime.Now:yyyyMMddHHmmss}{extension}";
-        var rutaArchivo = Path.Combine(uploadsFolder, nombreArchivo);
-
-        // Guardar archivo
-        using (var stream = new FileStream(rutaArchivo, FileMode.Create))
-        {
-            await foto.CopyToAsync(stream);
-        }
-
-        // Guardar ruta en base de datos
-        var rutaRelativa = $"/uploads/empleados/{nombreArchivo}";
-        empleado.FotoRuta = rutaRelativa;
-        await _context.SaveChangesAsync();
-
-        TempData["Success"] = "Foto subida correctamente";
+        TempData[resultado.Ok ? "Success" : "Error"] = resultado.Mensaje;
         return RedirectToAction(nameof(Details), new { id });
+    }
+
+    private async Task CargarListasAsync(int? departamentoId, int? puestoId)
+    {
+        ViewBag.Departamentos = new SelectList(await _departamentos.ListarAsync(), "Id", "Nombre", departamentoId);
+        var puestos = departamentoId > 0 ? await _puestos.ListarAsync(departamentoId) : new List<Puesto>();
+        ViewBag.Puestos = new SelectList(puestos, "Id", "Nombre", puestoId);
     }
 }

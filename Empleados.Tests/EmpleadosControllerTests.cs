@@ -69,7 +69,7 @@ public class EmpleadosControllerTests
         await context.SaveChangesAsync();
 
         // Usar el nombre completo para especificar el controlador de la API
-        var controller = new Empleados.Api.Controllers.EmpleadosController(context);
+        var controller = new Empleados.Api.Controllers.EmpleadosController(Servicios.Empleados(context));
 
         // Act: Llamar al método GetEmpleados
         var result = await controller.GetEmpleados();

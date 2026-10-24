@@ -7,4 +7,13 @@ public class PuestoDto
     public string? Descripcion { get; set; }
     public int DepartamentoId { get; set; }
     public string NombreDepartamento { get; set; } = string.Empty;
+
+    public static PuestoDto Desde(Entities.Puesto p) => new()
+    {
+        Id = p.Id,
+        Nombre = p.Nombre,
+        Descripcion = p.Descripcion,
+        DepartamentoId = p.DepartamentoId,
+        NombreDepartamento = p.Departamento?.Nombre ?? ""
+    };
 }

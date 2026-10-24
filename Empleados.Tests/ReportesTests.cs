@@ -56,7 +56,7 @@ public class ReportesTests
         );
         await context.SaveChangesAsync();
 
-        var controller = new Empleados.Api.Controllers.ReportesController(context);
+        var controller = new Empleados.Api.Controllers.ReportesController(Servicios.Reportes(context));
 
         // Act
         var result = await controller.GetReporteDepartamentos();
@@ -86,7 +86,7 @@ public class ReportesTests
         context.Departamentos.Add(new Departamento { Id = 10, Nombre = "Vacio", Descripcion = "Sin gente" });
         await context.SaveChangesAsync();
 
-        var controller = new Empleados.Api.Controllers.ReportesController(context);
+        var controller = new Empleados.Api.Controllers.ReportesController(Servicios.Reportes(context));
 
         // Act
         var result = await controller.GetReporteDepartamentos();

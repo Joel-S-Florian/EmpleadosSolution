@@ -36,7 +36,7 @@ public class NotificacionesTests
         );
         await context.SaveChangesAsync();
 
-        var controller = new Empleados.Api.Controllers.NotificacionesController(context);
+        var controller = new Empleados.Api.Controllers.NotificacionesController(Servicios.Notificaciones(context));
         SetUser(controller, "user1");
 
         var result = await controller.GetMisNotificaciones() as OkObjectResult;
@@ -55,7 +55,7 @@ public class NotificacionesTests
         context.Notificaciones.Add(new Notificacion { Id = 10, Mensaje = "Test", Tipo = TipoNotificacion.Info, UsuarioDestinoId = "user1", Leida = false, FechaCreacion = DateTime.Now });
         await context.SaveChangesAsync();
 
-        var controller = new Empleados.Api.Controllers.NotificacionesController(context);
+        var controller = new Empleados.Api.Controllers.NotificacionesController(Servicios.Notificaciones(context));
         SetUser(controller, "user1");
 
         var result = await controller.MarcarLeida(10) as OkObjectResult;
@@ -76,7 +76,7 @@ public class NotificacionesTests
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        var empController = new Empleados.Api.Controllers.EmpleadosController(context);
+        var empController = new Empleados.Api.Controllers.EmpleadosController(Servicios.Empleados(context));
         SetUser(empController, "user1");
 
         var dto = new CrearEmpleadoDto

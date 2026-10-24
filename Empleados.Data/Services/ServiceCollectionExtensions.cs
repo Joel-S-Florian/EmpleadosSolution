@@ -24,6 +24,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IncidenciaService>();
         services.AddScoped<BonificacionService>();
         services.AddScoped<LiquidacionService>();
+        services.AddScoped<ArchivosService>();
         return services;
     }
 }

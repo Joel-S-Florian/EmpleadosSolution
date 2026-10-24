@@ -37,6 +37,7 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
     public DbSet<ReciboPago> RecibosPago { get; set; }
     public DbSet<Prestamo> Prestamos { get; set; }
     public DbSet<Incidencia> Incidencias { get; set; }
+    public DbSet<Liquidacion> Liquidaciones { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -294,6 +295,25 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
             entity.HasOne(i => i.Empleado).WithMany().HasForeignKey(i => i.EmpleadoId).OnDelete(DeleteBehavior.Restrict);
             entity.HasIndex(i => new { i.EmpleadoId, i.FechaInicio });
             entity.HasQueryFilter(i => !FiltrarPorEmpresa || i.EmpresaId == EmpresaActualId);
+        });
+
+        modelBuilder.Entity<Liquidacion>(entity =>
+        {
+            entity.HasKey(l => l.Id);
+            entity.Property(l => l.Causa).HasConversion<string>().HasMaxLength(30);
+            entity.Property(l => l.Estado).HasConversion<string>().HasMaxLength(20);
+            entity.Property(l => l.TiempoServicio).HasMaxLength(60);
+            foreach (var monto in new[]
+            {
+                nameof(Liquidacion.SalarioPromedio), nameof(Liquidacion.SalarioDiario), nameof(Liquidacion.MontoAcordado),
+                nameof(Liquidacion.TotalIngresos), nameof(Liquidacion.TotalDeducciones), nameof(Liquidacion.Neto)
+            })
+                entity.Property(monto).HasPrecision(18, 2);
+            entity.Property(l => l.CreadaPor).HasMaxLength(256);
+            entity.Property(l => l.PagadaPor).HasMaxLength(256);
+            entity.HasOne(l => l.Empleado).WithMany().HasForeignKey(l => l.EmpleadoId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(l => l.EmpleadoId);
+            entity.HasQueryFilter(l => !FiltrarPorEmpresa || l.EmpresaId == EmpresaActualId);
         });
 
         DatosLegales.Sembrar(modelBuilder);

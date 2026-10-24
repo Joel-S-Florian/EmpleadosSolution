@@ -119,10 +119,11 @@ Otros sectores (zonas francas, hoteles, construcción, vigilantes, agrícola) ti
 - Pago de vacaciones.
 - **Hecho:** Nómina → Navidad y bonificación. El Salario de Navidad es una nómina especial (todos los empleados activos) que usa lo registrado en las nóminas del año y estima los meses sin nómina; se aprueba, se paga y se imprime como cualquier nómina. La Bonificación muestra el reparto (proporcional al salario y al tiempo trabajado, con tope de 45 o 60 días) y se carga como ingreso en una nómina regular, con la retención del INFOTEP. Las vacaciones se pagan con el salario normal de la nómina; las no disfrutadas, en la liquidación (Fase 3.5). Reglas 17 a 20 de CASOS_NOMINA.md pendientes de validar.
 
-### Fase 3.5: Terminaciones (prestaciones laborales)
+### Fase 3.5: Terminaciones (prestaciones laborales) ✅ (24-oct-2026)
 - Asistente según la causa (tabla 1.5): preaviso, cesantía y asistencia económica según antigüedad, con el salario promedio del último año ÷ 23.83, más vacaciones y Navidad proporcionales y deducciones pendientes.
 - Documentos: hoja de cálculo de prestaciones y recibo de descargo.
 - Se comparan los resultados con la calculadora oficial del Ministerio de Trabajo.
+- **Hecho:** Nómina → Liquidaciones (y botón en la ficha del empleado). Calcula según la causa, con el salario promedio de los últimos 12 meses (de las nóminas, o el salario actual donde no hay nómina; se puede indicar a mano), las vacaciones pendientes según el saldo más la proporción del año en curso (art. 180) y la Navidad hasta la salida (salvo que ya se haya pagado). Descuenta los saldos de préstamos. Queda en borrador; al marcarla pagada (solo Admin) el empleado sale de la empresa en la fecha de salida y los préstamos se saldan. PDF con la hoja de prestaciones y el recibo de descargo. **Pendiente:** comparar casos con la calculadora del Ministerio (reglas 21 a 25 de CASOS_NOMINA.md).
 
 ### Fase 3.6: Archivos legales y pago por banco
 - TSS: archivo de autodeterminación mensual y de novedades, con el layout v24 y validación previa.

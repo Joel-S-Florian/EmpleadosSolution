@@ -103,3 +103,31 @@ public class VacacionesColectivasDto
     [StringLength(500)]
     public string? Comentario { get; set; }
 }
+
+public class LiquidacionDto
+{
+    [Required(ErrorMessage = "Seleccione un empleado")]
+    public int EmpleadoId { get; set; }
+
+    public Empleados.Nomina.CausaTerminacion Causa { get; set; }
+
+    public DateTime FechaSalida { get; set; } = DateTime.Today;
+
+    // El empleador avisó con el tiempo de ley (no se paga preaviso)
+    public bool PreavisoOtorgado { get; set; }
+
+    // Vacío: promedio del último año según las nóminas registradas
+    [Range(0.01, 99999999.99, ErrorMessage = "El salario promedio debe ser mayor que 0")]
+    public decimal? SalarioPromedio { get; set; }
+
+    // Vacío: los días disponibles según el saldo de vacaciones
+    [Range(0, 366, ErrorMessage = "Los días de vacaciones deben estar entre 0 y 366")]
+    public decimal? DiasVacacionesPendientes { get; set; }
+
+    // Mutuo acuerdo u otros montos pactados
+    [Range(0, 99999999.99)]
+    public decimal MontoAcordado { get; set; }
+
+    [StringLength(500)]
+    public string? Comentario { get; set; }
+}

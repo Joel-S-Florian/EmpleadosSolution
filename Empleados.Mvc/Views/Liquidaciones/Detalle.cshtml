@@ -1,0 +1,84 @@
+@using Empleados.Data.Services
+@model Liquidacion
+@{
+    var nombre = $"{Model.Empleado?.Nombre} {Model.Empleado?.Apellido}";
+    ViewData["Title"] = "Liquidación " + nombre;
+    var lineas = LiquidacionService.Lineas(Model.LineasJson);
+    var explicacion = CicloNominaService.Lista(Model.ExplicacionJson);
+    var advertencias = CicloNominaService.Lista(Model.AdvertenciasJson);
+}
+
+<div class="app-pagina">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <a asp-action="Index" class="app-icono" aria-label="Volver"><i class="bi bi-arrow-left"></i></a>
+            <div>
+                <h1>Liquidación de @nombre <span class="app-chip">@Model.Estado.Texto()</span></h1>
+                <p>@LiquidacionService.Texto(Model.Causa) · salida el @Model.FechaSalida.ToString("dd/MM/yyyy") · @Model.TiempoServicio</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a asp-action="Pdf" asp-route-id="@Model.Id" class="app-boton-sec"><i class="bi bi-file-earmark-pdf"></i> PDF con recibo de descargo</a>
+            @if (Model.Estado == EstadoLiquidacion.Borrador)
+            {
+                <form asp-action="Eliminar" asp-route-id="@Model.Id" method="post" class="d-inline">
+                    <button type="submit" class="app-boton-sec" onclick="return confirm('¿Eliminar este borrador?')"><i class="bi bi-trash"></i> Eliminar</button>
+                </form>
+                @if (User.IsInRole("Admin"))
+                {
+                    <form asp-action="Pagar" asp-route-id="@Model.Id" method="post" class="d-inline-flex gap-1">
+                        <input name="fechaPago" type="date" value="@DateTime.Today.ToString("yyyy-MM-dd")" class="form-control" aria-label="Fecha de pago" />
+                        <button type="submit" class="app-boton" onclick="return confirm('Al marcarla pagada, @nombre sale de la empresa y sus préstamos se saldan. ¿Continuar?')"><i class="bi bi-check2-circle"></i> Marcar pagada</button>
+                    </form>
+                }
+            }
+        </div>
+    </div>
+
+    <partial name="~/Views/Shared/Components/_Alertas.cshtml" />
+
+    @foreach (var a in advertencias)
+    {
+        <div class="alert alert-warning py-2">@a</div>
+    }
+
+    <div class="app-tarjeta">
+        <div class="table-responsive">
+            <table class="table app-tabla">
+                <thead><tr><th>Concepto</th><th class="app-numero">Días</th><th class="app-numero">Pagos</th><th class="app-numero">Descuentos</th></tr></thead>
+                <tbody>
+                    @foreach (var l in lineas)
+                    {
+                        <tr>
+                            <td>@l.Concepto</td>
+                            <td class="app-numero">@(l.Dias > 0 ? l.Dias.ToString("0.##") : "")</td>
+                            <td class="app-numero">@(l.EsIngreso ? l.Monto.ToString("N2") : "")</td>
+                            <td class="app-numero">@(l.EsIngreso ? "" : l.Monto.ToString("N2"))</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="fw-semibold"><td colspan="2">Totales</td><td class="app-numero">@Model.TotalIngresos.ToString("N2")</td><td class="app-numero">@Model.TotalDeducciones.ToString("N2")</td></tr>
+                    <tr class="fw-bold"><td colspan="3">Neto a pagar</td><td class="app-numero">RD$ @Model.Neto.ToString("N2")</td></tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="app-tarjeta">
+        <div class="app-tarjeta-titulo"><i class="bi bi-info-circle"></i> Cómo se calculó</div>
+        <div class="app-tarjeta-cuerpo">
+            <ul class="mb-0">
+                @foreach (var e in explicacion)
+                {
+                    <li>@e</li>
+                }
+            </ul>
+            @if (Model.Comentario != null)
+            {
+                <div class="app-ayuda mt-2">@Model.Comentario</div>
+            }
+            <div class="app-ayuda mt-2">Calculada por @Model.CreadaPor el @Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")@(Model.FechaPago.HasValue ? $" · pagada el {Model.FechaPago:dd/MM/yyyy} por {Model.PagadaPor}" : "")</div>
+        </div>
+    </div>
+</div>

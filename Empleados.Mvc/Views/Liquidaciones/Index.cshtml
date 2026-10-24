@@ -1,0 +1,97 @@
+@using Empleados.Data.Services
+@using Empleados.Nomina
+@model List<Liquidacion>
+@{
+    ViewData["Title"] = "Liquidaciones";
+    var nuevo = (LiquidacionDto)ViewBag.Nuevo;
+}
+
+<div class="app-pagina">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <span class="app-icono"><i class="bi bi-door-open"></i></span>
+            <div>
+                <h1>Liquidaciones</h1>
+                <p>Prestaciones laborales al terminar el contrato: preaviso, cesantía, asistencia económica, vacaciones y Navidad.</p>
+            </div>
+        </div>
+    </div>
+
+    <partial name="~/Views/Shared/Components/_Alertas.cshtml" />
+
+    <form asp-action="Crear" method="post" class="app-tarjeta">
+        <div class="app-tarjeta-titulo"><i class="bi bi-calculator"></i> Calcular liquidación</div>
+        <div class="app-tarjeta-cuerpo">
+            <div asp-validation-summary="All" class="app-resumen-error"></div>
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label for="EmpleadoId" class="app-etiqueta">Empleado</label>
+                    <select id="EmpleadoId" name="EmpleadoId" asp-items="ViewBag.Empleados" class="form-select" required>
+                        <option value="">Seleccione…</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="Causa" class="app-etiqueta">Causa</label>
+                    <select id="Causa" name="Causa" asp-items="Html.GetEnumSelectList<CausaTerminacion>().Select(i => { i.Selected = i.Value == ((int)nuevo.Causa).ToString(); return i; })" class="form-select"></select>
+                </div>
+                <div class="col-md-2">
+                    <label for="FechaSalida" class="app-etiqueta">Fecha de salida</label>
+                    <input id="FechaSalida" name="FechaSalida" type="date" value="@nuevo.FechaSalida.ToString("yyyy-MM-dd")" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check mt-2">
+                        <input id="PreavisoOtorgado" name="PreavisoOtorgado" type="checkbox" value="true" class="form-check-input" checked="@nuevo.PreavisoOtorgado" />
+                        <label for="PreavisoOtorgado" class="form-check-label">Se le dio el preaviso de ley</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="SalarioPromedio" class="app-etiqueta">Salario promedio mensual</label>
+                    <input id="SalarioPromedio" name="SalarioPromedio" type="number" step="0.01" min="0.01" value="@nuevo.SalarioPromedio?.ToString("0.00")" class="form-control" placeholder="Automático" title="Vacío: promedio del último año según las nóminas" />
+                </div>
+                <div class="col-md-3">
+                    <label for="DiasVacacionesPendientes" class="app-etiqueta">Vacaciones pendientes (días)</label>
+                    <input id="DiasVacacionesPendientes" name="DiasVacacionesPendientes" type="number" step="0.5" min="0" value="@nuevo.DiasVacacionesPendientes" class="form-control" placeholder="Según el saldo" />
+                </div>
+                <div class="col-md-2">
+                    <label for="MontoAcordado" class="app-etiqueta">Monto acordado</label>
+                    <input id="MontoAcordado" name="MontoAcordado" type="number" step="0.01" min="0" value="@nuevo.MontoAcordado.ToString("0.00")" class="form-control" title="Mutuo acuerdo u otros montos pactados" />
+                </div>
+                <div class="col-md-4">
+                    <label for="Comentario" class="app-etiqueta">Comentario</label>
+                    <input id="Comentario" name="Comentario" value="@nuevo.Comentario" class="form-control" maxlength="500" />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="app-boton w-100 justify-content-center"><i class="bi bi-calculator"></i> Calcular</button>
+                </div>
+            </div>
+            <div class="app-ayuda mt-2">Se guarda como borrador para revisarla. Al marcarla pagada, el empleado sale de la empresa en la fecha de salida y sus préstamos se saldan.</div>
+        </div>
+    </form>
+
+    <div class="app-tarjeta">
+        <div class="table-responsive">
+            <table class="table table-hover app-tabla">
+                <thead>
+                    <tr><th>Empleado</th><th>Causa</th><th>Salida</th><th>Tiempo</th><th class="app-numero">Neto</th><th>Estado</th></tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="6" class="app-ayuda">No hay liquidaciones registradas.</td></tr>
+                    }
+                    @foreach (var l in Model)
+                    {
+                        <tr>
+                            <td><a asp-action="Detalle" asp-route-id="@l.Id">@l.Empleado?.Nombre @l.Empleado?.Apellido</a></td>
+                            <td>@LiquidacionService.Texto(l.Causa)</td>
+                            <td>@l.FechaSalida.ToString("dd/MM/yyyy")</td>
+                            <td>@l.TiempoServicio</td>
+                            <td class="app-numero fw-semibold">@l.Neto.ToString("N2")</td>
+                            <td><span class="app-chip">@l.Estado.Texto()</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

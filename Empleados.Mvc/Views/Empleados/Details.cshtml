@@ -71,6 +71,10 @@
                 {
                     <a asp-action="Edit" asp-route-id="@Model.Id" style="display:inline-flex; align-items:center; gap:0.4rem; background: var(--text-primary); color: var(--bg-surface); border:1px solid var(--text-primary); border-radius: var(--radius); padding:0.5rem 0.9rem; font-weight:500; text-decoration:none;"><i class="bi bi-pencil"></i> Editar</a>
                 }
+                @if (Model.Estado != EstadoEmpleado.Despedido)
+                {
+                    <a asp-controller="Nomina" asp-action="Simulador" asp-route-empleadoId="@Model.Id" class="app-boton-sec"><i class="bi bi-calculator"></i> Simular nómina</a>
+                }
             </div>
         </div>
 

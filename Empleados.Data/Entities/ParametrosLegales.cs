@@ -63,10 +63,15 @@ public static class ClavesParametro
     public const string VacacionesMas5Anios = "Laboral.VacacionesDias.Mas5Anios";
     public const string LicenciaPaternidadDias = "Laboral.LicenciaPaternidadDias";
     public const string LicenciaMaternidadSemanas = "Laboral.LicenciaMaternidadSemanas";
+    public const string CostoDependienteSfs = "TSS.SFS.CostoDependienteAdicional";
+
+    // Sin valor inicial: se configuran cuando se conozca el monto vigente
+    public static readonly IReadOnlySet<string> Opcionales = new HashSet<string> { CostoDependienteSfs };
 
     // Clave -> descripción para pantallas y validación
     public static readonly IReadOnlyDictionary<string, string> Descripciones = new Dictionary<string, string>
     {
+        [CostoDependienteSfs] = "SFS: costo mensual por dependiente adicional (RD$)",
         [AfpEmpleado] = "AFP: aporte del empleado (%)",
         [AfpEmpleador] = "AFP: aporte del empleador (%)",
         [SfsEmpleado] = "SFS: aporte del empleado (%)",

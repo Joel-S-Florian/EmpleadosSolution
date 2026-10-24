@@ -104,7 +104,7 @@ Estos usuarios se crean al arrancar el MVC solo en desarrollo (contraseñas en `
 ```bash
 dotnet test
 ```
-*Nota: La suite de pruebas incluye 39 tests que validan reportes, integridad referencial, notificaciones, reglas de negocio, subida de fotos, aislamiento entre empresas, parámetros legales por vigencia, datos de nómina e historial de movimientos.*
+*Nota: La suite de pruebas incluye 71 tests que validan los casos de nómina de [docs/CASOS_NOMINA.md](docs/CASOS_NOMINA.md), el motor de cálculo, reportes, integridad referencial, notificaciones, reglas de negocio, subida de fotos, aislamiento entre empresas, parámetros legales por vigencia, datos de nómina e historial de movimientos.*
 
 **CI:** cada push a `master` y cada PR ejecutan en GitHub Actions (`.github/workflows/ci.yml`) la compilación, los tests y una revisión de que el modelo de EF coincide con las migraciones desde la API y desde el MVC.
 
@@ -113,6 +113,15 @@ dotnet test
 La lógica de negocio vive en `Empleados.Data/Services` y la comparten la API y el MVC, así las reglas son las mismas en las dos aplicaciones. Los controladores solo traducen el resultado del servicio a HTTP (API) o a vistas (MVC).
 
 El sistema evoluciona hacia una nómina para República Dominicana; el plan por fases está en [docs/PLAN_NOMINA.md](docs/PLAN_NOMINA.md).
+
+### Motor de cálculo de nómina
+`Empleados.Nomina` es una librería sin base de datos ni web. Recibe el empleado, el período (quincenal o mensual), las horas extra, las ausencias, los otros ingresos y las deducciones, junto con los parámetros legales vigentes, y devuelve el recibo:
+- **Ingresos:** salario, prorrateo, ausencias, horas extra y recargos.
+- **Deducciones de ley:** AFP y SFS con topes mensuales, e ISR.
+- **Deducciones internas** y **aportes del empleador** (AFP, SFS, SRL e INFOTEP).
+- Una **explicación paso a paso** de cada cálculo.
+
+En la pantalla **Nómina → Simulador** y en `POST /api/Nomina/simular` se prueba con los datos reales de un empleado, sin guardar nada. Las reglas de cálculo y los casos para validarlas están en [docs/CASOS_NOMINA.md](docs/CASOS_NOMINA.md).
 
 ### Multiempresa
 - Cada departamento, puesto y empleado pertenece a una **empresa** (empleador con su RNC).
@@ -137,6 +146,7 @@ Todos requieren token JWT, salvo el login. Crear, editar o eliminar departamento
 | GET | `/api/Parametros/isr?fecha=…` | Escala anual de ISR vigente |
 | GET | `/api/Parametros/salarios-minimos` | Salarios mínimos por tamaño de empresa |
 | GET | `/api/Parametros/feriados/2026` | Feriados del año |
+| POST | `/api/Nomina/simular` | Simula el recibo de un empleado en un período (Admin o RRHH) |
 
 ### Empleados
 | Método | Endpoint | Descripción |

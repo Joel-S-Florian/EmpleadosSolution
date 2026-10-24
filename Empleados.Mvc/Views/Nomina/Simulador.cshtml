@@ -1,0 +1,210 @@
+@model SimuladorViewModel
+@using Empleados.Nomina
+@{
+    ViewData["Title"] = "Simulador de nómina";
+    var e = Model.Entrada;
+    var r = Model.Resultado?.Recibo;
+    string M(decimal v) => v.ToString("N2");
+}
+
+<div class="app-pagina">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <span class="app-icono"><i class="bi bi-calculator"></i></span>
+            <div>
+                <h1>Simulador de nómina</h1>
+                <p>Calcula el recibo de un empleado con los parámetros legales vigentes. No guarda nada.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <form asp-action="Simulador" method="post" class="app-tarjeta">
+                <div class="app-tarjeta-titulo"><i class="bi bi-sliders"></i> Datos del período</div>
+                <div class="app-tarjeta-cuerpo">
+                    <div asp-validation-summary="All" class="app-resumen-error"></div>
+                    <div class="row g-2">
+                        <div class="col-12">
+                            <label asp-for="Entrada.EmpleadoId" class="app-etiqueta">Empleado</label>
+                            <select asp-for="Entrada.EmpleadoId" asp-items="ViewBag.Empleados" class="form-select">
+                                <option value="">Seleccione…</option>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <label asp-for="Entrada.Anio" class="app-etiqueta">Año</label>
+                            <input asp-for="Entrada.Anio" type="number" class="form-control" />
+                        </div>
+                        <div class="col-4">
+                            <label asp-for="Entrada.Mes" class="app-etiqueta">Mes</label>
+                            <input asp-for="Entrada.Mes" type="number" min="1" max="12" class="form-control" />
+                        </div>
+                        <div class="col-4">
+                            <label asp-for="Entrada.Quincena" class="app-etiqueta">Quincena</label>
+                            <select asp-for="Entrada.Quincena" class="form-select">
+                                <option value="1">1.ª</option>
+                                <option value="2">2.ª</option>
+                            </select>
+                        </div>
+                        <div class="col-12 app-ayuda">La quincena se ignora si el empleado cobra mensual.</div>
+
+                        <div class="col-6">
+                            <label asp-for="Entrada.HorasTrabajadas" class="app-etiqueta">Horas trabajadas</label>
+                            <input asp-for="Entrada.HorasTrabajadas" type="number" step="0.5" min="0" class="form-control" />
+                            <div class="app-ayuda">Solo salario por hora</div>
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="Entrada.DiasAusenciaSinPago" class="app-etiqueta">Días de ausencia sin pago</label>
+                            <input asp-for="Entrada.DiasAusenciaSinPago" type="number" step="0.5" min="0" class="form-control" />
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="Entrada.HorasExtra" class="app-etiqueta">Horas extra (35 %)</label>
+                            <input asp-for="Entrada.HorasExtra" type="number" step="0.5" min="0" class="form-control" />
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="Entrada.HorasExtraExceso" class="app-etiqueta">Horas extra sobre 68 h/sem (100 %)</label>
+                            <input asp-for="Entrada.HorasExtraExceso" type="number" step="0.5" min="0" class="form-control" />
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="Entrada.HorasNocturnas" class="app-etiqueta">Horas nocturnas (15 %)</label>
+                            <input asp-for="Entrada.HorasNocturnas" type="number" step="0.5" min="0" class="form-control" />
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="Entrada.HorasFeriado" class="app-etiqueta">Horas en feriado o descanso (100 %)</label>
+                            <input asp-for="Entrada.HorasFeriado" type="number" step="0.5" min="0" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="fw-semibold mt-3 mb-1">Otros ingresos</div>
+                    @for (var i = 0; i < e.OtrosIngresos.Count; i++)
+                    {
+                        <div class="row g-1 mb-1 align-items-center">
+                            <div class="col-5"><input asp-for="Entrada.OtrosIngresos[i].Concepto" class="form-control form-control-sm" placeholder="Concepto" aria-label="Concepto del ingreso @(i + 1)" /></div>
+                            <div class="col-3"><input asp-for="Entrada.OtrosIngresos[i].Monto" type="number" step="0.01" min="0" class="form-control form-control-sm" aria-label="Monto del ingreso @(i + 1)" /></div>
+                            <div class="col-4 small">
+                                <label class="me-1"><input asp-for="Entrada.OtrosIngresos[i].CotizaTss" /> TSS</label>
+                                <label><input asp-for="Entrada.OtrosIngresos[i].GravaIsr" /> ISR</label>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="fw-semibold mt-3 mb-1">Deducciones internas</div>
+                    @for (var i = 0; i < e.Deducciones.Count; i++)
+                    {
+                        <div class="row g-1 mb-1">
+                            <div class="col-6"><input asp-for="Entrada.Deducciones[i].Concepto" class="form-control form-control-sm" placeholder="Préstamo, cooperativa…" aria-label="Concepto de la deducción @(i + 1)" /></div>
+                            <div class="col-3"><input asp-for="Entrada.Deducciones[i].Monto" type="number" step="0.01" min="0" class="form-control form-control-sm" aria-label="Monto de la deducción @(i + 1)" /></div>
+                            <div class="col-3"><input asp-for="Entrada.Deducciones[i].Prioridad" type="number" min="0" class="form-control form-control-sm" title="Orden en que se descuenta (menor primero)" aria-label="Prioridad de la deducción @(i + 1)" /></div>
+                        </div>
+                    }
+
+                    <div class="app-acciones">
+                        <button type="submit" class="app-boton w-100 justify-content-center"><i class="bi bi-calculator"></i> Calcular</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-lg-8">
+            @if (r == null)
+            {
+                <div class="app-aviso">Seleccione un empleado y presione <strong>Calcular</strong>.</div>
+            }
+            else
+            {
+                var res = Model.Resultado!;
+                foreach (var aviso in res.Advertencias.Concat(r.Advertencias))
+                {
+                    <div class="app-alerta-error"><i class="bi bi-exclamation-triangle"></i> @aviso</div>
+                }
+
+                <div class="app-tarjeta">
+                    <div class="app-tarjeta-titulo">
+                        <i class="bi bi-receipt"></i> @res.Empleado
+                        <small>@r.Periodo.Descripcion</small>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table app-tabla">
+                            <thead><tr><th>Concepto</th><th class="app-numero">Cantidad</th><th class="app-numero">Monto (RD$)</th></tr></thead>
+                            <tbody>
+                                @foreach (var seccion in new[] { (TipoLinea.Ingreso, "Ingresos"), (TipoLinea.DeduccionLey, "Deducciones de ley"), (TipoLinea.DeduccionInterna, "Deducciones internas") })
+                                {
+                                    var lineas = r.Lineas.Where(l => l.Tipo == seccion.Item1).ToList();
+                                    if (!lineas.Any()) { continue; }
+                                    <tr><td colspan="3" class="fw-semibold" style="background: var(--bg-muted);">@seccion.Item2</td></tr>
+                                    @foreach (var l in lineas)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @l.Concepto
+                                                @if (l.Tipo == TipoLinea.Ingreso && l.Codigo == Codigos.OtroIngreso)
+                                                {
+                                                    <span class="app-ayuda">@(l.CotizaTss ? "cotiza TSS" : "no cotiza") · @(l.GravaIsr ? "grava ISR" : "exento")</span>
+                                                }
+                                            </td>
+                                            <td class="app-numero">@l.Cantidad?.ToString("0.##")</td>
+                                            <td class="app-numero">@(l.Tipo == TipoLinea.Ingreso ? "" : "−")@M(l.Monto)</td>
+                                        </tr>
+                                    }
+                                }
+                                <tr class="fw-bold"><td>Total ingresos</td><td></td><td class="app-numero">@M(r.TotalIngresos)</td></tr>
+                                <tr class="fw-bold"><td>Total deducciones</td><td></td><td class="app-numero">−@M(r.TotalDeduccionesLey + r.TotalDeduccionesInternas)</td></tr>
+                                <tr class="fw-bold" style="font-size:1.05rem;"><td>Neto a pagar</td><td></td><td class="app-numero">@M(r.Neto)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="app-tarjeta">
+                            <div class="app-tarjeta-titulo"><i class="bi bi-building"></i> Aportes del empleador</div>
+                            <table class="table app-tabla">
+                                <tbody>
+                                    @foreach (var l in r.Lineas.Where(l => l.Tipo == TipoLinea.AportePatronal))
+                                    {
+                                        <tr><td>@l.Concepto</td><td class="app-numero">@M(l.Monto)</td></tr>
+                                    }
+                                    <tr class="fw-bold"><td>Costo total para la empresa</td><td class="app-numero">@M(r.CostoEmpleador)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="app-tarjeta">
+                            <div class="app-tarjeta-titulo"><i class="bi bi-info-circle"></i> Bases</div>
+                            <table class="table app-tabla">
+                                <tbody>
+                                    <tr><td>Base TSS del período</td><td class="app-numero">@M(r.BaseTssPeriodo)</td></tr>
+                                    <tr><td>Base ISR mensual@(r.Periodo.Quincena == 1 ? " (proyectada)" : "")</td><td class="app-numero">@M(r.BaseIsrMensual)</td></tr>
+                                    <tr><td>Renta anual proyectada</td><td class="app-numero">@M(r.RentaAnualProyectada)</td></tr>
+                                    @if (res.PrimeraQuincena != null)
+                                    {
+                                        <tr><td>Neto de la 1.ª quincena (solo salario)</td><td class="app-numero">@M(res.PrimeraQuincena.Neto)</td></tr>
+                                        <tr><td>ISR retenido en la 1.ª quincena</td><td class="app-numero">@M(res.PrimeraQuincena.Monto(Codigos.Isr))</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="app-tarjeta">
+                    <div class="app-tarjeta-titulo"><i class="bi bi-list-ol"></i> Cómo se calculó <small>para revisarlo a mano</small></div>
+                    <div class="app-tarjeta-cuerpo">
+                        @if (res.PrimeraQuincena != null)
+                        {
+                            <div class="app-ayuda mb-2">Para la 2.ª quincena se calculó antes la 1.ª con solo el salario, y se usa lo retenido en ella.</div>
+                        }
+                        <ol class="mb-0" style="font-size:0.88rem; line-height:1.6;">
+                            @foreach (var paso in r.Explicacion)
+                            {
+                                <li>@paso</li>
+                            }
+                        </ol>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

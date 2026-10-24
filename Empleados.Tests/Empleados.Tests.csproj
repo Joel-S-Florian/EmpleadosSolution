@@ -23,6 +23,7 @@
     <ProjectReference Include="..\Empleados.Data\Empleados.Data.csproj" />
     <ProjectReference Include="..\Empleados.Mvc\Empleados.Mvc.csproj" />
     <ProjectReference Include="..\Empleados.Api\Empleados.Api.csproj" />
+    <ProjectReference Include="..\Empleados.Nomina\Empleados.Nomina.csproj" />
   </ItemGroup>
 
   <ItemGroup>

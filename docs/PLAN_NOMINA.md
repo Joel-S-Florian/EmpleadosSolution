@@ -140,8 +140,9 @@ Otros sectores (zonas francas, hoteles, construcción, vigilantes, agrícola) ti
 - **Hecho:** al marcar una nómina pagada se envía a cada empleado su recibo en PDF por correo (SMTP de la sección `Correo`; sin servidor configurado quedan como .eml en `../correos`), con registro de enviado o fallido y botón para reenviar. **Portal del empleado** (rol Empleado; el Admin da o quita el acceso desde la ficha, con contraseña temporal por correo): recibos pagados, saldo de vacaciones, solicitudes de vacaciones y permisos (llegan por aprobar a RRHH con aviso) y carta de trabajo en PDF. Un usuario del portal no entra a ninguna otra pantalla, y la API solo da token a Admin y RRHH. **Avisos:** nómina nueva lista para aprobar, y cada día cumpleaños, fin del período de prueba (3 meses) y vacaciones que vencen en 30 días.
 - **También:** página pública de inicio y acceso en español separados del sistema (sin la navegación interna).
 
-### Fase 3.8: Reportes
+### Fase 3.8: Reportes ✅ (24-oct-2026)
 - Nómina por departamento, costo patronal total, acumulados anuales por empleado (para la declaración y para Navidad), resumen TSS e ISR del mes, ausentismo, rotación y vacaciones pendientes.
+- **Hecho:** Nómina → Reportes de nómina: costo por departamento (con aportes del empleador), acumulados anuales por empleado, ausentismo, rotación mensual y vacaciones pendientes, sobre las nóminas aprobadas, con descarga en CSV (Excel) y PDF; API `/api/Reportes/nomina/{tipo}`. El resumen TSS e ISR del mes está en Archivos TSS y banco (Fase 3.6). El inicio del sistema muestra lo pendiente: nóminas y solicitudes por aprobar, liquidaciones en borrador, última nómina pagada y próximos feriados.
 - Exportación a Excel y PDF.
 
 **Orden recomendado:** 3.0 → 3.1 → 3.3 → 3.2 → 3.4 → 3.5 → 3.6 → 3.7 → 3.8. Primero calcular y pagar una nómina simple completa, de punta a punta; después enriquecerla.

@@ -232,7 +232,7 @@ public class IncidenciaService
     {
         var frecuencia = await _context.Empleados.Where(e => e.Id == incidencia.EmpleadoId).Select(e => e.FrecuenciaPago).FirstAsync();
         var nomina = await _context.Nominas.FirstOrDefaultAsync(n =>
-            n.EmpresaId == incidencia.EmpresaId && n.Frecuencia == frecuencia &&
+            n.EmpresaId == incidencia.EmpresaId && n.Tipo == TipoNomina.Regular && n.Frecuencia == frecuencia &&
             n.Estado != EstadoNomina.Borrador && n.Estado != EstadoNomina.Calculada &&
             n.FechaInicio <= incidencia.FechaFin && n.FechaFin >= incidencia.FechaInicio);
         return nomina?.Descripcion;

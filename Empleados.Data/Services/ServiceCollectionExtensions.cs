@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CicloNominaService>();
         services.AddScoped<PrestamoService>();
         services.AddScoped<IncidenciaService>();
+        services.AddScoped<BonificacionService>();
         return services;
     }
 }

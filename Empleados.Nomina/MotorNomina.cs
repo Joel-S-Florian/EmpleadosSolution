@@ -20,6 +20,7 @@ public static class Codigos
     public const string SfsPatronal = "SFS_PAT";
     public const string Srl = "SRL";
     public const string Infotep = "INFOTEP";
+    public const string SalarioNavidad = "NAVIDAD";
 }
 
 // Cálculo de un recibo de nómina (República Dominicana). Función pura: sin base de datos ni reloj.

@@ -53,7 +53,7 @@ public class CicloNominaService
     public async Task<Dictionary<int, decimal>> NetosAnterioresAsync(NominaPeriodo nomina)
     {
         var anterior = await _context.Nominas
-            .Where(n => n.EmpresaId == nomina.EmpresaId && n.Frecuencia == nomina.Frecuencia &&
+            .Where(n => n.EmpresaId == nomina.EmpresaId && n.Tipo == nomina.Tipo && n.Frecuencia == nomina.Frecuencia &&
                         (n.Anio < nomina.Anio || (n.Anio == nomina.Anio && (n.Mes < nomina.Mes || (n.Mes == nomina.Mes && n.Quincena < nomina.Quincena)))))
             .OrderByDescending(n => n.Anio).ThenByDescending(n => n.Mes).ThenByDescending(n => n.Quincena)
             .Select(n => n.Id)
@@ -69,7 +69,7 @@ public class CicloNominaService
             return Resultado<NominaPeriodo>.Fallo(Resultado.Invalido("Seleccione una empresa antes de crear la nómina"));
 
         var quincena = dto.Frecuencia == FrecuenciaPago.Mensual ? 0 : dto.Quincena;
-        if (await _context.Nominas.AnyAsync(n => n.EmpresaId == empresaId && n.Anio == dto.Anio && n.Mes == dto.Mes && n.Frecuencia == dto.Frecuencia && n.Quincena == quincena))
+        if (await _context.Nominas.AnyAsync(n => n.EmpresaId == empresaId && n.Tipo == TipoNomina.Regular && n.Anio == dto.Anio && n.Mes == dto.Mes && n.Frecuencia == dto.Frecuencia && n.Quincena == quincena))
             return Resultado<NominaPeriodo>.Fallo(Resultado.Invalido("Ya existe una nómina para ese período"));
 
         var periodo = NominaService.Periodo(dto.Frecuencia, dto.Anio, dto.Mes, Math.Max(quincena, 1));
@@ -94,6 +94,35 @@ public class CicloNominaService
             : Resultado<NominaPeriodo>.Con(nomina, $"Nómina creada, pero no se pudo calcular: {calculo.Mensaje}");
     }
 
+    // Regalía pascual del año: una nómina especial con todos los empleados activos
+    public async Task<Resultado<NominaPeriodo>> CrearSalarioNavidadAsync(int anio)
+    {
+        if (_contexto.EmpresaId is not int empresaId)
+            return Resultado<NominaPeriodo>.Fallo(Resultado.Invalido("Seleccione una empresa antes de crear la nómina"));
+        if (await _context.Nominas.AnyAsync(n => n.EmpresaId == empresaId && n.Tipo == TipoNomina.SalarioNavidad && n.Anio == anio))
+            return Resultado<NominaPeriodo>.Fallo(Resultado.Invalido($"Ya existe el Salario de Navidad {anio}"));
+
+        var nomina = new NominaPeriodo
+        {
+            EmpresaId = empresaId,
+            Tipo = TipoNomina.SalarioNavidad,
+            Anio = anio,
+            Mes = 12,
+            Frecuencia = FrecuenciaPago.Mensual,
+            FechaInicio = new DateTime(anio, 1, 1),
+            FechaFin = new DateTime(anio, 12, 31),
+            FechaCreacion = DateTime.Now,
+            CreadaPor = _contexto.UsuarioNombre
+        };
+        _context.Nominas.Add(nomina);
+        await _context.SaveChangesAsync();
+
+        var calculo = await CalcularAsync(nomina.Id);
+        return calculo.Ok
+            ? Resultado<NominaPeriodo>.Con(nomina, "Salario de Navidad creado y calculado")
+            : Resultado<NominaPeriodo>.Con(nomina, $"Salario de Navidad creado, pero no se pudo calcular: {calculo.Mensaje}");
+    }
+
     // Sincroniza los empleados del período y recalcula todos los recibos con los parámetros vigentes
     public async Task<Resultado> CalcularAsync(int id)
     {
@@ -102,6 +131,8 @@ public class CicloNominaService
             return Resultado.NoEncontrado("Nómina no encontrada");
         if (!nomina.Editable)
             return Resultado.Invalido($"La nómina está {nomina.Estado.ToString().ToLowerInvariant()}: ya no se puede recalcular");
+        if (nomina.Tipo == TipoNomina.SalarioNavidad)
+            return await CalcularSalarioNavidadAsync(nomina);
 
         var empresa = await _context.Empresas.FirstAsync(e => e.Id == nomina.EmpresaId);
         var (parametros, faltante) = await _nomina.ParametrosAsync(nomina.FechaFin, empresa.TasaRiesgoSrl);
@@ -115,7 +146,7 @@ public class CicloNominaService
         if (nomina.Frecuencia == FrecuenciaPago.Quincenal && nomina.Quincena == 2)
         {
             var primera = await _context.Nominas.Include(n => n.Recibos)
-                .FirstOrDefaultAsync(n => n.EmpresaId == nomina.EmpresaId && n.Anio == nomina.Anio && n.Mes == nomina.Mes &&
+                .FirstOrDefaultAsync(n => n.EmpresaId == nomina.EmpresaId && n.Tipo == TipoNomina.Regular && n.Anio == nomina.Anio && n.Mes == nomina.Mes &&
                                           n.Frecuencia == FrecuenciaPago.Quincenal && n.Quincena == 1);
             if (primera == null)
                 avisoSinPrimera = "No hay 1.ª quincena registrada en el sistema: la TSS y el ISR del mes se calculan solo con esta quincena";
@@ -181,6 +212,11 @@ public class CicloNominaService
                 acumulados?.GetValueOrDefault(recibo.EmpleadoId), avisoSinPrimera, disponibles.Where(x => x.Prestamo.EmpleadoId == recibo.EmpleadoId), nota);
         }
 
+        return await GuardarCalculoAsync(nomina);
+    }
+
+    private async Task<Resultado> GuardarCalculoAsync(NominaPeriodo nomina)
+    {
         nomina.TotalIngresos = nomina.Recibos.Sum(r => r.TotalIngresos);
         nomina.TotalDeducciones = nomina.Recibos.Sum(r => r.TotalDeduccionesLey + r.TotalDeduccionesInternas);
         nomina.TotalNeto = nomina.Recibos.Sum(r => r.Neto);
@@ -195,20 +231,66 @@ public class CicloNominaService
             : $"Nómina calculada: {nomina.Recibos.Count} recibos, {conErrores} con errores que impiden aprobarla");
     }
 
-    private static void Calcular(ReciboPago recibo, Empleado? empleado, PeriodoNomina periodo, ParametrosNomina parametros,
-        AcumuladoMes? acumulado, string? avisoSinPrimera, IEnumerable<(Prestamo Prestamo, decimal Disponible)> prestamos, string? notaIncidencias)
+    // Art. 219: 1/12 del salario ordinario del año; no cotiza a la TSS ni paga ISR
+    private async Task<Resultado> CalcularSalarioNavidadAsync(NominaPeriodo nomina)
+    {
+        // shortcut: los despedidos reciben la proporción en su liquidación (Fase 3.5), no aquí
+        var empleados = await _context.Empleados
+            .Include(e => e.Departamento).Include(e => e.PuestoNav).Include(e => e.Banco)
+            .Where(e => e.EmpresaId == nomina.EmpresaId && e.Estado != EstadoEmpleado.Despedido && e.FechaContratacion <= nomina.FechaFin)
+            .ToDictionaryAsync(e => e.Id);
+        foreach (var recibo in nomina.Recibos.Where(r => !empleados.ContainsKey(r.EmpleadoId)).ToList())
+            nomina.Recibos.Remove(recibo);
+        foreach (var empleado in empleados.Values.Where(e => nomina.Recibos.All(r => r.EmpleadoId != e.Id)))
+            nomina.Recibos.Add(new ReciboPago { EmpresaId = nomina.EmpresaId, EmpleadoId = empleado.Id, NombreEmpleado = $"{empleado.Nombre} {empleado.Apellido}" });
+
+        // Salario ordinario registrado (salario menos ausencias) en los meses que las nóminas cubren completos
+        var registros = await _context.RecibosPago
+            .Where(r => r.Nomina!.EmpresaId == nomina.EmpresaId && r.Nomina.Tipo == TipoNomina.Regular && r.Nomina.Anio == nomina.Anio)
+            .Select(r => new
+            {
+                r.EmpleadoId, r.Nomina!.Mes, r.Nomina.FechaInicio, r.Nomina.FechaFin,
+                Monto = r.Lineas.Where(l => l.Codigo == Codigos.Salario || l.Codigo == Codigos.Ausencia).Sum(l => l.Monto)
+            })
+            .ToListAsync();
+        var registrado = registros.GroupBy(x => x.EmpleadoId).ToDictionary(g => g.Key, g => g
+            .GroupBy(x => x.Mes)
+            .Where(m => m.Sum(x => (x.FechaFin - x.FechaInicio).Days + 1) >= DateTime.DaysInMonth(nomina.Anio, m.Key))
+            .ToDictionary(m => m.Key, m => m.Sum(x => x.Monto)));
+
+        foreach (var recibo in nomina.Recibos)
+        {
+            var empleado = empleados[recibo.EmpleadoId];
+            LimpiarRecibo(recibo);
+            CopiarEmpleado(recibo, empleado);
+            var calculo = PagosEspeciales.SalarioNavidad(nomina.Anio, empleado.FechaContratacion, empleado.Salario,
+                empleado.TipoSalario == TipoSalario.PorHora, registrado.GetValueOrDefault(empleado.Id) ?? new Dictionary<int, decimal>());
+            recibo.Lineas.Add(new LineaReciboPago
+            {
+                Orden = 1,
+                Tipo = TipoLinea.Ingreso.ToString(),
+                Codigo = Codigos.SalarioNavidad,
+                Concepto = "Salario de Navidad (art. 219)",
+                Monto = calculo.Monto
+            });
+            recibo.TotalIngresos = recibo.Neto = calculo.Monto;
+            recibo.ExplicacionJson = Json(calculo.Explicacion);
+            recibo.AdvertenciasJson = calculo.Advertencias.Count > 0 ? Json(calculo.Advertencias) : null;
+        }
+
+        return await GuardarCalculoAsync(nomina);
+    }
+
+    private static void LimpiarRecibo(ReciboPago recibo)
     {
         recibo.Lineas.Clear();
         recibo.TotalIngresos = recibo.TotalDeduccionesLey = recibo.TotalDeduccionesInternas = recibo.Neto = 0;
         recibo.TotalAportesPatronales = recibo.BaseTss = recibo.BaseIsrMensual = 0;
         recibo.AcumuladoJson = recibo.ExplicacionJson = recibo.AdvertenciasJson = recibo.ErroresJson = null;
+    }
 
-        if (empleado == null)
-        {
-            recibo.ErroresJson = Json(new[] { "El empleado ya no corresponde a esta nómina; quite sus novedades para retirarlo" });
-            return;
-        }
-
+    private static void CopiarEmpleado(ReciboPago recibo, Empleado empleado)
+    {
         recibo.NombreEmpleado = $"{empleado.Nombre} {empleado.Apellido}";
         recibo.Documento = empleado.NumeroDocumento;
         recibo.Nss = empleado.Nss;
@@ -218,6 +300,20 @@ public class CicloNominaService
         recibo.TipoSalario = empleado.TipoSalario;
         recibo.Banco = empleado.Banco?.Nombre;
         recibo.NumeroCuenta = empleado.NumeroCuenta;
+    }
+
+    private static void Calcular(ReciboPago recibo, Empleado? empleado, PeriodoNomina periodo, ParametrosNomina parametros,
+        AcumuladoMes? acumulado, string? avisoSinPrimera, IEnumerable<(Prestamo Prestamo, decimal Disponible)> prestamos, string? notaIncidencias)
+    {
+        LimpiarRecibo(recibo);
+
+        if (empleado == null)
+        {
+            recibo.ErroresJson = Json(new[] { "El empleado ya no corresponde a esta nómina; quite sus novedades para retirarlo" });
+            return;
+        }
+
+        CopiarEmpleado(recibo, empleado);
 
         var errores = NominaService.DatosFaltantes(empleado);
         var advertencias = new List<string>();
@@ -287,6 +383,8 @@ public class CicloNominaService
             return Resultado.NoEncontrado("Recibo no encontrado");
         if (!recibo.Nomina!.Editable)
             return Resultado.Invalido("La nómina ya fue aprobada: reábrala para cambiar novedades");
+        if (recibo.Nomina.Tipo != TipoNomina.Regular)
+            return Resultado.Invalido("Las novedades solo aplican a las nóminas regulares");
 
         var (ingresos, deducciones, error) = NominaService.Convertir(dto.OtrosIngresos, dto.Deducciones);
         if (error != null)

@@ -30,7 +30,7 @@ public class NominasController : ControllerBase
         var nominas = await _ciclo.ListarAsync();
         return Ok(nominas.Select(n => new
         {
-            n.Id, n.Anio, n.Mes, n.Quincena, n.Frecuencia, n.Estado, n.FechaInicio, n.FechaFin,
+            n.Id, n.Tipo, n.Descripcion, n.Anio, n.Mes, n.Quincena, n.Frecuencia, n.Estado, n.FechaInicio, n.FechaFin,
             Recibos = n.Recibos.Count, n.TotalIngresos, n.TotalDeducciones, n.TotalNeto, n.TotalAportesPatronales
         }));
     }
@@ -45,7 +45,7 @@ public class NominasController : ControllerBase
 
         return Ok(new
         {
-            n.Id, n.Anio, n.Mes, n.Quincena, n.Frecuencia, n.Estado, n.FechaInicio, n.FechaFin,
+            n.Id, n.Tipo, n.Descripcion, n.Anio, n.Mes, n.Quincena, n.Frecuencia, n.Estado, n.FechaInicio, n.FechaFin,
             n.TotalIngresos, n.TotalDeducciones, n.TotalNeto, n.TotalAportesPatronales,
             n.CreadaPor, n.FechaCalculo, n.AprobadaPor, n.FechaAprobacion, n.FechaPago, n.FechaCierre,
             Recibos = n.Recibos.OrderBy(r => r.NombreEmpleado).Select(Recibo)

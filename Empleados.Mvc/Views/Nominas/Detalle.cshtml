@@ -119,7 +119,7 @@
                                 }
                             </td>
                             <td class="text-end text-nowrap">
-                                @if (Model.Editable)
+                                @if (Model.Editable && Model.Tipo == TipoNomina.Regular)
                                 {
                                     <a asp-action="Novedades" asp-route-id="@r.Id" class="app-boton-sec py-1 px-2" title="Novedades"><i class="bi bi-pencil-square"></i></a>
                                 }

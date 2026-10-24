@@ -28,12 +28,17 @@
         .brand-text { font-size: 1.05rem; }
         .brand-sub { font-size: 0.7rem; color: var(--text-muted); font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; margin-top: -2px; }
         .sidebar-nav { padding: var(--space-md) var(--space-sm); flex: 1; }
-        .sidebar-nav .nav-section { font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); padding: 0.75rem 0.75rem 0.25rem; font-weight: 600; }
         .sidebar-nav .nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: var(--radius); color: var(--text-secondary); font-weight: 500; font-size: 0.9rem; text-decoration: none; border: 1px solid transparent; }
         .sidebar-nav .nav-link:hover { background: var(--bg-muted); color: var(--text-primary); border-color: var(--border-color); }
         .sidebar-nav .nav-link.active { background: var(--text-primary); color: var(--bg-sidebar); border-color: var(--text-primary); }
         [data-theme="dark"] .sidebar-nav .nav-link.active { background: var(--bg-muted); color: var(--text-primary); border-color: var(--border-color-strong); }
         .sidebar-nav .nav-link i { font-size: 1.05rem; width: 20px; text-align: center; opacity: 0.9; }
+        .sidebar-nav .nav-grupo summary { list-style: none; cursor: pointer; }
+        .sidebar-nav .nav-grupo summary::-webkit-details-marker { display: none; }
+        .sidebar-nav .nav-grupo summary.abierto { color: var(--text-primary); }
+        .sidebar-nav .nav-grupo[open] .nav-flecha { transform: rotate(180deg); }
+        .sidebar-nav .nav-flecha { font-size: 0.75rem !important; transition: transform 0.15s ease; }
+        .sidebar-nav .nav-sub { padding-left: 2.6rem; font-size: 0.85rem; }
         .sidebar-footer { padding: var(--space-md) var(--space-sm); border-top: 1px solid var(--border-color); }
         .main-wrapper { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .topbar { height: 56px; background: var(--bg-surface); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 var(--space-lg); position: sticky; top: 0; z-index: 10; backdrop-filter: blur(8px); }
@@ -69,54 +74,39 @@
                     </span>
                 </a>
             </div>
+            @{
+                var controlador = ViewContext.RouteData.Values["controller"]?.ToString();
+                string Activo(params string[] controladores) => controladores.Contains(controlador) ? "active" : "";
+                var gestionaNomina = User.IsInRole("Admin") || User.IsInRole("RRHH");
+                var enNomina = new[] { "Nominas", "Prestamos", "Incidencias", "Nomina" }.Contains(controlador);
+            }
             <nav class="sidebar-nav">
-                <div class="nav-section">General</div>
-                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-house"></i> Inicio
-                </a>
-                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Empleados" ? "active" : "")" asp-controller="Empleados" asp-action="Index">
-                    <i class="bi bi-people"></i> Empleados
-                </a>
-                @if (User.IsInRole("Admin"))
+                <a class="nav-link @Activo("Home")" asp-controller="Home" asp-action="Index"><i class="bi bi-house"></i> Inicio</a>
+                <a class="nav-link @Activo("Empleados")" asp-controller="Empleados" asp-action="Index"><i class="bi bi-people"></i> Empleados</a>
+                @if (gestionaNomina)
                 {
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Departamentos" ? "active" : "")" asp-controller="Departamentos" asp-action="Index">
-                        <i class="bi bi-building"></i> Departamentos
-                    </a>
-                }
-                @if (User.IsInRole("Admin") || User.IsInRole("RRHH"))
-                {
-                    <div class="nav-section" style="margin-top: 0.5rem;">Gestión</div>
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Puestos" ? "active" : "")" asp-controller="Puestos" asp-action="Index">
-                        <i class="bi bi-briefcase"></i> Puestos
-                    </a>
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Reportes" ? "active" : "")" asp-controller="Reportes" asp-action="Index">
-                        <i class="bi bi-bar-chart-line"></i> Reportes
-                    </a>
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notificaciones" ? "active" : "")" asp-controller="Notificaciones" asp-action="Index">
-                        <i class="bi bi-bell"></i> Notificaciones
-                    </a>
-                }
-                @if (User.IsInRole("Admin") || User.IsInRole("RRHH"))
-                {
-                    <div class="nav-section" style="margin-top: 0.5rem;">Nómina</div>
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Nominas" ? "active" : "")" asp-controller="Nominas" asp-action="Index">
-                        <i class="bi bi-cash-stack"></i> Nóminas
-                    </a>
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Prestamos" ? "active" : "")" asp-controller="Prestamos" asp-action="Index">
-                        <i class="bi bi-piggy-bank"></i> Préstamos
-                    </a>
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Nomina" ? "active" : "")" asp-controller="Nomina" asp-action="Simulador">
-                        <i class="bi bi-calculator"></i> Simulador
-                    </a>
+                    <details class="nav-grupo" open="@enNomina">
+                        <summary class="nav-link @(enNomina ? "abierto" : "")"><i class="bi bi-cash-stack"></i> Nómina <i class="bi bi-chevron-down ms-auto nav-flecha"></i></summary>
+                        <a class="nav-link nav-sub @Activo("Nominas")" asp-controller="Nominas" asp-action="Index">Nóminas</a>
+                        <a class="nav-link nav-sub @Activo("Incidencias")" asp-controller="Incidencias" asp-action="Index">Incidencias y vacaciones</a>
+                        <a class="nav-link nav-sub @Activo("Prestamos")" asp-controller="Prestamos" asp-action="Index">Préstamos</a>
+                        <a class="nav-link nav-sub @Activo("Nomina")" asp-controller="Nomina" asp-action="Simulador">Simulador</a>
+                    </details>
                 }
                 @if (User.IsInRole("Admin"))
                 {
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Empresas" ? "active" : "")" asp-controller="Empresas" asp-action="Index">
-                        <i class="bi bi-buildings"></i> Empresas
-                    </a>
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Parametros" ? "active" : "")" asp-controller="Parametros" asp-action="Index">
-                        <i class="bi bi-sliders"></i> Parámetros legales
-                    </a>
+                    <a class="nav-link @Activo("Departamentos")" asp-controller="Departamentos" asp-action="Index"><i class="bi bi-building"></i> Departamentos</a>
+                }
+                @if (gestionaNomina)
+                {
+                    <a class="nav-link @Activo("Puestos")" asp-controller="Puestos" asp-action="Index"><i class="bi bi-briefcase"></i> Puestos</a>
+                    <a class="nav-link @Activo("Reportes")" asp-controller="Reportes" asp-action="Index"><i class="bi bi-bar-chart-line"></i> Reportes</a>
+                    <a class="nav-link @Activo("Notificaciones")" asp-controller="Notificaciones" asp-action="Index"><i class="bi bi-bell"></i> Notificaciones</a>
+                }
+                @if (User.IsInRole("Admin"))
+                {
+                    <a class="nav-link @Activo("Empresas")" asp-controller="Empresas" asp-action="Index"><i class="bi bi-buildings"></i> Empresas</a>
+                    <a class="nav-link @Activo("Parametros")" asp-controller="Parametros" asp-action="Index"><i class="bi bi-sliders"></i> Parámetros legales</a>
                 }
             </nav>
             <div class="sidebar-footer">

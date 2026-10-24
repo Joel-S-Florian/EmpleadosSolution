@@ -3,6 +3,8 @@ using Empleados.Data.DTOs;
 using Empleados.Data.Entities;
 using Empleados.Nomina;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
@@ -157,9 +159,27 @@ public class CicloNominaService
             .Where(x => x.Disponible > 0)
             .ToList();
 
+        // Faltas, retardos y permisos sin goce aprobados que tocan el período
+        var incidencias = await _context.Incidencias
+            .Where(i => idsEmpleados.Contains(i.EmpleadoId) && i.Estado == EstadoIncidencia.Aprobada && i.Descontar &&
+                        i.FechaInicio <= nomina.FechaFin && i.FechaFin >= nomina.FechaInicio)
+            .ToListAsync();
+        var desdeFeriados = incidencias.Select(i => i.FechaInicio).DefaultIfEmpty(nomina.FechaInicio).Min();
+        var hastaFeriados = incidencias.Select(i => i.FechaFin).DefaultIfEmpty(nomina.FechaFin).Max();
+        var feriados = await _context.Feriados
+            .Where(f => f.Fecha >= desdeFeriados && f.Fecha <= hastaFeriados)
+            .Select(f => f.Fecha).ToListAsync();
+
         foreach (var recibo in nomina.Recibos)
+        {
+            var delEmpleado = incidencias.Where(i => i.EmpleadoId == recibo.EmpleadoId).OrderBy(i => i.FechaInicio).ToList();
+            recibo.DiasIncidencias = delEmpleado.Sum(i => IncidenciaService.DiasEnPeriodo(i, nomina.FechaInicio, nomina.FechaFin, feriados, parametros.HorasJornadaDiaria));
+            var nota = delEmpleado.Count == 0 ? null : "Incidencias aprobadas: " + string.Join("; ", delEmpleado.Select(i =>
+                $"{Texto(i.Tipo)} {i.FechaInicio:dd/MM}{(i.FechaFin > i.FechaInicio ? $"-{i.FechaFin:dd/MM}" : "")} " +
+                (i.Tipo == TipoIncidencia.Retardo ? $"{i.Horas:0.##} h" : $"{i.Dias:0.##} días"))) + $" = {recibo.DiasIncidencias:0.####} días a descontar";
             Calcular(recibo, empleados.GetValueOrDefault(recibo.EmpleadoId), periodo, parametros,
-                acumulados?.GetValueOrDefault(recibo.EmpleadoId), avisoSinPrimera, disponibles.Where(x => x.Prestamo.EmpleadoId == recibo.EmpleadoId));
+                acumulados?.GetValueOrDefault(recibo.EmpleadoId), avisoSinPrimera, disponibles.Where(x => x.Prestamo.EmpleadoId == recibo.EmpleadoId), nota);
+        }
 
         nomina.TotalIngresos = nomina.Recibos.Sum(r => r.TotalIngresos);
         nomina.TotalDeducciones = nomina.Recibos.Sum(r => r.TotalDeduccionesLey + r.TotalDeduccionesInternas);
@@ -176,7 +196,7 @@ public class CicloNominaService
     }
 
     private static void Calcular(ReciboPago recibo, Empleado? empleado, PeriodoNomina periodo, ParametrosNomina parametros,
-        AcumuladoMes? acumulado, string? avisoSinPrimera, IEnumerable<(Prestamo Prestamo, decimal Disponible)> prestamos)
+        AcumuladoMes? acumulado, string? avisoSinPrimera, IEnumerable<(Prestamo Prestamo, decimal Disponible)> prestamos, string? notaIncidencias)
     {
         recibo.Lineas.Clear();
         recibo.TotalIngresos = recibo.TotalDeduccionesLey = recibo.TotalDeduccionesInternas = recibo.Neto = 0;
@@ -212,7 +232,7 @@ public class CicloNominaService
         var entrada = NominaService.EntradaBase(empleado, periodo) with
         {
             HorasTrabajadas = recibo.HorasTrabajadas,
-            DiasAusenciaSinPago = recibo.DiasAusenciaSinPago,
+            DiasAusenciaSinPago = recibo.DiasAusenciaSinPago + recibo.DiasIncidencias,
             HorasExtra = recibo.HorasExtra,
             HorasExtraExceso = recibo.HorasExtraExceso,
             HorasNocturnas = recibo.HorasNocturnas,
@@ -248,7 +268,7 @@ public class CicloNominaService
             recibo.BaseTss = resultado.BaseTssPeriodo;
             recibo.BaseIsrMensual = resultado.BaseIsrMensual;
             recibo.AcumuladoJson = JsonSerializer.Serialize(resultado.AcumuladoAlCierre);
-            recibo.ExplicacionJson = Json(resultado.Explicacion);
+            recibo.ExplicacionJson = Json(notaIncidencias == null ? resultado.Explicacion : resultado.Explicacion.Prepend(notaIncidencias));
             advertencias.AddRange(resultado.Advertencias);
         }
         catch (ArgumentException ex)
@@ -390,4 +410,7 @@ public class CicloNominaService
     private static readonly JsonSerializerOptions OpcionesJson = new() { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
 
     private static string Json(IEnumerable<string> textos) => JsonSerializer.Serialize(textos, OpcionesJson);
+
+    private static string Texto(Enum valor) =>
+        valor.GetType().GetField(valor.ToString())?.GetCustomAttribute<DisplayAttribute>()?.GetName() ?? valor.ToString();
 }

@@ -108,6 +108,18 @@ public class ParametrosLegalesService
         return Resultado.Exito("Feriado registrado");
     }
 
+    // Agrega los feriados del año según la Ley 139-97 que aún no estén registrados en su fecha
+    public async Task<Resultado> GenerarFeriadosAsync(int anio)
+    {
+        var existentes = await _context.Feriados.Where(f => f.Fecha.Year == anio).Select(f => f.Fecha).ToListAsync();
+        var nuevos = Empleados.Nomina.CalendarioLaboral.Feriados(anio).Where(f => !existentes.Contains(f.Fecha)).ToList();
+        _context.Feriados.AddRange(nuevos.Select(f => new Feriado { Fecha = f.Fecha, Nombre = f.Nombre }));
+        await _context.SaveChangesAsync();
+        return Resultado.Exito(nuevos.Count == 0
+            ? $"Los feriados de {anio} ya estaban registrados"
+            : $"Se agregaron {nuevos.Count} feriados de {anio}; revise si el Ministerio de Trabajo publicó algún cambio");
+    }
+
     public async Task<Resultado> EliminarFeriadoAsync(int id)
     {
         var feriado = await _context.Feriados.FindAsync(id);

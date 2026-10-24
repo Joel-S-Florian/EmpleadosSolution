@@ -43,13 +43,15 @@ public class EmpleadosController : Controller
     }
 
     // GET: Empleados/Details/5
-    public async Task<IActionResult> Details(int id)
+    public async Task<IActionResult> Details(int id, [FromServices] IncidenciaService incidencias)
     {
         var empleado = await _empleados.ObtenerAsync(id);
         if (empleado == null)
             return NotFound();
 
         ViewBag.Historial = await _empleados.HistorialAsync(id);
+        ViewBag.Vacaciones = await incidencias.SaldoVacacionesAsync(id);
+        ViewBag.Incidencias = (await incidencias.ListarAsync(id)).Take(10).ToList();
         return View(empleado);
     }
 

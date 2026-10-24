@@ -153,6 +153,9 @@
             <i class="bi bi-calendar-event"></i> Feriados @Model.Anio
             <small>fecha en que se disfruta (con el traslado de la Ley 139-97 ya aplicado)</small>
             <span class="ms-auto d-flex gap-1">
+                <form asp-action="GenerarFeriados" asp-route-anio="@Model.Anio" method="post" class="d-inline">
+                    <button type="submit" class="app-boton-sec py-1 px-2" title="Agrega los feriados que falten según la Ley 139-97"><i class="bi bi-magic"></i> Generar @Model.Anio</button>
+                </form>
                 <a asp-action="Index" asp-route-anio="@(Model.Anio - 1)" class="app-boton-sec py-1 px-2" aria-label="Año anterior"><i class="bi bi-chevron-left"></i></a>
                 <a asp-action="Index" asp-route-anio="@(Model.Anio + 1)" class="app-boton-sec py-1 px-2" aria-label="Año siguiente"><i class="bi bi-chevron-right"></i></a>
             </span>

@@ -18,6 +18,10 @@
     <form asp-action="Novedades" asp-route-id="@recibo.Id" method="post" class="app-tarjeta">
         <div class="app-tarjeta-cuerpo">
             <div asp-validation-summary="All" class="app-resumen-error"></div>
+            @if (recibo.DiasIncidencias > 0)
+            {
+                <div class="app-ayuda mb-2"><i class="bi bi-calendar2-check"></i> Además se descuentan @recibo.DiasIncidencias.ToString("0.####") día(s) por <a asp-controller="Incidencias" asp-action="Index" asp-route-empleadoId="@recibo.EmpleadoId" asp-route-anio="@recibo.Nomina!.Anio" asp-route-mes="@recibo.Nomina.Mes">incidencias aprobadas</a>; no los repita aquí.</div>
+            }
             <div class="row g-2">
                 @if (recibo.TipoSalario == TipoSalario.PorHora)
                 {

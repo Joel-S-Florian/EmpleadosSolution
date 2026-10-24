@@ -32,6 +32,10 @@ Marca cada una con ✅ si es como lo haces, o anota cómo lo haces tú:
 10. **Deducciones internas** (préstamos, cooperativa): se aplican después de las de ley, en orden de prioridad, sin dejar el neto en negativo. Lo que no alcanza queda como aviso.
 11. **Redondeo:** cada monto se redondea a 2 decimales (0.005 sube).
 12. **Límite entre los tramos del 20 % y el 25 % del ISR:** la DGII publica 79,776 de cuota fija, pero el acumulado exacto da 79,774.80. El sistema usa la tabla publicada, igual que la DGII.
+13. **Días laborables de una incidencia:** se cuentan de lunes a viernes, sin feriados. Si la empresa trabaja sábados, los días se ajustan a mano. ¿Se cuenta el sábado como medio día?
+14. **Qué se descuenta por defecto:** faltas, retardos (horas ÷ 8 = fracción de día) y permisos sin goce. Las licencias (médica, maternidad, paternidad, luto, matrimonio) se pagan, salvo que se marque "descontar". ¿Se descuenta la licencia médica cuando la cubre el subsidio de la SISALRIL?
+15. **Saldo de vacaciones:** 14 días al cumplir de 1 a 4 años y 18 desde los 5 años (art. 177). El saldo es el del año de servicio en curso; lo que no se tomó el año anterior no pasa al siguiente. ¿Se permite arrastrar días?
+16. **Incidencia aprobada después de aprobar la nómina:** no cambia esa nómina; el sistema avisa para registrar el descuento como novedad en la siguiente.
 
 ## Casos
 Todos son del mes de **octubre 2026** y de empresas con SRL de 1.20 %.

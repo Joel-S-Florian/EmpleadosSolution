@@ -1,5 +1,7 @@
 # Sistema de Gestión de Empleados - ASP.NET Core
 
+[![CI](https://github.com/Joel-S-Florian/EmpleadosSolution/actions/workflows/ci.yml/badge.svg)](https://github.com/Joel-S-Florian/EmpleadosSolution/actions/workflows/ci.yml)
+
 Sistema completo para la gestión de recursos humanos desarrollado con ASP.NET Core 10. Implementa una arquitectura de tres capas con dos aplicaciones independientes (Web API y Web MVC) que comparten la misma base de datos a través de una Class Library. 
 
 El proyecto ha sido elevado a un estándar empresarial, incluyendo un rediseño completo de la interfaz con soporte nativo para modo claro/oscuro, accesibilidad WCAG AA, integridad referencial estricta y un conjunto robusto de pruebas unitarias.
@@ -103,6 +105,8 @@ Estos usuarios se crean al arrancar el MVC solo en desarrollo (contraseñas en `
 dotnet test
 ```
 *Nota: La suite de pruebas incluye 19 tests que validan agregaciones de reportes, integridad referencial de puestos, notificaciones, reglas de negocio (empleado despedido, correo y departamento) y la subida de fotos.*
+
+**CI:** cada push a `master` y cada PR ejecutan en GitHub Actions (`.github/workflows/ci.yml`) la compilación, los tests y una revisión de que el modelo de EF coincide con las migraciones desde la API y desde el MVC.
 
 ## Arquitectura
 

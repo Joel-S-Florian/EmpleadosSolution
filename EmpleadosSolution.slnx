@@ -5,5 +5,6 @@
   <Project Path="Empleados.Api/Empleados.Api.csproj" />
   <Project Path="Empleados.Data/Empleados.Data.csproj" />
   <Project Path="Empleados.Mvc/Empleados.Mvc.csproj" />
+  <Project Path="Empleados.Nomina/Empleados.Nomina.csproj" />
   <Project Path="Empleados.Tests/Empleados.Tests.csproj" />
 </Solution>

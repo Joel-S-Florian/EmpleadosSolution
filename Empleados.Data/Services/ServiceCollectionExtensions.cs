@@ -18,6 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DepartamentoService>();
         services.AddScoped<PuestoService>();
         services.AddScoped<ReporteService>();
+        services.AddScoped<NominaService>();
         return services;
     }
 }

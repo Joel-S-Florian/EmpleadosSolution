@@ -53,7 +53,7 @@ public class ParametrosLegalesTests
         var marzo2026 = new DateTime(2026, 3, 1);
 
         var vigentes = await servicio.VigentesAsync(marzo2026);
-        Assert.All(ClavesParametro.Descripciones.Keys, clave => Assert.Contains(vigentes, p => p.Clave == clave));
+        Assert.All(ClavesParametro.Descripciones.Keys.Except(ClavesParametro.Opcionales), clave => Assert.Contains(vigentes, p => p.Clave == clave));
         Assert.Equal(29988.00m, await servicio.SalarioMinimoAsync(TamanoEmpresa.Grande, marzo2026));
         // Antes del 1-feb-2026 no hay salario mínimo cargado (el tramo anterior no está en el sistema)
         Assert.Null(await servicio.SalarioMinimoAsync(TamanoEmpresa.Grande, new DateTime(2026, 1, 15)));

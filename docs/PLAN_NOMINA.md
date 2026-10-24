@@ -92,12 +92,13 @@ Otros sectores (zonas francas, hoteles, construcción, vigilantes, agrícola) ti
 - Historial de movimientos.
 - **Entregable:** empleados listos para calcular nómina, y una tabla de parámetros que el administrador puede actualizar sin programar.
 
-### Fase 3.1: Motor de cálculo de la nómina regular
+### Fase 3.1: Motor de cálculo de la nómina regular ✅ (24-oct-2026)
 - Salario del período (quincenal o mensual), con prorrateo por ingreso o salida a mitad de período.
 - Descuentos de ley: AFP y SFS del empleado con sus topes, e ISR. Aportes patronales: AFP, SFS, SRL e INFOTEP.
 - Horas extra (35 % y 100 %), recargo nocturno, feriados y descanso trabajado.
 - Deducciones internas: préstamos y avances en cuotas, cooperativa, embargos y pensiones alimenticias con orden de prelación.
 - **Entregable:** una librería probada con unos 30 casos golden, como salario en el tope del SFS, ingreso a mitad de quincena, ISR en cada tramo, o salario mínimo con horas extra.
+- **Hecho:** proyecto `Empleados.Nomina`, 12 casos golden y 20 pruebas de reglas, simulador (MVC y API) y [CASOS_NOMINA.md](CASOS_NOMINA.md) con las reglas a confirmar. Las deducciones internas se reciben como líneas del período; guardarlas como préstamos en cuotas pasa a la Fase 3.3, porque las cuotas se descuentan al cerrar una nómina. Los embargos y las pensiones alimenticias quedan pendientes de definir su prelación legal.
 
 ### Fase 3.2: Incidencias y asistencia
 - Faltas, retardos, permisos con o sin goce de sueldo, licencias (médica, maternidad, paternidad, luto, matrimonio).

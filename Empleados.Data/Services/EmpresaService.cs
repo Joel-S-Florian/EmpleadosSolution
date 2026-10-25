@@ -67,12 +67,14 @@ public class EmpresaService
         if (empresa == null)
             return Resultado.NoEncontrado("Empresa no encontrada");
 
-        var nuevos = usuarioIds.Distinct().ToHashSet();
+        // Los usuarios del portal del empleado se gestionan desde la ficha del empleado, no aquí
+        var delPortal = (await _context.Empleados.IgnoreQueryFilters().Where(e => e.UsuarioId != null).Select(e => e.UsuarioId!).ToListAsync()).ToHashSet();
+        var nuevos = usuarioIds.Distinct().Where(u => !delPortal.Contains(u)).ToHashSet();
         var existentes = await _context.Users.Where(u => nuevos.Contains(u.Id)).Select(u => u.Id).ToListAsync();
         if (existentes.Count != nuevos.Count)
             return Resultado.Invalido("Algún usuario no existe");
 
-        foreach (var acceso in empresa.Usuarios.Where(u => !nuevos.Contains(u.UsuarioId)).ToList())
+        foreach (var acceso in empresa.Usuarios.Where(u => !nuevos.Contains(u.UsuarioId) && !delPortal.Contains(u.UsuarioId)).ToList())
             empresa.Usuarios.Remove(acceso);
         foreach (var usuarioId in nuevos.Where(n => empresa.Usuarios.All(u => u.UsuarioId != n)))
             empresa.Usuarios.Add(new UsuarioEmpresa { UsuarioId = usuarioId, EmpresaId = id });

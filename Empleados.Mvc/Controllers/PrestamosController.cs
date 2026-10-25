@@ -57,9 +57,7 @@ public class PrestamosController : Controller
 
     private async Task<IActionResult> Mostrar(PrestamoDto nuevo, int? filtroEmpleado)
     {
-        var empleados = (await _empleados.ListarAsync(null, null, null, pageSize: 100)).Items
-            .Where(e => e.Estado != EstadoEmpleado.Despedido)
-            .OrderBy(e => e.Nombre).ThenBy(e => e.Apellido);
+        var empleados = await _empleados.ParaSeleccionAsync();
         ViewBag.Empleados = new SelectList(empleados.Select(e => new { e.Id, Texto = $"{e.Nombre} {e.Apellido}" }), "Id", "Texto", nuevo.EmpleadoId);
         ViewBag.Nuevo = nuevo;
         return View("Index", await _prestamos.ListarAsync(filtroEmpleado));

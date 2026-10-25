@@ -90,8 +90,7 @@ public class LiquidacionesController : Controller
 
     private async Task<IActionResult> Mostrar(LiquidacionDto nuevo)
     {
-        var empleados = (await _empleados.ListarAsync(null, null, null, pageSize: 100)).Items
-            .OrderBy(e => e.Nombre).ThenBy(e => e.Apellido);
+        var empleados = await _empleados.ParaSeleccionAsync(incluirDespedidos: true);
         ViewBag.Empleados = new SelectList(empleados.Select(e => new { e.Id, Texto = $"{e.Nombre} {e.Apellido}" }), "Id", "Texto", nuevo.EmpleadoId);
         ViewBag.Nuevo = nuevo;
         return View("Index", await _liquidaciones.ListarAsync());

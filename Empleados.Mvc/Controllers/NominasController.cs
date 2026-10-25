@@ -129,6 +129,16 @@ public class NominasController : Controller
         return File(pdf, "application/pdf", $"recibo-{recibo.Nomina!.Anio}-{recibo.Nomina.Mes:00}-{recibo.NombreEmpleado.Replace(' ', '-')}.pdf");
     }
 
+    // GET: Nominas/ResumenPdf/5 - una fila por empleado, con totales y firmas
+    public async Task<IActionResult> ResumenPdf(int id)
+    {
+        var nomina = await _ciclo.ObtenerAsync(id);
+        if (nomina == null)
+            return NotFound();
+        var empresa = await _context.Empresas.FirstAsync(e => e.Id == nomina.EmpresaId);
+        return File(ResumenNominaPdf.Generar(empresa, nomina), "application/pdf", $"resumen-nomina-{nomina.Anio}-{nomina.Mes:00}{(nomina.Quincena > 0 ? $"-q{nomina.Quincena}" : "")}.pdf");
+    }
+
     // GET: Nominas/RecibosPdf/5 (todos los recibos de la nómina)
     public async Task<IActionResult> RecibosPdf(int id)
     {

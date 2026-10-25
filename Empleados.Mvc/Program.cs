@@ -132,6 +132,16 @@ using (var scope = app.Services.CreateScope())
             }
             await db.SaveChangesAsync();
         }
+
+        // Empresa de demostración con un año de nóminas: dotnet run --project Empleados.Mvc -- --demo
+        if (args.Contains("--demo"))
+        {
+            var usuarios = new List<string>();
+            foreach (var seed in seedUsers)
+                if (await userManager.FindByEmailAsync(seed.Email) is { } usuario)
+                    usuarios.Add(usuario.Id);
+            Console.WriteLine(await DatosDemo.CrearAsync(db, usuarios));
+        }
     }
 }
 

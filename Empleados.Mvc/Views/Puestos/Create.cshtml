@@ -34,9 +34,22 @@
                     <textarea asp-for="Descripcion" class="form-control" rows="3" placeholder="Responsabilidades principales" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;"></textarea>
                     <span asp-validation-for="Descripcion" style="color: var(--danger); font-size:0.8rem;"></span>
                 </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label asp-for="SalarioMinimo" class="app-etiqueta">Salario mínimo (RD$)</label>
+                        <input asp-for="SalarioMinimo" type="number" step="0.01" min="0.01" class="form-control" placeholder="Sin mínimo" />
+                        <span asp-validation-for="SalarioMinimo" class="app-error"></span>
+                    </div>
+                    <div class="col-6">
+                        <label asp-for="SalarioMaximo" class="app-etiqueta">Salario máximo (RD$)</label>
+                        <input asp-for="SalarioMaximo" type="number" step="0.01" min="0.01" class="form-control" placeholder="Sin máximo" />
+                        <span asp-validation-for="SalarioMaximo" class="app-error"></span>
+                    </div>
+                    <div class="col-12 app-ayuda">Opcional. El salario fijo de los empleados de este puesto debe quedar dentro del rango.</div>
+                </div>
                 <div>
                     <label asp-for="DepartamentoId" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Departamento *</label>
-                    <select asp-for="DepartamentoId" class="form-select" asp-items="ViewBag.Departamentos" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;">
+                    <select data-smart-select asp-for="DepartamentoId" class="form-select" asp-items="ViewBag.Departamentos" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;">
                         <option value="">Seleccione departamento</option>
                     </select>
                     <span asp-validation-for="DepartamentoId" style="color: var(--danger); font-size:0.8rem;"></span>

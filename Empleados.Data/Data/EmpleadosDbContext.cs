@@ -112,6 +112,8 @@ public class EmpleadosDbContext : IdentityDbContext<IdentityUser>
         {
             entity.HasKey(p => p.Id);
             entity.Property(p => p.Nombre).IsRequired().HasMaxLength(100);
+            entity.Property(p => p.SalarioMinimo).HasPrecision(18, 2);
+            entity.Property(p => p.SalarioMaximo).HasPrecision(18, 2);
             entity.Property(p => p.Descripcion).HasMaxLength(500);
             entity.HasOne<Empresa>().WithMany().HasForeignKey(p => p.EmpresaId).OnDelete(DeleteBehavior.Restrict);
             entity.HasQueryFilter(p => !FiltrarPorEmpresa || p.EmpresaId == EmpresaActualId);

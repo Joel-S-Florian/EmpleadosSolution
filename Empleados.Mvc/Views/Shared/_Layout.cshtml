@@ -79,7 +79,7 @@
                 string Activo(params string[] controladores) => controladores.Contains(controlador) ? "active" : "";
                 var gestionaNomina = User.IsInRole("Admin") || User.IsInRole("RRHH");
                 var esPortal = User.IsInRole("Empleado") && !gestionaNomina;
-                var enNomina = new[] { "Nominas", "Prestamos", "Incidencias", "PagosEspeciales", "Liquidaciones", "Archivos", "ReportesNomina", "Nomina" }.Contains(controlador);
+                var enNomina = new[] { "Nominas", "Prestamos", "Incidencias", "PagosEspeciales", "Liquidaciones", "Archivos", "Nomina" }.Contains(controlador);
             }
             <nav class="sidebar-nav">
                 @if (esPortal)
@@ -101,7 +101,6 @@
                         <a class="nav-link nav-sub @Activo("PagosEspeciales")" asp-controller="PagosEspeciales" asp-action="Index">Navidad y bonificación</a>
                         <a class="nav-link nav-sub @Activo("Liquidaciones")" asp-controller="Liquidaciones" asp-action="Index">Liquidaciones</a>
                         <a class="nav-link nav-sub @Activo("Archivos")" asp-controller="Archivos" asp-action="Index">Archivos TSS y banco</a>
-                        <a class="nav-link nav-sub @Activo("ReportesNomina")" asp-controller="ReportesNomina" asp-action="Index">Reportes de nómina</a>
                         <a class="nav-link nav-sub @Activo("Prestamos")" asp-controller="Prestamos" asp-action="Index">Préstamos</a>
                         <a class="nav-link nav-sub @Activo("Nomina")" asp-controller="Nomina" asp-action="Simulador">Simulador</a>
                     </details>
@@ -141,10 +140,16 @@
                     @if (User.Identity != null && User.Identity.IsAuthenticated && !esPortal)
                     {
                         @await Component.InvokeAsync("SelectorEmpresa")
-                        <a class="icon-btn notif-btn" asp-controller="Notificaciones" asp-action="Index" title="Notificaciones" id="notif-bell" aria-label="Notificaciones">
-                            <i class="bi bi-bell"></i>
-                            <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.65rem; padding: 0.3em 0.45em;">0</span>
-                        </a>
+                        <div class="notif-contenedor">
+                            <button type="button" class="icon-btn notif-btn" title="Notificaciones" id="notif-bell" aria-label="Notificaciones" aria-haspopup="true" aria-expanded="false" aria-controls="notif-panel">
+                                <i class="bi bi-bell"></i>
+                                <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.65rem; padding: 0.3em 0.45em;">0</span>
+                            </button>
+                            <div class="notif-panel" id="notif-panel" hidden>
+                                @Html.AntiForgeryToken()
+                                <div class="notif-panel-cuerpo"><div class="notif-cargando">Cargando…</div></div>
+                            </div>
+                        </div>
                     }
                     <button class="icon-btn" id="theme-toggle" type="button" aria-label="Cambiar tema" title="Cambiar tema">
                         <i class="bi bi-sun" data-theme-icon="sun"></i>
@@ -171,6 +176,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/smart-select.js" asp-append-version="true"></script>
     <script>
         // Sidebar mobile toggle
         (function() {
@@ -182,6 +188,39 @@
             function close() { sidebar.classList.remove('open'); backdrop.classList.remove('show'); }
             toggle.addEventListener('click', () => sidebar.classList.contains('open') ? close() : open());
             backdrop.addEventListener('click', close);
+        })();
+        // Panel de notificaciones: se carga al abrirlo y se cierra al hacer clic fuera o con Escape
+        (function () {
+            const boton = document.getElementById('notif-bell');
+            const panel = document.getElementById('notif-panel');
+            if (!boton || !panel) return;
+            const cuerpo = panel.querySelector('.notif-panel-cuerpo');
+            const token = () => panel.querySelector('input[name="__RequestVerificationToken"]').value;
+            async function cargar() {
+                const res = await fetch('/Notificaciones/Panel', { credentials: 'same-origin' });
+                cuerpo.innerHTML = res.ok ? await res.text() : '<div class="notif-cargando">No se pudieron cargar.</div>';
+            }
+            async function enviar(url) {
+                const datos = new FormData();
+                datos.append('__RequestVerificationToken', token());
+                await fetch(url, { method: 'POST', body: datos, credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (window.actualizarNotificaciones) window.actualizarNotificaciones();
+            }
+            function cerrar() { panel.hidden = true; boton.setAttribute('aria-expanded', 'false'); }
+            boton.addEventListener('click', async () => {
+                if (!panel.hidden) return cerrar();
+                panel.hidden = false;
+                boton.setAttribute('aria-expanded', 'true');
+                await cargar();
+            });
+            document.addEventListener('mousedown', (e) => { if (!panel.hidden && !panel.contains(e.target) && !boton.contains(e.target)) cerrar(); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) { cerrar(); boton.focus(); } });
+            panel.addEventListener('click', async (e) => {
+                const todas = e.target.closest('[data-marcar-todas]');
+                const item = e.target.closest('[data-notificacion]');
+                if (todas) { e.preventDefault(); await enviar('/Notificaciones/MarcarTodasLeidas'); await cargar(); }
+                else if (item && item.dataset.leida === 'false') { await enviar('/Notificaciones/MarcarLeida/' + item.dataset.notificacion); item.dataset.leida = 'true'; item.classList.remove('notif-no-leida'); }
+            });
         })();
         // Polling notificaciones cada 30s
         (function () {
@@ -201,6 +240,7 @@
                     }
                 } catch (e) { /* silent */ }
             }
+            window.actualizarNotificaciones = updateNotifCount;
             updateNotifCount();
             setInterval(updateNotifCount, 30000);
         })();

@@ -60,6 +60,17 @@ public class NominasController : ControllerBase
         return recibo == null ? NotFound(new { mensaje = "Recibo no encontrado" }) : Ok(Recibo(recibo));
     }
 
+    // GET: api/Nominas/5/resumen-pdf
+    [HttpGet("{id}/resumen-pdf")]
+    public async Task<IActionResult> GetResumenPdf(int id)
+    {
+        var nomina = await _ciclo.ObtenerAsync(id);
+        if (nomina == null)
+            return NotFound(new { mensaje = "Nómina no encontrada" });
+        var empresa = await _context.Empresas.FirstAsync(e => e.Id == nomina.EmpresaId);
+        return File(ResumenNominaPdf.Generar(empresa, nomina), "application/pdf", $"resumen-nomina-{nomina.Id}.pdf");
+    }
+
     // GET: api/Nominas/recibos/7/pdf
     [HttpGet("recibos/{reciboId}/pdf")]
     public async Task<IActionResult> GetReciboPdf(int reciboId)

@@ -48,7 +48,7 @@ public class PuestosController : Controller
     [Authorize(Roles = "Admin")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Nombre,Descripcion,DepartamentoId")] Puesto puesto)
+    public async Task<IActionResult> Create([Bind("Nombre,Descripcion,DepartamentoId,SalarioMinimo,SalarioMaximo")] Puesto puesto)
     {
         if (ModelState.IsValid)
         {
@@ -78,7 +78,7 @@ public class PuestosController : Controller
     [Authorize(Roles = "Admin")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Descripcion,DepartamentoId")] Puesto puesto)
+    public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Descripcion,DepartamentoId,SalarioMinimo,SalarioMaximo")] Puesto puesto)
     {
         if (id != puesto.Id) return NotFound();
 
@@ -115,12 +115,12 @@ public class PuestosController : Controller
     public async Task<IActionResult> GetByDepartamento(int departamentoId)
     {
         var puestos = await _puestos.ListarAsync(departamentoId);
-        return Json(puestos.Select(p => new { id = p.Id, nombre = p.Nombre }));
+        return Json(puestos.Select(p => new { id = p.Id, nombre = p.Nombre, salarioMinimo = p.SalarioMinimo, salarioMaximo = p.SalarioMaximo }));
     }
 
     private async Task CargarDepartamentosAsync(int? seleccionado) =>
         ViewBag.Departamentos = new SelectList(await _departamentos.ListarAsync(), "Id", "Nombre", seleccionado);
 
     private static CrearPuestoDto ADto(Puesto p) =>
-        new() { Nombre = p.Nombre, Descripcion = p.Descripcion, DepartamentoId = p.DepartamentoId };
+        new() { Nombre = p.Nombre, Descripcion = p.Descripcion, DepartamentoId = p.DepartamentoId, SalarioMinimo = p.SalarioMinimo, SalarioMaximo = p.SalarioMaximo };
 }

@@ -90,6 +90,11 @@ dotnet run --project Empleados.Mvc
 ```
 - HTTPS: `https://localhost:7293`
 
+**Datos de demostración (solo desarrollo):** crea la empresa *Distribuidora del Caribe SRL* con 34 empleados, préstamos, incidencias, las nóminas de enero a octubre de 2026 calculadas con el motor real, la bonificación 2025 y dos liquidaciones. Octubre queda a medio ciclo para ver la aprobación. Si ya existe, no se duplica.
+```bash
+dotnet run --project Empleados.Mvc -- --demo
+```
+
 ## Credenciales de Prueba
 
 **Acceso Web MVC (Identity):**
@@ -104,7 +109,7 @@ Estos usuarios se crean al arrancar el MVC solo en desarrollo (contraseñas en `
 ```bash
 dotnet test
 ```
-*Nota: La suite de pruebas incluye 157 tests que validan los casos de nómina de [docs/CASOS_NOMINA.md](docs/CASOS_NOMINA.md), el motor de cálculo, reportes, integridad referencial, notificaciones, reglas de negocio, subida de fotos, aislamiento entre empresas, parámetros legales por vigencia, datos de nómina, historial de movimientos, feriados de la Ley 139-97, vacaciones, incidencias, Salario de Navidad, bonificación y prestaciones laborales.*
+*Nota: La suite de pruebas incluye 170 tests que validan los casos de nómina de [docs/CASOS_NOMINA.md](docs/CASOS_NOMINA.md), el motor de cálculo, reportes, integridad referencial, notificaciones, reglas de negocio, subida de fotos, aislamiento entre empresas, parámetros legales por vigencia, datos de nómina, historial de movimientos, feriados de la Ley 139-97, vacaciones, incidencias, Salario de Navidad, bonificación y prestaciones laborales.*
 
 **CI:** cada push a `master` y cada PR ejecutan en GitHub Actions (`.github/workflows/ci.yml`) la compilación, los tests y una revisión de que el modelo de EF coincide con las migraciones desde la API y desde el MVC.
 
@@ -138,7 +143,7 @@ En la pantalla **Nómina → Simulador** y en `POST /api/Nomina/simular` se prue
 
 **Portal del empleado:** desde la ficha del empleado, el Admin le da acceso (usuario con su correo y contraseña temporal). El empleado ve sus recibos pagados y su saldo de vacaciones, pide vacaciones o permisos y descarga su carta de trabajo. Al pagar una nómina, cada recibo se envía por correo; configure la sección `Correo` (Host, Puerto, Usuario, Clave, Remitente). Sin `Host`, los correos se guardan como archivos .eml en `../correos`.
 
-**Nómina → Reportes de nómina:** costo por departamento, acumulados anuales, ausentismo, rotación y vacaciones pendientes, en pantalla, CSV (Excel) o PDF.
+**Reportes:** 12 reportes de personal (plantilla, por departamento, cumpleaños, contratos por vencer), nómina (costo por departamento, detalle de una nómina, comparativo mensual, acumulados, préstamos) y asistencia (ausentismo, vacaciones pendientes, rotación), con filtros por año, mes, departamento, estado o nómina, y descarga en Excel (.xlsx), CSV o PDF. Cada nómina tiene además un **PDF resumen** con una fila por empleado.
 
 **Nómina → Incidencias** registra faltas, retardos, permisos, licencias y vacaciones (también colectivas). Al aprobarse, las faltas, los retardos y los permisos sin goce se descuentan solos en la nómina del período. Las vacaciones se validan contra el saldo del año de servicio, visible en la ficha del empleado. En **Parámetros legales** se generan los feriados de cualquier año con los traslados de la Ley 139-97.
 
@@ -180,7 +185,8 @@ Todos requieren token JWT, salvo el login. Crear, editar o eliminar departamento
 | POST | `/api/Incidencias/colectivas` | Vacaciones colectivas |
 | GET / POST / DELETE | `/api/Liquidaciones` · `/api/Liquidaciones/5` · `/5/pdf` · `/5/pagar?fechaPago=` | Liquidaciones de prestaciones (pagar: solo Admin) |
 | GET | `/api/Archivos/tss/2026/10` · `/txt` · `/api/Archivos/dispersion/5?bancoId=` · `/api/Archivos/planilla` | Autodeterminación TSS, pago al banco y planilla |
-| GET | `/api/Reportes/nomina/{tipo}?anio=&mes=` | Reportes de nómina (CostoPorDepartamento, AcumuladosAnuales, Ausentismo, Rotacion, VacacionesPendientes) |
+| GET | `/api/Reportes/catalogo` · `/api/Reportes/{tipo}?anio=&mes=&departamentoId=&estado=&nominaId=` | Catálogo de reportes y cada reporte en JSON |
+| GET | `/api/Nominas/5/resumen-pdf` | PDF resumen de la nómina |
 | POST | `/api/Nominas/5/enviar-recibos` | Reenvía los recibos por correo (al pagar se envían solos) |
 | POST | `/api/PagosEspeciales/salario-navidad?anio=` | Crea y calcula el Salario de Navidad |
 | GET / POST | `/api/PagosEspeciales/bonificacion?anioFiscal=&utilidad=` (`&nominaId=` al aplicar) | Reparto de la bonificación y su aplicación |

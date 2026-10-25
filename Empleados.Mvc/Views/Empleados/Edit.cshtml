@@ -3,132 +3,28 @@
     ViewData["Title"] = "Editar empleado";
 }
 
-<div style="max-width:900px; margin:0 auto;">
-    <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom: var(--space-lg);">
-        <a asp-action="Index" style="width:36px; height:36px; display:grid; place-items:center; border-radius: var(--radius); border:1px solid var(--border-color); background: var(--bg-surface); color: var(--text-secondary); text-decoration:none;"><i class="bi bi-arrow-left"></i></a>
-        <div>
-            <h1 style="font-size:1.25rem; font-weight:700; margin:0; letter-spacing:-0.02em;">Editar empleado</h1>
-            <p style="margin:0; color: var(--text-secondary); font-size:0.9rem;">@Model.Nombre @Model.Apellido · @Model.CorreoElectronico</p>
-        </div>
-    </div>
-
-    <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow:hidden;">
-        <div style="padding: var(--space-lg) var(--space-xl); border-bottom:1px solid var(--border-color); display:flex; align-items:center; gap:0.75rem;">
-            <span style="width:36px; height:36px; display:grid; place-items:center; background: var(--bg-muted); border:1px solid var(--border-color); border-radius: var(--radius); color: var(--text-secondary);"><i class="bi bi-pencil-square"></i></span>
+<div class="app-pagina">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <a asp-action="Details" asp-route-id="@ViewContext.RouteData.Values["id"]" class="app-icono" aria-label="Volver"><i class="bi bi-arrow-left"></i></a>
             <div>
-                <div style="font-weight:600; color: var(--text-primary);">Actualizar información</div>
-                <div style="font-size:0.8rem; color: var(--text-muted);">Modifica solo los campos necesarios</div>
+                <h1>Editar empleado</h1>
+                <p>@Model.Nombre @Model.Apellido · @Model.CorreoElectronico</p>
             </div>
         </div>
-
-        <form asp-action="Edit" asp-route-id="@ViewContext.RouteData.Values["id"]" style="padding: var(--space-xl);">
-            <div asp-validation-summary="ModelOnly" style="background: var(--danger-soft); border:1px solid var(--danger-border); color: var(--danger); border-radius: var(--radius); padding:0.75rem 1rem; margin-bottom: var(--space-lg); font-size:0.9rem;"></div>
-
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label asp-for="Nombre" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Nombre *</label>
-                    <input asp-for="Nombre" class="form-control" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;" />
-                    <span asp-validation-for="Nombre" style="color: var(--danger); font-size:0.8rem;"></span>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="Apellido" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Apellido *</label>
-                    <input asp-for="Apellido" class="form-control" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;" />
-                    <span asp-validation-for="Apellido" style="color: var(--danger); font-size:0.8rem;"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="FechaNacimiento" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Fecha nacimiento</label>
-                    <input asp-for="FechaNacimiento" type="date" class="form-control" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;" />
-                    <span asp-validation-for="FechaNacimiento" style="color: var(--danger); font-size:0.8rem;"></span>
-                </div>
-                <div class="col-md-8">
-                    <label asp-for="Direccion" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Dirección</label>
-                    <input asp-for="Direccion" class="form-control" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;" />
-                    <span asp-validation-for="Direccion" style="color: var(--danger); font-size:0.8rem;"></span>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="Telefono" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Teléfono</label>
-                    <input asp-for="Telefono" class="form-control" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;" />
-                    <span asp-validation-for="Telefono" style="color: var(--danger); font-size:0.8rem;"></span>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="CorreoElectronico" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Correo electrónico</label>
-                    <input asp-for="CorreoElectronico" class="form-control" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;" />
-                    <span asp-validation-for="CorreoElectronico" style="color: var(--danger); font-size:0.8rem;"></span>
-                </div>
-
-                <div class="col-12"><hr style="border-color: var(--border-color); margin: var(--space-sm) 0;" /></div>
-
-                <div class="col-md-6">
-                    <label asp-for="DepartamentoId" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Departamento *</label>
-                    <select asp-for="DepartamentoId" class="form-select" id="DepartamentoId" asp-items="ViewBag.Departamentos" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;">
-                        <option value="">Seleccione departamento</option>
-                    </select>
-                    <span asp-validation-for="DepartamentoId" style="color: var(--danger); font-size:0.8rem;"></span>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="PuestoId" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Puesto</label>
-                    <select asp-for="PuestoId" class="form-select" id="PuestoId" asp-items="ViewBag.Puestos" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;">
-                        <option value="">Seleccione puesto</option>
-                    </select>
-                    <span asp-validation-for="PuestoId" style="color: var(--danger); font-size:0.8rem;"></span>
-                </div>
-                <div class="col-md-3">
-                    <label asp-for="Salario" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Salario</label>
-                    <input asp-for="Salario" type="number" step="0.01" class="form-control" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;" />
-                    <span asp-validation-for="Salario" style="color: var(--danger); font-size:0.8rem;"></span>
-                </div>
-                <div class="col-md-3">
-                    <label asp-for="FechaContratacion" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Contratación</label>
-                    <input asp-for="FechaContratacion" type="date" class="form-control" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;" />
-                    <span asp-validation-for="FechaContratacion" style="color: var(--danger); font-size:0.8rem;"></span>
-                </div>
-            </div>
-
-            <partial name="_DatosNomina" model="Model" />
-
-            <div style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top: var(--space-xl); padding-top: var(--space-lg); border-top:1px solid var(--border-color);">
-                <a asp-action="Index" style="display:inline-flex; align-items:center; gap:0.4rem; background: var(--bg-surface); color: var(--text-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.6rem 1rem; font-weight:500; text-decoration:none;">Cancelar</a>
-                <button type="submit" style="display:inline-flex; align-items:center; gap:0.5rem; background: var(--text-primary); color: var(--bg-surface); border:1px solid var(--text-primary); border-radius: var(--radius); padding:0.6rem 1.2rem; font-weight:500; cursor:pointer;">
-                    <i class="bi bi-check-lg"></i> Guardar cambios
-                </button>
-            </div>
-        </form>
     </div>
+
+    <form asp-action="Edit" asp-route-id="@ViewContext.RouteData.Values["id"]" class="app-form-empleado">
+        <partial name="_FormEmpleado" model="Model" />
+        <div class="app-barra-acciones">
+            <span class="app-ayuda">Los campos con * son obligatorios</span>
+            <a asp-action="Details" asp-route-id="@ViewContext.RouteData.Values["id"]" class="app-boton-sec">Cancelar</a>
+            <button type="submit" class="app-boton"><i class="bi bi-check-lg"></i> Guardar cambios</button>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
-    <script>
-        async function cargarPuestosEdit(deptId, selectedId) {
-            const puestoSelect = document.getElementById('PuestoId');
-            if (!puestoSelect) return;
-            puestoSelect.innerHTML = '<option value="">Seleccione puesto</option>';
-            if (!deptId) return;
-            try {
-                const res = await fetch('/Puestos/GetByDepartamento?departamentoId=' + deptId, { credentials: 'same-origin' });
-                if (!res.ok) return;
-                const puestos = await res.json();
-                if (puestos.length === 0) {
-                    const opt = document.createElement('option');
-                    opt.value = ""; opt.textContent = "No hay puestos para este departamento"; opt.disabled = true;
-                    puestoSelect.appendChild(opt);
-                }
-                puestos.forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = p.id ?? p.Id;
-                    opt.textContent = p.nombre ?? p.Nombre;
-                    if (selectedId && opt.value == selectedId) opt.selected = true;
-                    puestoSelect.appendChild(opt);
-                });
-            } catch (e) { console.error(e); }
-        }
-        document.getElementById('DepartamentoId')?.addEventListener('change', function () {
-            cargarPuestosEdit(this.value, null);
-        });
-        (function() {
-            const dept = document.getElementById('DepartamentoId');
-            const selected = document.getElementById('PuestoId')?.value;
-            if (dept && dept.value) cargarPuestosEdit(dept.value, selected);
-        })();
-    </script>
+    <script src="~/js/empleado-form.js" asp-append-version="true"></script>
 }

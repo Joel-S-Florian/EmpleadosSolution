@@ -30,6 +30,24 @@ public class NotificacionesController : Controller
         return Json(new { count = await _notificaciones.ContarNoLeidasAsync(UsuarioActualId) });
     }
 
+    // GET: Notificaciones/Panel - las últimas, para el panel desplegable de la campana
+    [HttpGet]
+    public async Task<IActionResult> Panel()
+    {
+        return PartialView("_Panel", await _notificaciones.ListarAsync(UsuarioActualId, 8));
+    }
+
+    // POST: Notificaciones/MarcarTodasLeidas
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MarcarTodasLeidas()
+    {
+        await _notificaciones.MarcarTodasLeidasAsync(UsuarioActualId);
+        if (Request.Headers.XRequestedWith == "XMLHttpRequest")
+            return Json(new { success = true });
+        return RedirectToAction(nameof(Index));
+    }
+
     // POST: Notificaciones/MarcarLeida/5
     [HttpPost]
     [ValidateAntiForgeryToken]

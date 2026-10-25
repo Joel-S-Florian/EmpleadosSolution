@@ -1,0 +1,47 @@
+@model List<Notificacion>
+@{
+    var noLeidas = Model.Count(n => !n.Leida);
+    string Icono(TipoNotificacion tipo) => tipo switch
+    {
+        TipoNotificacion.Success => "bi-check-circle text-success",
+        TipoNotificacion.Warning => "bi-exclamation-triangle text-warning",
+        _ => "bi-info-circle text-primary"
+    };
+    string Hace(DateTime fecha)
+    {
+        var lapso = DateTime.Now - fecha;
+        return lapso.TotalMinutes < 1 ? "ahora"
+            : lapso.TotalMinutes < 60 ? $"hace {(int)lapso.TotalMinutes} min"
+            : lapso.TotalHours < 24 ? $"hace {(int)lapso.TotalHours} h"
+            : lapso.TotalDays < 7 ? $"hace {(int)lapso.TotalDays} día(s)"
+            : fecha.ToString("dd/MM/yyyy");
+    }
+}
+
+<div class="notif-cabecera">
+    <span>Notificaciones @if (noLeidas > 0) { <span class="app-chip ms-1">@noLeidas nueva(s)</span> }</span>
+    @if (noLeidas > 0)
+    {
+        <button type="button" data-marcar-todas>Marcar todas como leídas</button>
+    }
+</div>
+@if (!Model.Any())
+{
+    <div class="notif-cargando"><i class="bi bi-bell-slash"></i> No tiene notificaciones.</div>
+}
+else
+{
+    <ul class="notif-lista">
+        @foreach (var n in Model)
+        {
+            <li class="notif-item @(n.Leida ? "" : "notif-no-leida")" data-notificacion="@n.Id" data-leida="@(n.Leida ? "true" : "false")" title="@(n.Leida ? "" : "Clic para marcar como leída")">
+                <i class="bi @Icono(n.Tipo)" aria-hidden="true"></i>
+                <div>
+                    <div class="notif-texto">@n.Mensaje</div>
+                    <div class="notif-fecha">@Hace(n.FechaCreacion)</div>
+                </div>
+            </li>
+        }
+    </ul>
+}
+<a class="notif-pie" asp-controller="Notificaciones" asp-action="Index">Ver todas</a>

@@ -14,13 +14,11 @@
         </div>
     </div>
 
-    <form asp-action="Create" class="app-tarjeta">
-        <div class="app-tarjeta-cuerpo">
-            <partial name="_FormEmpresa" model="Model" />
-            <div class="app-acciones">
-                <a asp-action="Index" class="app-boton-sec">Cancelar</a>
-                <button type="submit" class="app-boton"><i class="bi bi-check-lg"></i> Guardar</button>
-            </div>
+    <form asp-action="Create">
+        <partial name="_FormEmpresa" model="Model" />
+        <div class="app-barra-acciones">
+            <a asp-action="Index" class="app-boton-sec">Cancelar</a>
+            <button type="submit" class="app-boton"><i class="bi bi-check-lg"></i> Crear empresa</button>
         </div>
     </form>
 </div>

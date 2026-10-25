@@ -2,6 +2,10 @@
 @{
     ViewData["Title"] = "Parámetros legales";
     var hoy = DateTime.Today.ToString("yyyy-MM-dd");
+    var seccion = Model.Seccion;
+    string N(decimal? v, string formato = "#,0.##") => v?.ToString(formato) ?? "—";
+    var exentoIsr = Model.EscalaIsr.FirstOrDefault()?.Hasta;
+    var proximoFeriado = Model.Feriados.FirstOrDefault(f => f.Fecha >= DateTime.Today);
 }
 
 <div class="app-pagina">
@@ -13,211 +17,306 @@
                 <p>Valores con fecha de vigencia. Una nómina siempre usa los vigentes en su período.</p>
             </div>
         </div>
-        <form method="get" class="d-flex align-items-end gap-2">
-            <div>
-                <label for="fecha" class="app-etiqueta">Ver vigentes al</label>
-                <input type="date" id="fecha" name="fecha" value="@Model.Fecha.ToString("yyyy-MM-dd")" class="form-control" />
-            </div>
-            <button type="submit" class="app-boton-sec">Ver</button>
-        </form>
     </div>
+
+    <nav class="app-subnav" aria-label="Apartados de parámetros legales">
+        @foreach (var s in ParametrosViewModel.Secciones)
+        {
+            <a asp-action="Index" asp-route-seccion="@s.Key" class="@(s.Key == seccion ? "activo" : "")" aria-current="@(s.Key == seccion ? "page" : null)"><i class="bi @s.Value.Icono"></i> @s.Value.Titulo</a>
+        }
+    </nav>
 
     <partial name="~/Views/Shared/Components/_Alertas.cshtml" />
 
-    <div class="app-aviso">
-        <i class="bi bi-info-circle"></i>
-        Los valores iniciales de 2026 provienen de fuentes secundarias. Verifíquelos con la DGII, la TSS y el Ministerio de Trabajo.
-        Un cambio de ley se registra como <strong>nueva vigencia</strong>; los valores anteriores no se modifican.
-    </div>
-
-    <div class="app-tarjeta">
-        <div class="app-tarjeta-titulo"><i class="bi bi-percent"></i> Vigentes al @Model.Fecha.ToString("dd/MM/yyyy")</div>
-        <div class="table-responsive">
-            <table class="table app-tabla">
-                <thead><tr><th>Parámetro</th><th class="app-numero">Valor</th><th>Desde</th><th>Fuente</th></tr></thead>
-                <tbody>
-                    @foreach (var p in Model.Vigentes)
-                    {
-                        <tr>
-                            <td>
-                                <div>@(ClavesParametro.Descripciones.TryGetValue(p.Clave, out var descripcion) ? descripcion : p.Clave)</div>
-                                <div class="app-ayuda">@p.Clave</div>
-                            </td>
-                            <td class="app-numero fw-semibold">@p.Valor.ToString("#,0.####")</td>
-                            <td>@p.VigenteDesde.ToString("dd/MM/yyyy")</td>
-                            <td class="app-ayuda">@p.Fuente</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <div class="app-tarjeta-cuerpo border-top">
-            <form asp-action="NuevaVigencia" method="post" class="row g-2 align-items-end">
-                <div class="col-md-4">
-                    <label for="clave" class="app-etiqueta">Parámetro</label>
-                    <select id="clave" name="clave" class="form-select" required>
-                        @foreach (var item in ClavesParametro.Descripciones)
-                        {
-                            <option value="@item.Key">@item.Value</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label for="valor" class="app-etiqueta">Nuevo valor</label>
-                    <input id="valor" name="valor" type="number" step="0.0001" min="0" class="form-control" required />
-                </div>
-                <div class="col-md-2">
-                    <label for="vigenteDesde" class="app-etiqueta">Vigente desde</label>
-                    <input id="vigenteDesde" name="vigenteDesde" type="date" value="@hoy" class="form-control" required />
-                </div>
-                <div class="col-md-2">
-                    <label for="fuente" class="app-etiqueta">Fuente</label>
-                    <input id="fuente" name="fuente" class="form-control" placeholder="Resolución, ley…" maxlength="300" />
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="app-boton w-100 justify-content-center"><i class="bi bi-plus-lg"></i> Nueva vigencia</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="row g-3">
-        <div class="col-lg-6">
-            <div class="app-tarjeta">
-                <div class="app-tarjeta-titulo"><i class="bi bi-receipt"></i> Escala anual ISR <small>vigente al @Model.Fecha.ToString("dd/MM/yyyy")</small></div>
-                <div class="table-responsive">
-                    <table class="table app-tabla">
-                        <thead><tr><th class="app-numero">Renta anual desde</th><th class="app-numero">Hasta</th><th class="app-numero">Tasa</th><th class="app-numero">Cuota fija</th></tr></thead>
-                        <tbody>
-                            @foreach (var t in Model.EscalaIsr)
-                            {
-                                <tr>
-                                    <td class="app-numero">@t.Desde.ToString("N2")</td>
-                                    <td class="app-numero">@(t.Hasta?.ToString("N2") ?? "en adelante")</td>
-                                    <td class="app-numero">@t.Tasa.ToString("0.##") %</td>
-                                    <td class="app-numero">@t.CuotaFija.ToString("N2")</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-                <div class="app-tarjeta-cuerpo app-ayuda border-top">
-                    ISR anual = cuota fija + (renta − desde) × tasa. La renta es el salario menos los aportes del empleado a AFP y SFS.
-                </div>
+    @if (seccion == "resumen")
+    {
+        <div class="row g-3">
+            <div class="col-md-6 col-xl-3">
+                <a asp-action="Index" asp-route-seccion="tss" class="app-tarjeta d-block text-decoration-none h-100 app-resumen">
+                    <div class="app-tarjeta-cuerpo">
+                        <span class="app-ayuda d-block"><i class="bi bi-shield-check"></i> Aportes del empleado</span>
+                        <div class="app-resumen-cifra">AFP @N(Model.Valor(ClavesParametro.AfpEmpleado)) % · SFS @N(Model.Valor(ClavesParametro.SfsEmpleado)) %</div>
+                        <span class="app-ayuda">Empleador: AFP @N(Model.Valor(ClavesParametro.AfpEmpleador)) % · SFS @N(Model.Valor(ClavesParametro.SfsEmpleador)) %</span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <a asp-action="Index" asp-route-seccion="tss" class="app-tarjeta d-block text-decoration-none h-100 app-resumen">
+                    <div class="app-tarjeta-cuerpo">
+                        <span class="app-ayuda d-block"><i class="bi bi-arrow-up-circle"></i> Salario mínimo cotizable</span>
+                        <div class="app-resumen-cifra">RD$ @N(Model.Valor(ClavesParametro.SalarioMinimoCotizable), "N2")</div>
+                        <span class="app-ayuda">Topes: AFP @N(Model.Valor(ClavesParametro.TopeAfpSalarios)) · SFS @N(Model.Valor(ClavesParametro.TopeSfsSalarios)) · SRL @N(Model.Valor(ClavesParametro.TopeSrlSalarios)) salarios</span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <a asp-action="Index" asp-route-seccion="isr" class="app-tarjeta d-block text-decoration-none h-100 app-resumen">
+                    <div class="app-tarjeta-cuerpo">
+                        <span class="app-ayuda d-block"><i class="bi bi-receipt"></i> ISR asalariado</span>
+                        <div class="app-resumen-cifra">Exento hasta RD$ @N(exentoIsr, "N2")</div>
+                        <span class="app-ayuda">@Model.EscalaIsr.Count tramos anuales</span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <a asp-action="Index" asp-route-seccion="feriados" class="app-tarjeta d-block text-decoration-none h-100 app-resumen">
+                    <div class="app-tarjeta-cuerpo">
+                        <span class="app-ayuda d-block"><i class="bi bi-calendar-event"></i> Próximo feriado</span>
+                        <div class="app-resumen-cifra">@(proximoFeriado?.Fecha.ToString("ddd d 'de' MMMM") ?? "—")</div>
+                        <span class="app-ayuda">@(proximoFeriado?.Nombre ?? $"{Model.Feriados.Count} feriados en {Model.Anio}")</span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <a asp-action="Index" asp-route-seccion="salarios" class="app-tarjeta d-block text-decoration-none h-100 app-resumen">
+                    <div class="app-tarjeta-cuerpo">
+                        <span class="app-ayuda d-block"><i class="bi bi-cash-coin"></i> Salarios mínimos</span>
+                        <div class="app-resumen-cifra">@(Model.SalariosMinimos.Any() ? Model.SalariosMinimos.Max(s => s.VigenteDesde).ToString("dd/MM/yyyy") : "—")</div>
+                        <span class="app-ayuda">Última vigencia registrada</span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <a asp-action="Index" asp-route-seccion="laboral" class="app-tarjeta d-block text-decoration-none h-100 app-resumen">
+                    <div class="app-tarjeta-cuerpo">
+                        <span class="app-ayuda d-block"><i class="bi bi-clock"></i> Jornada y recargos</span>
+                        <div class="app-resumen-cifra">÷ @N(Model.Valor(ClavesParametro.DivisorSalarioDiario)) · @N(Model.Valor(ClavesParametro.HorasJornadaDiaria)) h</div>
+                        <span class="app-ayuda">Horas extra +@N(Model.Valor(ClavesParametro.RecargoHoraExtra)) % · feriado +@N(Model.Valor(ClavesParametro.RecargoFeriado)) %</span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <a asp-action="Index" asp-route-seccion="historial" class="app-tarjeta d-block text-decoration-none h-100 app-resumen">
+                    <div class="app-tarjeta-cuerpo">
+                        <span class="app-ayuda d-block"><i class="bi bi-clock-history"></i> Historial</span>
+                        <div class="app-resumen-cifra">@Model.Historial.Count vigencias</div>
+                        <span class="app-ayuda">Todos los cambios registrados</span>
+                    </div>
+                </a>
             </div>
         </div>
-
-        <div class="col-lg-6">
-            <div class="app-tarjeta">
-                <div class="app-tarjeta-titulo"><i class="bi bi-cash-coin"></i> Salarios mínimos <small>sector privado no sectorizado</small></div>
-                <div class="table-responsive">
-                    <table class="table app-tabla">
-                        <thead><tr><th>Tamaño de empresa</th><th class="app-numero">Mensual (RD$)</th><th>Desde</th></tr></thead>
-                        <tbody>
-                            @foreach (var s in Model.SalariosMinimos)
-                            {
-                                <tr>
-                                    <td>@s.Tamano.Texto()</td>
-                                    <td class="app-numero">@s.Monto.ToString("N2")</td>
-                                    <td>@s.VigenteDesde.ToString("dd/MM/yyyy")</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-                <div class="app-tarjeta-cuerpo border-top">
-                    <form asp-action="NuevoSalarioMinimo" method="post" class="row g-2 align-items-end">
-                        <div class="col-4">
-                            <label for="tamano" class="app-etiqueta">Tamaño</label>
-                            <select id="tamano" name="tamano" asp-items="Html.GetEnumSelectList<TamanoEmpresa>()" class="form-select"></select>
-                        </div>
-                        <div class="col-3">
-                            <label for="monto" class="app-etiqueta">Monto</label>
-                            <input id="monto" name="monto" type="number" step="0.01" min="0.01" class="form-control" required />
-                        </div>
-                        <div class="col-3">
-                            <label for="smDesde" class="app-etiqueta">Desde</label>
-                            <input id="smDesde" name="vigenteDesde" type="date" value="@hoy" class="form-control" required />
-                        </div>
-                        <div class="col-2">
-                            <button type="submit" class="app-boton w-100 justify-content-center" title="Agregar"><i class="bi bi-plus-lg"></i></button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+        <div class="app-aviso mt-3">
+            <i class="bi bi-info-circle"></i>
+            Los valores iniciales de 2026 provienen de fuentes secundarias. Verifíquelos con la DGII, la TSS y el Ministerio de Trabajo.
+            Un cambio de ley se registra como <strong>nueva vigencia</strong>; los valores anteriores no se modifican.
         </div>
-    </div>
+    }
 
-    <div class="app-tarjeta">
-        <div class="app-tarjeta-titulo">
-            <i class="bi bi-calendar-event"></i> Feriados @Model.Anio
-            <small>fecha en que se disfruta (con el traslado de la Ley 139-97 ya aplicado)</small>
-            <span class="ms-auto d-flex gap-1">
-                <form asp-action="GenerarFeriados" asp-route-anio="@Model.Anio" method="post" class="d-inline">
-                    <button type="submit" class="app-boton-sec py-1 px-2" title="Agrega los feriados que falten según la Ley 139-97"><i class="bi bi-magic"></i> Generar @Model.Anio</button>
+    @if (seccion is "tss" or "laboral")
+    {
+        <div class="app-tarjeta">
+            <div class="app-tarjeta-titulo">
+                <i class="bi @ParametrosViewModel.Secciones[seccion].Icono"></i> @ParametrosViewModel.Secciones[seccion].Titulo
+                <form method="get" class="ms-auto d-flex align-items-center gap-2">
+                    <input type="hidden" name="seccion" value="@seccion" />
+                    <label for="fecha" class="app-ayuda mb-0 text-nowrap">Vigentes al</label>
+                    <input type="date" id="fecha" name="fecha" value="@Model.Fecha.ToString("yyyy-MM-dd")" class="form-control form-control-sm" onchange="this.form.submit()" />
                 </form>
-                <a asp-action="Index" asp-route-anio="@(Model.Anio - 1)" class="app-boton-sec py-1 px-2" aria-label="Año anterior"><i class="bi bi-chevron-left"></i></a>
-                <a asp-action="Index" asp-route-anio="@(Model.Anio + 1)" class="app-boton-sec py-1 px-2" aria-label="Año siguiente"><i class="bi bi-chevron-right"></i></a>
-            </span>
+            </div>
+            <div class="table-responsive">
+                <table class="table app-tabla">
+                    <thead><tr><th>Parámetro</th><th class="app-numero">Valor</th><th>Desde</th><th>Fuente</th></tr></thead>
+                    <tbody>
+                        @foreach (var p in Model.VigentesDe(seccion))
+                        {
+                            <tr>
+                                <td>
+                                    <div>@(ClavesParametro.Descripciones.TryGetValue(p.Clave, out var descripcion) ? descripcion : p.Clave)</div>
+                                    <div class="app-ayuda">@p.Clave</div>
+                                </td>
+                                <td class="app-numero fw-semibold">@p.Valor.ToString("#,0.####")</td>
+                                <td>@p.VigenteDesde.ToString("dd/MM/yyyy")</td>
+                                <td class="app-ayuda">@p.Fuente</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="app-tarjeta-cuerpo border-top">
+                <div class="fw-semibold mb-2">Registrar una nueva vigencia</div>
+                <form asp-action="NuevaVigencia" method="post" class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label for="clave" class="app-etiqueta">Parámetro</label>
+                        <select data-smart-select id="clave" name="clave" class="form-select" required>
+                            @foreach (var item in ClavesParametro.Descripciones.Where(d => (seccion == "laboral") == d.Key.StartsWith("Laboral.")))
+                            {
+                                <option value="@item.Key">@item.Value</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="valor" class="app-etiqueta">Nuevo valor</label>
+                        <input id="valor" name="valor" type="number" step="0.0001" min="0" class="form-control" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label for="vigenteDesde" class="app-etiqueta">Vigente desde</label>
+                        <input id="vigenteDesde" name="vigenteDesde" type="date" value="@hoy" class="form-control" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label for="fuente" class="app-etiqueta">Fuente</label>
+                        <input id="fuente" name="fuente" class="form-control" placeholder="Resolución, ley…" maxlength="300" />
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="app-boton w-100 justify-content-center"><i class="bi bi-plus-lg"></i> Registrar</button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="table-responsive">
-            <table class="table app-tabla">
-                <thead><tr><th>Fecha</th><th>Día</th><th>Feriado</th><th class="text-end"></th></tr></thead>
-                <tbody>
-                    @if (!Model.Feriados.Any())
-                    {
-                        <tr><td colspan="4" class="app-ayuda">No hay feriados registrados para @Model.Anio.</td></tr>
-                    }
-                    @foreach (var f in Model.Feriados)
-                    {
-                        <tr>
-                            <td>@f.Fecha.ToString("dd/MM/yyyy")</td>
-                            <td>@f.Fecha.ToString("dddd")</td>
-                            <td>@f.Nombre</td>
-                            <td class="text-end">
-                                <form asp-action="EliminarFeriado" asp-route-id="@f.Id" asp-route-anio="@Model.Anio" method="post" class="d-inline">
-                                    <button type="submit" class="app-boton-peligro" title="Eliminar" onclick="return confirm('¿Eliminar este feriado?')"><i class="bi bi-trash"></i></button>
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <div class="app-tarjeta-cuerpo border-top">
-            <form asp-action="NuevoFeriado" method="post" class="row g-2 align-items-end">
-                <div class="col-md-3">
-                    <label for="feriadoFecha" class="app-etiqueta">Fecha</label>
-                    <input id="feriadoFecha" name="fecha" type="date" class="form-control" required />
-                </div>
-                <div class="col-md-6">
-                    <label for="feriadoNombre" class="app-etiqueta">Nombre</label>
-                    <input id="feriadoNombre" name="nombre" class="form-control" maxlength="100" required />
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="app-boton w-100 justify-content-center"><i class="bi bi-plus-lg"></i> Agregar feriado</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    }
 
-    <details class="app-tarjeta">
-        <summary class="app-tarjeta-titulo" style="cursor:pointer;"><i class="bi bi-clock-history"></i> Historial de vigencias (@Model.Historial.Count)</summary>
-        <div class="table-responsive">
-            <table class="table app-tabla">
-                <thead><tr><th>Clave</th><th class="app-numero">Valor</th><th>Desde</th><th>Fuente</th></tr></thead>
-                <tbody>
-                    @foreach (var p in Model.Historial)
-                    {
-                        <tr>
-                            <td>@p.Clave</td>
-                            <td class="app-numero">@p.Valor.ToString("#,0.####")</td>
-                            <td>@p.VigenteDesde.ToString("dd/MM/yyyy")</td>
-                            <td class="app-ayuda">@p.Fuente</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    @if (seccion == "isr")
+    {
+        <div class="app-tarjeta">
+            <div class="app-tarjeta-titulo">
+                <i class="bi bi-receipt"></i> Escala anual del ISR
+                <form method="get" class="ms-auto d-flex align-items-center gap-2">
+                    <input type="hidden" name="seccion" value="isr" />
+                    <label for="fechaIsr" class="app-ayuda mb-0 text-nowrap">Vigente al</label>
+                    <input type="date" id="fechaIsr" name="fecha" value="@Model.Fecha.ToString("yyyy-MM-dd")" class="form-control form-control-sm" onchange="this.form.submit()" />
+                </form>
+            </div>
+            <div class="table-responsive">
+                <table class="table app-tabla">
+                    <thead><tr><th class="app-numero">Renta anual desde</th><th class="app-numero">Hasta</th><th class="app-numero">Tasa</th><th class="app-numero">Cuota fija</th></tr></thead>
+                    <tbody>
+                        @foreach (var t in Model.EscalaIsr)
+                        {
+                            <tr>
+                                <td class="app-numero">@t.Desde.ToString("N2")</td>
+                                <td class="app-numero">@(t.Hasta?.ToString("N2") ?? "en adelante")</td>
+                                <td class="app-numero">@t.Tasa.ToString("0.##") %</td>
+                                <td class="app-numero">@t.CuotaFija.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="app-tarjeta-cuerpo app-ayuda border-top">
+                ISR anual = cuota fija + (renta − desde) × tasa. La renta es el salario menos los aportes del empleado a AFP y SFS.
+            </div>
         </div>
-    </details>
+    }
+
+    @if (seccion == "salarios")
+    {
+        <div class="app-tarjeta">
+            <div class="app-tarjeta-titulo"><i class="bi bi-cash-coin"></i> Salarios mínimos <small>sector privado no sectorizado</small></div>
+            <div class="table-responsive">
+                <table class="table app-tabla">
+                    <thead><tr><th>Tamaño de empresa</th><th class="app-numero">Mensual (RD$)</th><th>Desde</th></tr></thead>
+                    <tbody>
+                        @foreach (var s in Model.SalariosMinimos)
+                        {
+                            <tr>
+                                <td>@s.Tamano.Texto()</td>
+                                <td class="app-numero">@s.Monto.ToString("N2")</td>
+                                <td>@s.VigenteDesde.ToString("dd/MM/yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="app-tarjeta-cuerpo border-top">
+                <form asp-action="NuevoSalarioMinimo" method="post" class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label for="tamano" class="app-etiqueta">Tamaño</label>
+                        <select id="tamano" name="tamano" asp-items="Html.GetEnumSelectList<TamanoEmpresa>()" class="form-select"></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="monto" class="app-etiqueta">Monto</label>
+                        <input id="monto" name="monto" type="number" step="0.01" min="0.01" class="form-control" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="smDesde" class="app-etiqueta">Desde</label>
+                        <input id="smDesde" name="vigenteDesde" type="date" value="@hoy" class="form-control" required />
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="app-boton w-100 justify-content-center"><i class="bi bi-plus-lg"></i> Agregar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    @if (seccion == "feriados")
+    {
+        <div class="app-tarjeta">
+            <div class="app-tarjeta-titulo">
+                <i class="bi bi-calendar-event"></i> Feriados @Model.Anio
+                <small>fecha en que se disfruta (con el traslado de la Ley 139-97 ya aplicado)</small>
+                <span class="ms-auto d-flex gap-1">
+                    <form asp-action="GenerarFeriados" asp-route-anio="@Model.Anio" method="post" class="d-inline">
+                        <button type="submit" class="app-boton-sec py-1 px-2" title="Agrega los feriados que falten según la Ley 139-97"><i class="bi bi-magic"></i> Generar @Model.Anio</button>
+                    </form>
+                    <a asp-action="Index" asp-route-seccion="feriados" asp-route-anio="@(Model.Anio - 1)" class="app-boton-sec py-1 px-2" aria-label="Año anterior"><i class="bi bi-chevron-left"></i></a>
+                    <a asp-action="Index" asp-route-seccion="feriados" asp-route-anio="@(Model.Anio + 1)" class="app-boton-sec py-1 px-2" aria-label="Año siguiente"><i class="bi bi-chevron-right"></i></a>
+                </span>
+            </div>
+            <div class="table-responsive">
+                <table class="table app-tabla">
+                    <thead><tr><th>Fecha</th><th>Día</th><th>Feriado</th><th class="text-end"></th></tr></thead>
+                    <tbody>
+                        @if (!Model.Feriados.Any())
+                        {
+                            <tr><td colspan="4" class="app-ayuda">No hay feriados registrados para @Model.Anio. Use "Generar @Model.Anio".</td></tr>
+                        }
+                        @foreach (var f in Model.Feriados)
+                        {
+                            <tr class="@(f.Fecha < DateTime.Today ? "app-pasado" : "")">
+                                <td>@f.Fecha.ToString("dd/MM/yyyy")</td>
+                                <td>@f.Fecha.ToString("dddd")</td>
+                                <td>@f.Nombre</td>
+                                <td class="text-end">
+                                    <form asp-action="EliminarFeriado" asp-route-id="@f.Id" asp-route-anio="@Model.Anio" method="post" class="d-inline">
+                                        <button type="submit" class="app-boton-peligro" title="Eliminar" aria-label="Eliminar @f.Nombre" onclick="return confirm('¿Eliminar este feriado?')"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="app-tarjeta-cuerpo border-top">
+                <form asp-action="NuevoFeriado" method="post" class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label for="feriadoFecha" class="app-etiqueta">Fecha</label>
+                        <input id="feriadoFecha" name="fecha" type="date" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="feriadoNombre" class="app-etiqueta">Nombre</label>
+                        <input id="feriadoNombre" name="nombre" class="form-control" maxlength="100" required />
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="app-boton w-100 justify-content-center"><i class="bi bi-plus-lg"></i> Agregar feriado</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    @if (seccion == "historial")
+    {
+        <div class="app-tarjeta">
+            <div class="app-tarjeta-titulo"><i class="bi bi-clock-history"></i> Historial de vigencias <small>@Model.Historial.Count registros</small></div>
+            <div class="table-responsive">
+                <table class="table app-tabla">
+                    <thead><tr><th>Parámetro</th><th class="app-numero">Valor</th><th>Desde</th><th>Fuente</th></tr></thead>
+                    <tbody>
+                        @foreach (var p in Model.Historial)
+                        {
+                            <tr>
+                                <td>
+                                    <div>@(ClavesParametro.Descripciones.TryGetValue(p.Clave, out var descripcion) ? descripcion : p.Clave)</div>
+                                    <div class="app-ayuda">@p.Clave</div>
+                                </td>
+                                <td class="app-numero">@p.Valor.ToString("#,0.####")</td>
+                                <td>@p.VigenteDesde.ToString("dd/MM/yyyy")</td>
+                                <td class="app-ayuda">@p.Fuente</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
 </div>

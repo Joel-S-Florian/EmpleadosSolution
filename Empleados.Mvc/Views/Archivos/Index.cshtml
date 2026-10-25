@@ -91,13 +91,13 @@
             <form asp-action="Dispersion" method="get" class="row g-2 align-items-end">
                 <div class="col-md-4">
                     <label for="nominaId" class="app-etiqueta">Nómina aprobada</label>
-                    <select id="nominaId" name="nominaId" asp-items="ViewBag.Nominas" class="form-select" required>
+                    <select data-smart-select id="nominaId" name="nominaId" asp-items="ViewBag.Nominas" class="form-select" required>
                         <option value="">Seleccione…</option>
                     </select>
                 </div>
                 <div class="col-md-4">
                     <label for="bancoId" class="app-etiqueta">Banco</label>
-                    <select id="bancoId" name="bancoId" asp-items="ViewBag.Bancos" class="form-select">
+                    <select data-smart-select id="bancoId" name="bancoId" asp-items="ViewBag.Bancos" class="form-select">
                         <option value="">Todos los bancos</option>
                     </select>
                 </div>

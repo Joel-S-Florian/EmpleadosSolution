@@ -75,6 +75,13 @@ public class EmpleadoService
             .ThenByDescending(m => m.Id)
             .ToListAsync();
 
+    // Para las listas de selección: todos, del ingreso más reciente al más antiguo
+    public Task<List<Empleado>> ParaSeleccionAsync(bool incluirDespedidos = false) =>
+        _context.Empleados
+            .Where(e => incluirDespedidos || e.Estado != EstadoEmpleado.Despedido)
+            .OrderByDescending(e => e.FechaContratacion).ThenByDescending(e => e.Id)
+            .ToListAsync();
+
     public Task<List<Banco>> BancosAsync() =>
         _context.Bancos.OrderBy(b => b.Nombre).ToListAsync();
 

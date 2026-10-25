@@ -55,7 +55,7 @@
             <form asp-action="NuevaVigencia" method="post" class="row g-2 align-items-end">
                 <div class="col-md-4">
                     <label for="clave" class="app-etiqueta">Parámetro</label>
-                    <select id="clave" name="clave" class="form-select" required>
+                    <select data-smart-select id="clave" name="clave" class="form-select" required>
                         @foreach (var item in ClavesParametro.Descripciones)
                         {
                             <option value="@item.Key">@item.Value</option>

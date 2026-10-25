@@ -53,9 +53,7 @@ public class NominaController : Controller
         while (entrada.Deducciones.Count < FilasAdicionales)
             entrada.Deducciones.Add(new DeduccionSimuladaDto());
 
-        var activos = (await _empleados.ListarAsync(null, null, null, pageSize: 100)).Items
-            .Where(e => e.Estado != EstadoEmpleado.Despedido)
-            .OrderBy(e => e.Nombre).ThenBy(e => e.Apellido);
+        var activos = await _empleados.ParaSeleccionAsync();
         ViewBag.Empleados = new SelectList(
             activos.Select(e => new { e.Id, Texto = $"{e.Nombre} {e.Apellido} · {e.FrecuenciaPago.Texto()} · RD${e.Salario:N2}{(e.TipoSalario == TipoSalario.PorHora ? "/h" : "")}" }),
             "Id", "Texto", entrada.EmpleadoId);

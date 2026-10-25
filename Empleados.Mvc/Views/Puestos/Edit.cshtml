@@ -37,7 +37,7 @@
                 </div>
                 <div>
                     <label asp-for="DepartamentoId" style="font-size:0.8rem; font-weight:600; color: var(--text-secondary); letter-spacing:0.02em; margin-bottom:0.35rem; display:block;">Departamento *</label>
-                    <select asp-for="DepartamentoId" class="form-select" asp-items="ViewBag.Departamentos" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;">
+                    <select data-smart-select asp-for="DepartamentoId" class="form-select" asp-items="ViewBag.Departamentos" style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); padding:0.55rem 0.75rem;">
                         <option value="">Seleccione departamento</option>
                     </select>
                     <span asp-validation-for="DepartamentoId" style="color: var(--danger); font-size:0.8rem;"></span>

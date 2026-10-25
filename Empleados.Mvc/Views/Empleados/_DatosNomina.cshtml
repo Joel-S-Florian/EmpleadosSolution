@@ -61,7 +61,7 @@
         </div>
         <div class="col-md-5">
             <label asp-for="BancoId" class="app-etiqueta">Banco</label>
-            <select asp-for="BancoId" asp-items="ViewBag.Bancos" class="form-select">
+            <select data-smart-select asp-for="BancoId" asp-items="ViewBag.Bancos" class="form-select">
                 <option value="">Sin cuenta (pago por cheque o efectivo)</option>
             </select>
             <span asp-validation-for="BancoId" class="app-error"></span>

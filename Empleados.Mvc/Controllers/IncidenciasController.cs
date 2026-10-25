@@ -81,9 +81,7 @@ public class IncidenciasController : Controller
     private async Task<IActionResult> Mostrar(IncidenciaDto nuevo, int? anio, int? mes, EstadoIncidencia? estado, int? empleadoId)
     {
         var desde = new DateTime(anio ?? DateTime.Today.Year, mes ?? DateTime.Today.Month, 1);
-        var empleados = (await _empleados.ListarAsync(null, null, null, pageSize: 100)).Items
-            .Where(e => e.Estado != EstadoEmpleado.Despedido)
-            .OrderBy(e => e.Nombre).ThenBy(e => e.Apellido)
+        var empleados = (await _empleados.ParaSeleccionAsync())
             .Select(e => new { e.Id, Texto = $"{e.Nombre} {e.Apellido}" })
             .ToList();
         ViewBag.Empleados = new SelectList(empleados, "Id", "Texto", nuevo.EmpleadoId);

@@ -3,8 +3,9 @@
     Layout = "_LayoutPublico";
 }
 
+<div class="lp-hero-fondo">
 <section class="lp-seccion lp-hero">
-    <div>
+    <div class="lp-hero-texto">
         <span class="lp-etiqueta"><i class="bi bi-geo-alt"></i> Hecho para República Dominicana</span>
         <h1>La nómina completa, <span>sin hojas de cálculo.</span></h1>
         <p class="lp-sub">
@@ -12,8 +13,8 @@
             paga el Salario de Navidad y las prestaciones, y genera el archivo de la TSS, todo en un solo lugar.
         </p>
         <div class="lp-hero-acciones">
-            <a class="pub-boton" asp-area="Identity" asp-page="/Account/Login"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
-            <a class="pub-boton-sec" href="#funciones">Ver funciones <i class="bi bi-arrow-down"></i></a>
+            <a class="pub-boton" asp-area="Identity" asp-page="/Account/Login">Iniciar sesión <i class="bi bi-arrow-right"></i></a>
+            <a class="pub-boton-sec" href="#funciones">Ver funciones <i class="bi bi-arrow-down lp-flecha-abajo"></i></a>
         </div>
         <div class="lp-puntos">
             <span><i class="bi bi-check-circle-fill"></i>Varias empresas</span>
@@ -22,6 +23,7 @@
         </div>
     </div>
 
+    <div class="lp-recibo-marco">
     <div class="lp-recibo" aria-label="Ejemplo de recibo de pago">
         <div class="lp-recibo-cab">
             <div>
@@ -37,44 +39,60 @@
         <div class="lp-recibo-fila menos"><span>Préstamo (cuota)</span><span>−2,000.00</span></div>
         <div class="lp-recibo-total">
             <span class="app-ayuda">Neto a pagar (RD$)</span>
-            <strong>24,483.68</strong>
+            <strong data-contar="24483.68">24,483.68</strong>
         </div>
+    </div>
     </div>
 </section>
 
+<div class="lp-cinta" aria-label="Lo que calcula el sistema">
+    <div class="lp-cinta-pista">
+        @foreach (var copia in new[] { false, true })
+        {
+            <ul aria-hidden="@(copia ? "true" : "false")">
+                @foreach (var concepto in new[] { "AFP", "SFS", "Riesgos laborales", "ISR", "INFOTEP", "Horas extra", "Feriados", "Vacaciones", "Salario de Navidad", "Bonificación", "Preaviso", "Cesantía", "Préstamos", "Archivo TSS" })
+                {
+                    <li>@concepto</li>
+                }
+            </ul>
+        }
+    </div>
+</div>
+</div>
+
 <section class="lp-seccion" id="funciones">
-    <div class="lp-titulo">
+    <div class="lp-titulo lp-revelar">
         <span class="lp-etiqueta">Funciones</span>
         <h2>Todo el ciclo de la nómina</h2>
         <p>Desde la ausencia de un día hasta el archivo que se sube al SUIR, con reglas del Código de Trabajo y de la TSS.</p>
     </div>
-    <div class="lp-grid">
-        <div class="lp-tarjeta">
+    <div class="lp-grid" data-escalonar>
+        <div class="lp-tarjeta lp-revelar">
             <div class="lp-tarjeta-icono"><i class="bi bi-cash-stack"></i></div>
             <h3>Nómina quincenal y mensual</h3>
             <p>AFP, SFS y riesgos laborales con sus topes; ISR recalculado con lo acumulado del mes; horas extra, nocturnas y feriados; préstamos en cuotas.</p>
         </div>
-        <div class="lp-tarjeta">
+        <div class="lp-tarjeta lp-revelar">
             <div class="lp-tarjeta-icono"><i class="bi bi-calendar2-check"></i></div>
             <h3>Incidencias y vacaciones</h3>
             <p>Faltas, retardos, permisos y licencias que se descuentan solos. Saldo de vacaciones por año de servicio y feriados de la Ley 139-97.</p>
         </div>
-        <div class="lp-tarjeta">
+        <div class="lp-tarjeta lp-revelar">
             <div class="lp-tarjeta-icono"><i class="bi bi-gift"></i></div>
             <h3>Navidad y bonificación</h3>
             <p>Salario de Navidad con lo devengado en el año y bonificación del 10 % de las utilidades con su tope de 45 o 60 días.</p>
         </div>
-        <div class="lp-tarjeta">
+        <div class="lp-tarjeta lp-revelar">
             <div class="lp-tarjeta-icono"><i class="bi bi-door-open"></i></div>
             <h3>Liquidaciones</h3>
             <p>Preaviso, cesantía, asistencia económica, vacaciones y Navidad según la causa, con el recibo de descargo listo para firmar.</p>
         </div>
-        <div class="lp-tarjeta">
+        <div class="lp-tarjeta lp-revelar">
             <div class="lp-tarjeta-icono"><i class="bi bi-file-earmark-arrow-down"></i></div>
             <h3>TSS y pago al banco</h3>
             <p>Archivo de autodeterminación para el SUIR, resumen de aportes e ISR del mes y archivo de pago de la nómina.</p>
         </div>
-        <div class="lp-tarjeta">
+        <div class="lp-tarjeta lp-revelar">
             <div class="lp-tarjeta-icono"><i class="bi bi-person-badge"></i></div>
             <h3>Portal del empleado</h3>
             <p>Cada empleado ve sus recibos, su saldo de vacaciones, pide permisos y descarga su carta de trabajo. Los recibos llegan por correo.</p>
@@ -84,25 +102,25 @@
 
 <div class="lp-banda" id="como-funciona">
     <section class="lp-seccion">
-        <div class="lp-titulo">
+        <div class="lp-titulo lp-revelar">
             <span class="lp-etiqueta">Cómo funciona</span>
             <h2>Cuatro pasos por período</h2>
             <p>Nada se paga sin revisión: cada nómina pasa por cálculo, aprobación y pago, y queda cerrada.</p>
         </div>
-        <div class="lp-pasos">
-            <div class="lp-paso">
+        <div class="lp-pasos" data-escalonar>
+            <div class="lp-paso lp-revelar">
                 <h3>Calcula</h3>
                 <p>Se crea el período y cada recibo se calcula con los parámetros legales vigentes en esa fecha.</p>
             </div>
-            <div class="lp-paso">
+            <div class="lp-paso lp-revelar">
                 <h3>Revisa</h3>
                 <p>Cada línea muestra cómo se calculó, y se compara con el neto del período anterior.</p>
             </div>
-            <div class="lp-paso">
+            <div class="lp-paso lp-revelar">
                 <h3>Aprueba</h3>
                 <p>Solo el administrador aprueba, y el sistema lo bloquea si falta la cédula o el NSS de alguien.</p>
             </div>
-            <div class="lp-paso">
+            <div class="lp-paso lp-revelar">
                 <h3>Paga y envía</h3>
                 <p>Se marca pagada, se descuentan los préstamos y cada empleado recibe su recibo en PDF.</p>
             </div>
@@ -111,26 +129,30 @@
 </div>
 
 <section class="lp-seccion" id="cumplimiento">
-    <div class="lp-titulo">
+    <div class="lp-titulo lp-revelar">
         <span class="lp-etiqueta">Cumplimiento</span>
         <h2>Las reglas del país, como parámetros</h2>
         <p>Tasas, topes, escala del ISR, salarios mínimos y feriados se guardan con su fecha de vigencia: un cambio de ley se registra sin tocar el sistema.</p>
     </div>
-    <div class="lp-leyes">
-        <div class="lp-ley"><strong>Ley 87-01</strong><span>Seguridad Social: AFP, SFS y riesgos laborales con topes por salario mínimo.</span></div>
-        <div class="lp-ley"><strong>Código Tributario</strong><span>Escala anual del ISR asalariado de la DGII y retención mensual.</span></div>
-        <div class="lp-ley"><strong>Código de Trabajo</strong><span>Jornada, horas extra, vacaciones, Navidad, bonificación y prestaciones.</span></div>
-        <div class="lp-ley"><strong>Ley 139-97</strong><span>Traslado de los feriados al lunes según el día en que caen.</span></div>
+    <div class="lp-leyes" data-escalonar>
+        <div class="lp-ley lp-revelar"><strong>Ley 87-01</strong><span>Seguridad Social: AFP, SFS y riesgos laborales con topes por salario mínimo.</span></div>
+        <div class="lp-ley lp-revelar"><strong>Código Tributario</strong><span>Escala anual del ISR asalariado de la DGII y retención mensual.</span></div>
+        <div class="lp-ley lp-revelar"><strong>Código de Trabajo</strong><span>Jornada, horas extra, vacaciones, Navidad, bonificación y prestaciones.</span></div>
+        <div class="lp-ley lp-revelar"><strong>Ley 139-97</strong><span>Traslado de los feriados al lunes según el día en que caen.</span></div>
     </div>
     <p class="lp-nota">Los valores de referencia deben confirmarse con las publicaciones oficiales de la TSS, la DGII y el Ministerio de Trabajo antes de pagar una nómina real.</p>
 </section>
 
 <section class="lp-seccion pt-0">
-    <div class="lp-cta">
+    <div class="lp-cta lp-revelar">
         <div>
             <h2>¿Ya tienes una cuenta?</h2>
             <p>Entra para gestionar la nómina, o para ver tus recibos si eres empleado.</p>
         </div>
-        <a class="pub-boton" asp-area="Identity" asp-page="/Account/Login"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
+        <a class="pub-boton" asp-area="Identity" asp-page="/Account/Login">Iniciar sesión <i class="bi bi-arrow-right"></i></a>
     </div>
 </section>
+
+@section Scripts {
+    <script src="~/js/landing.js" asp-append-version="true"></script>
+}

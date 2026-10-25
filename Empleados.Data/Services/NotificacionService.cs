@@ -36,6 +36,17 @@ public class NotificacionService
     public Task<int> ContarNoLeidasAsync(string? usuarioId) =>
         Visibles(usuarioId).CountAsync(n => !n.Leida);
 
+    // Solo las del usuario: las globales las marca cada uno al abrirlas
+    public async Task<int> MarcarTodasLeidasAsync(string? usuarioId)
+    {
+        if (string.IsNullOrEmpty(usuarioId))
+            return 0;
+        var pendientes = await _context.Notificaciones.Where(n => n.UsuarioDestinoId == usuarioId && !n.Leida).ToListAsync();
+        pendientes.ForEach(n => n.Leida = true);
+        await _context.SaveChangesAsync();
+        return pendientes.Count;
+    }
+
     public async Task<Resultado> MarcarLeidaAsync(int id, string? usuarioId)
     {
         var notificacion = await _context.Notificaciones.FindAsync(id);

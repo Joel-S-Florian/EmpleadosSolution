@@ -76,14 +76,14 @@
             <div class="app-tarjeta-cuerpo row g-3">
                 <div class="col-sm-6 col-xl-6">
                     <label asp-for="DepartamentoId" class="app-etiqueta">Departamento *</label>
-                    <select data-smart-select asp-for="DepartamentoId" class="form-select" id="DepartamentoId" asp-items="ViewBag.Departamentos">
+                    <select asp-for="DepartamentoId" class="form-select" id="DepartamentoId" asp-items="ViewBag.Departamentos">
                         <option value="">Seleccione departamento</option>
                     </select>
                     <span asp-validation-for="DepartamentoId" class="app-error"></span>
                 </div>
                 <div class="col-sm-6 col-xl-6">
                     <label asp-for="PuestoId" class="app-etiqueta">Puesto</label>
-                    <select data-smart-select asp-for="PuestoId" class="form-select" id="PuestoId" asp-items="ViewBag.Puestos">
+                    <select asp-for="PuestoId" class="form-select" id="PuestoId" asp-items="ViewBag.Puestos">
                         <option value="">Seleccione puesto</option>
                     </select>
                     <span asp-validation-for="PuestoId" class="app-error"></span>
@@ -158,7 +158,7 @@
             <div class="app-tarjeta-cuerpo row g-3">
                 <div class="col-sm-6 col-xl-5">
                     <label asp-for="BancoId" class="app-etiqueta">Banco</label>
-                    <select data-smart-select asp-for="BancoId" asp-items="ViewBag.Bancos" class="form-select">
+                    <select asp-for="BancoId" asp-items="ViewBag.Bancos" class="form-select">
                         <option value="">Sin cuenta (cheque o efectivo)</option>
                     </select>
                     <span asp-validation-for="BancoId" class="app-error"></span>

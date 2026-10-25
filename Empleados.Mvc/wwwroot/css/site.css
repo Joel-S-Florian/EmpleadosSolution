@@ -69,10 +69,11 @@ a:hover { color: var(--accent-hover); }
 .ss-boton { text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background-color: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border-color); }
 .ss-boton.ss-sin-valor { color: var(--text-muted); }
 .ss-boton[aria-expanded="true"] { border-color: var(--border-color-strong); box-shadow: var(--focus-ring); }
-.ss-panel { position: absolute; z-index: 1050; top: calc(100% + 4px); left: 0; right: 0; min-width: 240px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow-lg); overflow: hidden; }
+.ss-panel { position: fixed; z-index: 2000; display: flex; flex-direction: column; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow-lg); overflow: hidden; }
+.ss-panel[hidden], .ss-buscar[hidden], .ss-pie[hidden] { display: none !important; }
 .ss-buscar { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.65rem; border-bottom: 1px solid var(--border-color); color: var(--text-muted); }
 .ss-buscar input { border: 0; outline: 0; background: transparent; color: var(--text-primary); width: 100%; font-size: 0.9rem; }
-.ss-lista { list-style: none; margin: 0; padding: 0.3rem; max-height: 260px; overflow-y: auto; }
+.ss-lista { list-style: none; margin: 0; padding: 0.3rem; flex: 1 1 auto; min-height: 0; max-height: 320px; overflow-y: auto; outline: none; }
 .ss-opcion { padding: 0.45rem 0.6rem; border-radius: calc(var(--radius) - 2px); cursor: pointer; font-size: 0.9rem; color: var(--text-primary); }
 .ss-opcion:hover, .ss-opcion.ss-activa { background: var(--bg-muted); }
 .ss-opcion[aria-selected="true"] { font-weight: 600; }
@@ -131,3 +132,4 @@ a:hover { color: var(--accent-hover); }
 .app-reportes-catalogo a.activo { background: var(--text-primary); color: var(--bg-surface); }
 .app-reportes-contenido { min-width: 0; }
 @media (max-width: 991px) { .app-reportes { grid-template-columns: 1fr; } .app-reportes-catalogo { position: static; flex-direction: row; flex-wrap: wrap; } .app-reportes-grupo { width: 100%; } }
+.ss-boton.is-invalid { border-color: var(--danger); }

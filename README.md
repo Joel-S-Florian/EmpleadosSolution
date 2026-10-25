@@ -143,6 +143,8 @@ En la pantalla **Nómina → Simulador** y en `POST /api/Nomina/simular` se prue
 
 **Portal del empleado:** desde la ficha del empleado, el Admin le da acceso (usuario con su correo y contraseña temporal). El empleado ve sus recibos pagados y su saldo de vacaciones, pide vacaciones o permisos y descarga su carta de trabajo. Al pagar una nómina, cada recibo se envía por correo; configure la sección `Correo` (Host, Puerto, Usuario, Clave, Remitente). Sin `Host`, los correos se guardan como archivos .eml en `../correos`.
 
+**Desplegables:** todos los `<select class="form-select">` usan el componente Smart Select (buscador, carga progresiva, menú que no se recorta). Las reglas están en [docs/ESTANDAR_DESPLEGABLES.md](docs/ESTANDAR_DESPLEGABLES.md).
+
 **Reportes:** 12 reportes de personal (plantilla, por departamento, cumpleaños, contratos por vencer), nómina (costo por departamento, detalle de una nómina, comparativo mensual, acumulados, préstamos) y asistencia (ausentismo, vacaciones pendientes, rotación), con filtros por año, mes, departamento, estado o nómina, y descarga en Excel (.xlsx), CSV o PDF. Cada nómina tiene además un **PDF resumen** con una fila por empleado.
 
 **Nómina → Incidencias** registra faltas, retardos, permisos, licencias y vacaciones (también colectivas). Al aprobarse, las faltas, los retardos y los permisos sin goce se descuentan solos en la nómina del período. Las vacaciones se validan contra el saldo del año de servicio, visible en la ficha del empleado. En **Parámetros legales** se generan los feriados de cualquier año con los traslados de la Ley 139-97.

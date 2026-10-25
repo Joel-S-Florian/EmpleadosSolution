@@ -13,4 +13,10 @@ public class CrearPuestoDto
 
     [Required(ErrorMessage = "El departamento es obligatorio")]
     public int DepartamentoId { get; set; }
+
+    [Range(0.01, 99999999.99, ErrorMessage = "El salario mínimo debe ser mayor que 0")]
+    public decimal? SalarioMinimo { get; set; }
+
+    [Range(0.01, 99999999.99, ErrorMessage = "El salario máximo debe ser mayor que 0")]
+    public decimal? SalarioMaximo { get; set; }
 }

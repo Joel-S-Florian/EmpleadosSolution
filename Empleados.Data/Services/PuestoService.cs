@@ -36,7 +36,9 @@ public class PuestoService
             EmpresaId = await EmpresaDelDepartamentoAsync(dto.DepartamentoId),
             Nombre = dto.Nombre,
             Descripcion = dto.Descripcion,
-            DepartamentoId = dto.DepartamentoId
+            DepartamentoId = dto.DepartamentoId,
+            SalarioMinimo = dto.SalarioMinimo,
+            SalarioMaximo = dto.SalarioMaximo
         };
         _context.Puestos.Add(puesto);
         await _context.SaveChangesAsync();
@@ -58,8 +60,17 @@ public class PuestoService
         puesto.Nombre = dto.Nombre;
         puesto.Descripcion = dto.Descripcion;
         puesto.DepartamentoId = dto.DepartamentoId;
+        puesto.SalarioMinimo = dto.SalarioMinimo;
+        puesto.SalarioMaximo = dto.SalarioMaximo;
         await _context.SaveChangesAsync();
-        return Resultado.Exito("Puesto actualizado correctamente");
+
+        // El rango nuevo no cambia salarios: solo avisa quién queda fuera
+        var fuera = await _context.Empleados.CountAsync(e => e.PuestoId == id && e.Estado != EstadoEmpleado.Despedido &&
+            e.TipoSalario == TipoSalario.FijoMensual &&
+            ((dto.SalarioMinimo != null && e.Salario < dto.SalarioMinimo) || (dto.SalarioMaximo != null && e.Salario > dto.SalarioMaximo)));
+        return Resultado.Exito(fuera == 0
+            ? "Puesto actualizado correctamente"
+            : $"Puesto actualizado. {fuera} empleado(s) de este puesto tienen un salario fuera del nuevo rango");
     }
 
     public async Task<Resultado> EliminarAsync(int id)
@@ -84,6 +95,10 @@ public class PuestoService
     {
         if (!await _context.Departamentos.AnyAsync(d => d.Id == dto.DepartamentoId))
             return Resultado.Invalido("El departamento no existe", nameof(dto.DepartamentoId));
+        if (dto.SalarioMinimo <= 0 || dto.SalarioMaximo <= 0)
+            return Resultado.Invalido("Los salarios del rango deben ser mayores que 0", nameof(dto.SalarioMinimo));
+        if (dto.SalarioMinimo > dto.SalarioMaximo)
+            return Resultado.Invalido("El salario mínimo no puede ser mayor que el máximo", nameof(dto.SalarioMaximo));
 
         if (await _context.Puestos.AnyAsync(p => p.Nombre == dto.Nombre && p.DepartamentoId == dto.DepartamentoId && p.Id != id))
             return Resultado.Invalido(id == null

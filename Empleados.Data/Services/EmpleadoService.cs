@@ -217,6 +217,12 @@ public class EmpleadoService
                 return (Resultado.Invalido("El puesto no existe", nameof(dto.PuestoId)), null);
             if (puesto.DepartamentoId != dto.DepartamentoId)
                 return (Resultado.Invalido("El puesto no pertenece al departamento seleccionado", nameof(dto.PuestoId)), null);
+            if (dto.TipoSalario == TipoSalario.FijoMensual &&
+                ((puesto.SalarioMinimo != null && dto.Salario < puesto.SalarioMinimo) || (puesto.SalarioMaximo != null && dto.Salario > puesto.SalarioMaximo)))
+                return (Resultado.Invalido(
+                    $"El salario está fuera del rango del puesto {puesto.Nombre} " +
+                    $"({(puesto.SalarioMinimo is decimal min ? "RD$" + Dinero(min) : "sin mínimo")} – {(puesto.SalarioMaximo is decimal max ? "RD$" + Dinero(max) : "sin máximo")})",
+                    nameof(dto.Salario)), null);
         }
 
         if (dto.TipoContrato == TipoContrato.TiempoDefinido && dto.FechaFinContrato == null)

@@ -54,21 +54,21 @@
                         <input type="hidden" name="tipo" value="@tipo" />
                         @if (info.Nomina)
                         {
-                            <div class="col-md-5">
+                            <div class="col-12 col-xl-6">
                                 <label for="nominaId" class="app-etiqueta">Nómina</label>
                                 <select data-smart-select id="nominaId" name="nominaId" asp-items="ViewBag.Nominas" class="form-select"></select>
                             </div>
                         }
                         @if (info.Anio)
                         {
-                            <div class="col-md-2">
+                            <div class="col-6 col-lg-4 col-xl-2">
                                 <label for="anio" class="app-etiqueta">Año</label>
                                 <input id="anio" name="anio" type="number" min="2020" max="2100" value="@filtro.Anio" class="form-control" />
                             </div>
                         }
                         @if (info.Mes)
                         {
-                            <div class="col-md-2">
+                            <div class="col-6 col-lg-4 col-xl-3">
                                 <label for="mes" class="app-etiqueta">Mes</label>
                                 <select id="mes" name="mes" class="form-select">
                                     <option value="">@(tipo == TipoReporte.Cumpleanos ? "Este mes" : "Todo el año")</option>
@@ -81,7 +81,7 @@
                         }
                         @if (info.Departamento)
                         {
-                            <div class="col-md-3">
+                            <div class="col-12 col-lg-4 col-xl-4">
                                 <label for="departamentoId" class="app-etiqueta">Departamento</label>
                                 <select data-smart-select id="departamentoId" name="departamentoId" asp-items="ViewBag.Departamentos" class="form-select">
                                     <option value="">Todos</option>
@@ -90,7 +90,7 @@
                         }
                         @if (info.Estado)
                         {
-                            <div class="col-md-2">
+                            <div class="col-6 col-lg-4 col-xl-3">
                                 <label for="estado" class="app-etiqueta">Estado</label>
                                 <select id="estado" name="estado" class="form-select">
                                     <option value="">Activos e inactivos</option>

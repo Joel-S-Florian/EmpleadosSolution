@@ -1,0 +1,180 @@
+@model CrearEmpleadoDto
+@* Formulario de empleado por apartados; compartido por Create y Edit *@
+
+<div asp-validation-summary="ModelOnly" class="app-resumen-error"></div>
+
+<div class="app-form-apartados">
+    <nav class="app-form-indice" aria-label="Apartados del formulario">
+        <a href="#ap-personales"><i class="bi bi-person"></i> Datos personales</a>
+        <a href="#ap-contacto"><i class="bi bi-telephone"></i> Contacto</a>
+        <a href="#ap-puesto"><i class="bi bi-briefcase"></i> Puesto y salario</a>
+        <a href="#ap-contrato"><i class="bi bi-file-earmark-text"></i> Contrato</a>
+        <a href="#ap-tss"><i class="bi bi-shield-check"></i> Seguridad social</a>
+        <a href="#ap-banco"><i class="bi bi-bank"></i> Cuenta bancaria</a>
+    </nav>
+
+    <div class="app-form-contenido">
+        <section class="app-tarjeta" id="ap-personales">
+            <div class="app-tarjeta-titulo"><i class="bi bi-person"></i> Datos personales</div>
+            <div class="app-tarjeta-cuerpo row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Nombre" class="app-etiqueta">Nombre *</label>
+                    <input asp-for="Nombre" class="form-control" placeholder="Ej: Ana María" />
+                    <span asp-validation-for="Nombre" class="app-error"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Apellido" class="app-etiqueta">Apellidos *</label>
+                    <input asp-for="Apellido" class="form-control" placeholder="Ej: García Pérez" />
+                    <span asp-validation-for="Apellido" class="app-error"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="TipoDocumento" class="app-etiqueta">Documento</label>
+                    <select asp-for="TipoDocumento" asp-items="Html.GetEnumSelectList<TipoDocumento>()" class="form-select"></select>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NumeroDocumento" class="app-etiqueta">Número de documento</label>
+                    <input asp-for="NumeroDocumento" class="form-control" placeholder="001-0000000-0" />
+                    <span asp-validation-for="NumeroDocumento" class="app-error"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="FechaNacimiento" class="app-etiqueta">Fecha de nacimiento *</label>
+                    <input asp-for="FechaNacimiento" type="date" class="form-control" />
+                    <span asp-validation-for="FechaNacimiento" class="app-error"></span>
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="Sexo" class="app-etiqueta">Sexo</label>
+                    <select asp-for="Sexo" asp-items="Html.GetEnumSelectList<Sexo>()" class="form-select">
+                        <option value="">—</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="app-tarjeta" id="ap-contacto">
+            <div class="app-tarjeta-titulo"><i class="bi bi-telephone"></i> Contacto <small>el correo se usa para enviar los recibos y para el portal</small></div>
+            <div class="app-tarjeta-cuerpo row g-3">
+                <div class="col-md-7">
+                    <label asp-for="CorreoElectronico" class="app-etiqueta">Correo electrónico *</label>
+                    <input asp-for="CorreoElectronico" class="form-control" placeholder="nombre@empresa.com" />
+                    <span asp-validation-for="CorreoElectronico" class="app-error"></span>
+                </div>
+                <div class="col-md-5">
+                    <label asp-for="Telefono" class="app-etiqueta">Teléfono *</label>
+                    <input asp-for="Telefono" class="form-control" placeholder="809-555-0000" />
+                    <span asp-validation-for="Telefono" class="app-error"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Direccion" class="app-etiqueta">Dirección *</label>
+                    <input asp-for="Direccion" class="form-control" placeholder="Calle, número, sector, ciudad" />
+                    <span asp-validation-for="Direccion" class="app-error"></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="app-tarjeta" id="ap-puesto">
+            <div class="app-tarjeta-titulo"><i class="bi bi-briefcase"></i> Puesto y salario</div>
+            <div class="app-tarjeta-cuerpo row g-3">
+                <div class="col-md-6">
+                    <label asp-for="DepartamentoId" class="app-etiqueta">Departamento *</label>
+                    <select data-smart-select asp-for="DepartamentoId" class="form-select" id="DepartamentoId" asp-items="ViewBag.Departamentos">
+                        <option value="">Seleccione departamento</option>
+                    </select>
+                    <span asp-validation-for="DepartamentoId" class="app-error"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="PuestoId" class="app-etiqueta">Puesto</label>
+                    <select data-smart-select asp-for="PuestoId" class="form-select" id="PuestoId" asp-items="ViewBag.Puestos">
+                        <option value="">Seleccione puesto</option>
+                    </select>
+                    <span asp-validation-for="PuestoId" class="app-error"></span>
+                    <div class="app-ayuda" id="rangoPuesto">Se filtra según el departamento</div>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="TipoSalario" class="app-etiqueta">Tipo de salario</label>
+                    <select asp-for="TipoSalario" asp-items="Html.GetEnumSelectList<TipoSalario>()" class="form-select"></select>
+                    <div class="app-ayuda">Por hora: el salario es la tarifa</div>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Salario" class="app-etiqueta">Salario (RD$) *</label>
+                    <input asp-for="Salario" type="number" step="0.01" class="form-control" placeholder="35000" />
+                    <span asp-validation-for="Salario" class="app-error"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="FrecuenciaPago" class="app-etiqueta">Frecuencia de pago</label>
+                    <select asp-for="FrecuenciaPago" asp-items="Html.GetEnumSelectList<FrecuenciaPago>()" class="form-select">
+                        <option value="">La de la empresa</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="FechaContratacion" class="app-etiqueta">Fecha de ingreso *</label>
+                    <input asp-for="FechaContratacion" type="date" class="form-control" />
+                    <span asp-validation-for="FechaContratacion" class="app-error"></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="app-tarjeta" id="ap-contrato">
+            <div class="app-tarjeta-titulo"><i class="bi bi-file-earmark-text"></i> Contrato</div>
+            <div class="app-tarjeta-cuerpo row g-3">
+                <div class="col-md-6">
+                    <label asp-for="TipoContrato" class="app-etiqueta">Tipo de contrato</label>
+                    <select asp-for="TipoContrato" asp-items="Html.GetEnumSelectList<TipoContrato>()" class="form-select"></select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="FechaFinContrato" class="app-etiqueta">Fin del contrato</label>
+                    <input asp-for="FechaFinContrato" type="date" class="form-control" />
+                    <span asp-validation-for="FechaFinContrato" class="app-error"></span>
+                    <div class="app-ayuda">Obligatoria si es por tiempo definido</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="app-tarjeta" id="ap-tss">
+            <div class="app-tarjeta-titulo"><i class="bi bi-shield-check"></i> Seguridad social <small>el documento y el NSS son obligatorios para aprobar la nómina</small></div>
+            <div class="app-tarjeta-cuerpo row g-3">
+                <div class="col-md-4">
+                    <label asp-for="Nss" class="app-etiqueta">NSS</label>
+                    <input asp-for="Nss" class="form-control" placeholder="Número de seguridad social" />
+                    <span asp-validation-for="Nss" class="app-error"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Afp" class="app-etiqueta">AFP</label>
+                    <input asp-for="Afp" class="form-control" placeholder="Ej: AFP Popular" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Ars" class="app-etiqueta">ARS</label>
+                    <input asp-for="Ars" class="form-control" placeholder="Ej: ARS Humano" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="DependientesSfs" class="app-etiqueta">Dependientes adicionales SFS</label>
+                    <input asp-for="DependientesSfs" type="number" min="0" max="20" class="form-control" />
+                    <span asp-validation-for="DependientesSfs" class="app-error"></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="app-tarjeta" id="ap-banco">
+            <div class="app-tarjeta-titulo"><i class="bi bi-bank"></i> Cuenta bancaria <small>para el pago de la nómina por banco</small></div>
+            <div class="app-tarjeta-cuerpo row g-3">
+                <div class="col-md-5">
+                    <label asp-for="BancoId" class="app-etiqueta">Banco</label>
+                    <select data-smart-select asp-for="BancoId" asp-items="ViewBag.Bancos" class="form-select">
+                        <option value="">Sin cuenta (cheque o efectivo)</option>
+                    </select>
+                    <span asp-validation-for="BancoId" class="app-error"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NumeroCuenta" class="app-etiqueta">Número de cuenta</label>
+                    <input asp-for="NumeroCuenta" class="form-control" />
+                    <span asp-validation-for="NumeroCuenta" class="app-error"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="TipoCuenta" class="app-etiqueta">Tipo de cuenta</label>
+                    <select asp-for="TipoCuenta" asp-items="Html.GetEnumSelectList<TipoCuenta>()" class="form-select">
+                        <option value="">—</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

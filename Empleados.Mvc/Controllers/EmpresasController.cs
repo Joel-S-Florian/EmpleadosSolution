@@ -1,4 +1,6 @@
+using Empleados.Data.Data;
 using Empleados.Data.DTOs;
+using Empleados.Data.Entities;
 using Empleados.Data.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -12,11 +14,13 @@ public class EmpresasController : Controller
 {
     private readonly EmpresaService _empresas;
     private readonly UserManager<IdentityUser> _usuarios;
+    private readonly EmpleadosDbContext _context;
 
-    public EmpresasController(EmpresaService empresas, UserManager<IdentityUser> usuarios)
+    public EmpresasController(EmpresaService empresas, UserManager<IdentityUser> usuarios, EmpleadosDbContext context)
     {
         _empresas = empresas;
         _usuarios = usuarios;
+        _context = context;
     }
 
     // GET: Empresas
@@ -57,6 +61,7 @@ public class EmpresasController : Controller
             return NotFound();
 
         await CargarUsuariosAsync(empresa.Usuarios.Select(u => u.UsuarioId));
+        await CargarResumenAsync(id);
         return View(EmpresaDto.Desde(empresa));
     }
 
@@ -81,12 +86,25 @@ public class EmpresasController : Controller
         }
 
         await CargarUsuariosAsync(usuarioIds);
+        await CargarResumenAsync(id);
         return View(dto);
     }
 
+    // Sin los usuarios del portal: su acceso se da y se quita desde la ficha del empleado
     private async Task CargarUsuariosAsync(IEnumerable<string> asignados)
     {
-        ViewBag.Usuarios = await _usuarios.Users.OrderBy(u => u.Email).Select(u => new { u.Id, u.Email }).ToListAsync();
+        var delPortal = _context.Empleados.IgnoreQueryFilters().Where(e => e.UsuarioId != null).Select(e => e.UsuarioId);
+        ViewBag.Usuarios = await _usuarios.Users.Where(u => !delPortal.Contains(u.Id)).OrderBy(u => u.Email).Select(u => new { u.Id, u.Email }).ToListAsync();
         ViewBag.Asignados = asignados.ToHashSet();
+    }
+
+    private async Task CargarResumenAsync(int id)
+    {
+        var empleados = _context.Empleados.IgnoreQueryFilters().Where(e => e.EmpresaId == id);
+        ViewBag.EmpleadosActivos = await empleados.CountAsync(e => e.Estado == EstadoEmpleado.Activo);
+        ViewBag.EmpleadosPortal = await empleados.CountAsync(e => e.UsuarioId != null);
+        ViewBag.Departamentos = await _context.Departamentos.IgnoreQueryFilters().CountAsync(d => d.EmpresaId == id);
+        ViewBag.UltimaNomina = await _context.Nominas.IgnoreQueryFilters().Where(n => n.EmpresaId == id && n.FechaPago != null)
+            .OrderByDescending(n => n.FechaPago).FirstOrDefaultAsync();
     }
 }

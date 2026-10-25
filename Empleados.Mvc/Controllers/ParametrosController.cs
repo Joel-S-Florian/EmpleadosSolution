@@ -17,12 +17,13 @@ public class ParametrosController : Controller
         _parametros = parametros;
     }
 
-    // GET: Parametros?fecha=2026-03-01&anio=2026
-    public async Task<IActionResult> Index(DateTime? fecha, int? anio)
+    // GET: Parametros?seccion=tss&fecha=2026-03-01&anio=2026
+    public async Task<IActionResult> Index(DateTime? fecha, int? anio, string? seccion)
     {
         var dia = fecha?.Date ?? DateTime.Today;
         var modelo = new ParametrosViewModel
         {
+            Seccion = ParametrosViewModel.Secciones.ContainsKey(seccion ?? "") ? seccion! : "resumen",
             Fecha = dia,
             Vigentes = await _parametros.VigentesAsync(dia),
             Historial = await _parametros.HistorialAsync(),
@@ -40,7 +41,7 @@ public class ParametrosController : Controller
     public async Task<IActionResult> NuevaVigencia(string clave, decimal valor, DateTime vigenteDesde, string? fuente)
     {
         Avisar(await _parametros.AgregarVigenciaAsync(clave, valor, vigenteDesde, fuente));
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index), new { seccion = clave.StartsWith("Laboral.") ? "laboral" : "tss" });
     }
 
     // POST: Parametros/NuevoSalarioMinimo
@@ -49,7 +50,7 @@ public class ParametrosController : Controller
     public async Task<IActionResult> NuevoSalarioMinimo(TamanoEmpresa tamano, decimal monto, DateTime vigenteDesde)
     {
         Avisar(await _parametros.AgregarSalarioMinimoAsync(tamano, monto, vigenteDesde));
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index), new { seccion = "salarios" });
     }
 
     // POST: Parametros/NuevoFeriado
@@ -58,7 +59,7 @@ public class ParametrosController : Controller
     public async Task<IActionResult> NuevoFeriado(DateTime fecha, string nombre)
     {
         Avisar(await _parametros.AgregarFeriadoAsync(fecha, nombre));
-        return RedirectToAction(nameof(Index), new { anio = fecha.Year });
+        return RedirectToAction(nameof(Index), new { seccion = "feriados", anio = fecha.Year });
     }
 
     // POST: Parametros/GenerarFeriados?anio=2027
@@ -67,7 +68,7 @@ public class ParametrosController : Controller
     public async Task<IActionResult> GenerarFeriados(int anio)
     {
         Avisar(await _parametros.GenerarFeriadosAsync(anio));
-        return RedirectToAction(nameof(Index), new { anio });
+        return RedirectToAction(nameof(Index), new { seccion = "feriados", anio });
     }
 
     // POST: Parametros/EliminarFeriado/5
@@ -76,7 +77,7 @@ public class ParametrosController : Controller
     public async Task<IActionResult> EliminarFeriado(int id, int anio)
     {
         Avisar(await _parametros.EliminarFeriadoAsync(id));
-        return RedirectToAction(nameof(Index), new { anio });
+        return RedirectToAction(nameof(Index), new { seccion = "feriados", anio });
     }
 
     private void Avisar(Resultado resultado) =>

@@ -121,3 +121,13 @@ a:hover { color: var(--accent-hover); }
 .app-datos dd { margin: 0; text-align: right; font-weight: 600; }
 .app-lista-usuarios { max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.3rem; }
 @media (max-width: 991px) { .app-form-apartados { grid-template-columns: 1fr; } .app-form-indice { position: static; flex-direction: row; flex-wrap: wrap; } }
+
+/* Centro de reportes */
+.app-reportes { display: grid; grid-template-columns: 250px 1fr; gap: var(--space-lg); align-items: start; }
+.app-reportes-catalogo { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 0.1rem; padding: 0.5rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); }
+.app-reportes-grupo { font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; padding: 0.6rem 0.6rem 0.25rem; }
+.app-reportes-catalogo a { display: flex; align-items: center; gap: 0.55rem; padding: 0.45rem 0.6rem; border-radius: var(--radius); color: var(--text-secondary); text-decoration: none; font-size: 0.87rem; }
+.app-reportes-catalogo a:hover { background: var(--bg-muted); color: var(--text-primary); }
+.app-reportes-catalogo a.activo { background: var(--text-primary); color: var(--bg-surface); }
+.app-reportes-contenido { min-width: 0; }
+@media (max-width: 991px) { .app-reportes { grid-template-columns: 1fr; } .app-reportes-catalogo { position: static; flex-direction: row; flex-wrap: wrap; } .app-reportes-grupo { width: 100%; } }

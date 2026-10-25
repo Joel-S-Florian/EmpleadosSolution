@@ -1,100 +1,165 @@
-@model IEnumerable<Empleados.Data.DTOs.ReporteDepartamentoDto>
-@using System.Globalization
+@using Empleados.Data.Services
+@model TablaReporte
 @{
     ViewData["Title"] = "Reportes";
-    var culture = new CultureInfo("es-DO");
+    var tipo = (TipoReporte)ViewBag.Tipo;
+    var filtro = (FiltroReporte)ViewBag.Filtro;
+    var info = GeneradorReportes.Catalogo[tipo];
+    var ruta = new Dictionary<string, string?>
+    {
+        ["tipo"] = tipo.ToString(),
+        ["anio"] = filtro.Anio.ToString(),
+        ["mes"] = filtro.Mes?.ToString(),
+        ["departamentoId"] = filtro.DepartamentoId?.ToString(),
+        ["estado"] = filtro.Estado?.ToString(),
+        ["nominaId"] = filtro.NominaId?.ToString()
+    };
+    var hayFiltros = info.Anio || info.Mes || info.Departamento || info.Estado || info.Nomina;
 }
 
-<div style="max-width:1200px; margin:0 auto;">
-    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap: var(--space-md); margin-bottom: var(--space-lg); flex-wrap:wrap;">
-        <div style="display:flex; gap: var(--space-md); align-items:flex-start;">
-            <span style="width:44px; height:44px; display:grid; place-items:center; background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius); color: var(--text-secondary);"><i class="bi bi-bar-chart-line" style="font-size:1.2rem;"></i></span>
+<div class="app-pagina">
+    <div class="app-encabezado">
+        <div class="d-flex gap-3 align-items-start">
+            <span class="app-icono"><i class="bi bi-bar-chart-line"></i></span>
             <div>
-                <h1 style="font-size:1.35rem; font-weight:700; margin:0; letter-spacing:-0.02em;">Reportes por departamento</h1>
-                <p style="margin:0.2rem 0 0; color: var(--text-secondary); font-size:0.9rem;">Métricas agregadas en tiempo real · @Model.Count() departamentos</p>
+                <h1>Reportes</h1>
+                <p>Personal, nómina y asistencia. Elija un reporte, ajuste los filtros y descárguelo en Excel, CSV o PDF.</p>
             </div>
         </div>
-        <span style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.35rem 0.75rem; border-radius: var(--radius-pill); background: var(--bg-surface); border:1px solid var(--border-color); color: var(--text-secondary); font-size:0.8rem; font-weight:600;">
-            <i class="bi bi-clock" style="font-size:0.85rem;"></i> Tiempo real
-        </span>
     </div>
 
-    @if (!Model.Any())
-    {
-        <partial name="~/Views/Shared/Components/_EmptyState.cshtml" model='((string Icon, string Title, string Description, string ActionText, string ActionUrl)) ("bi-bar-chart", "Sin datos para reportar", "No hay departamentos registrados. Crea departamentos y asigna empleados para generar métricas.", "", "")' />
-    }
-    else
-    {
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-md-4">
-            @foreach (var item in Model)
+    <div class="app-reportes">
+        <nav class="app-reportes-catalogo" aria-label="Reportes disponibles">
+            @foreach (var grupo in GeneradorReportes.Catalogo.GroupBy(r => r.Value.Categoria))
             {
-                var pct = item.TotalEmpleados > 0 ? (double)item.Activos / item.TotalEmpleados * 100 : 0;
-                <div class="col">
-                    <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow:hidden; height:100%; display:flex; flex-direction:column;">
-                        <div style="padding: var(--space-lg) var(--space-lg) var(--space-md); border-bottom:1px solid var(--border-color); display:flex; align-items:center; gap:0.75rem;">
-                            <span style="width:38px; height:38px; display:grid; place-items:center; background: var(--bg-muted); border:1px solid var(--border-color); border-radius: var(--radius); color: var(--text-secondary);"><i class="bi bi-building"></i></span>
-                            <div style="min-width:0;">
-                                <div style="font-weight:600; color: var(--text-primary); font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">@item.Nombre</div>
-                                <div style="font-size:0.75rem; color: var(--text-muted); letter-spacing:0.03em; text-transform:uppercase;">Departamento</div>
-                            </div>
-                        </div>
-                        <div style="padding: var(--space-lg); flex:1; display:flex; flex-direction:column; gap: var(--space-md);">
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap: var(--space-md);">
-                                <div style="background: var(--bg-muted); border:1px solid var(--border-color); border-radius: var(--radius); padding: var(--space-md); text-align:center;">
-                                    <div style="font-size:1.35rem; font-weight:700; color: var(--text-primary); line-height:1;">@item.TotalEmpleados</div>
-                                    <div style="font-size:0.7rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600; margin-top:0.25rem;">Total</div>
-                                </div>
-                                <div style="background: var(--success-soft); border:1px solid var(--success-border); border-radius: var(--radius); padding: var(--space-md); text-align:center;">
-                                    <div style="font-size:1.35rem; font-weight:700; color: var(--success); line-height:1;">@item.Activos</div>
-                                    <div style="font-size:0.7rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--success); font-weight:600; margin-top:0.25rem;">Activos</div>
-                                </div>
-                            </div>
-                            <div style="background: var(--bg-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding: var(--space-md); text-align:center;">
-                                <div style="font-size:0.7rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600;">Nómina mensual (activos)</div>
-                                <div style="font-size:1.15rem; font-weight:700; color: var(--text-primary); margin-top:0.25rem;">@item.NominaMensual.ToString("C", culture)</div>
-                            </div>
-                            <div>
-                                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color: var(--text-muted); margin-bottom:0.35rem;">
-                                    <span>Activos</span><span>@pct.ToString("F0")%</span>
-                                </div>
-                                <div style="height:6px; background: var(--bg-muted); border:1px solid var(--border-color); border-radius: var(--radius-pill); overflow:hidden;">
-                                    <div style="height:100%; background: var(--success); width: @pct.ToString("F0", CultureInfo.InvariantCulture)%; border-radius: var(--radius-pill); transition: width 0.4s ease;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div style="padding: 0.6rem var(--space-lg); background: var(--bg-muted); border-top:1px solid var(--border-color); display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color: var(--text-muted);">
-                            <i class="bi bi-people" style="font-size:0.85rem;"></i> @item.TotalEmpleados empleado(s) en total
-                        </div>
-                    </div>
+                <div class="app-reportes-grupo">@grupo.Key</div>
+                @foreach (var r in grupo)
+                {
+                    <a asp-action="Index" asp-route-tipo="@r.Key" asp-route-anio="@filtro.Anio" class="@(r.Key == tipo ? "activo" : "")" aria-current="@(r.Key == tipo ? "page" : null)">
+                        <i class="bi @r.Value.Icono"></i> @Textos.De(r.Key)
+                    </a>
+                }
+            }
+        </nav>
+
+        <div class="app-reportes-contenido">
+            <div class="app-tarjeta">
+                <div class="app-tarjeta-titulo">
+                    <i class="bi @info.Icono"></i> @Textos.De(tipo)
+                    <small>@info.Descripcion</small>
                 </div>
+                @if (hayFiltros)
+                {
+                    <form method="get" class="app-tarjeta-cuerpo row g-2 align-items-end border-bottom">
+                        <input type="hidden" name="tipo" value="@tipo" />
+                        @if (info.Nomina)
+                        {
+                            <div class="col-md-5">
+                                <label for="nominaId" class="app-etiqueta">Nómina</label>
+                                <select data-smart-select id="nominaId" name="nominaId" asp-items="ViewBag.Nominas" class="form-select"></select>
+                            </div>
+                        }
+                        @if (info.Anio)
+                        {
+                            <div class="col-md-2">
+                                <label for="anio" class="app-etiqueta">Año</label>
+                                <input id="anio" name="anio" type="number" min="2020" max="2100" value="@filtro.Anio" class="form-control" />
+                            </div>
+                        }
+                        @if (info.Mes)
+                        {
+                            <div class="col-md-2">
+                                <label for="mes" class="app-etiqueta">Mes</label>
+                                <select id="mes" name="mes" class="form-select">
+                                    <option value="">@(tipo == TipoReporte.Cumpleanos ? "Este mes" : "Todo el año")</option>
+                                    @for (var m = 1; m <= 12; m++)
+                                    {
+                                        <option value="@m" selected="@(m == filtro.Mes)">@(new DateTime(2000, m, 1).ToString("MMMM"))</option>
+                                    }
+                                </select>
+                            </div>
+                        }
+                        @if (info.Departamento)
+                        {
+                            <div class="col-md-3">
+                                <label for="departamentoId" class="app-etiqueta">Departamento</label>
+                                <select data-smart-select id="departamentoId" name="departamentoId" asp-items="ViewBag.Departamentos" class="form-select">
+                                    <option value="">Todos</option>
+                                </select>
+                            </div>
+                        }
+                        @if (info.Estado)
+                        {
+                            <div class="col-md-2">
+                                <label for="estado" class="app-etiqueta">Estado</label>
+                                <select id="estado" name="estado" class="form-select">
+                                    <option value="">Activos e inactivos</option>
+                                    @foreach (var e in Enum.GetValues<EstadoEmpleado>())
+                                    {
+                                        <option value="@e" selected="@(e == filtro.Estado)">@e.Texto()</option>
+                                    }
+                                </select>
+                            </div>
+                        }
+                        <div class="col-md-auto">
+                            <button type="submit" class="app-boton"><i class="bi bi-funnel"></i> Aplicar</button>
+                        </div>
+                    </form>
+                }
+                <div class="app-tarjeta-cuerpo d-flex flex-wrap align-items-center gap-2">
+                    <span class="app-ayuda me-auto">@Model.Subtitulo · @Model.Filas.Count fila(s)</span>
+                    <a asp-action="Index" asp-all-route-data="ruta" asp-route-formato="xlsx" class="app-boton-sec"><i class="bi bi-file-earmark-excel"></i> Excel</a>
+                    <a asp-action="Index" asp-all-route-data="ruta" asp-route-formato="csv" class="app-boton-sec"><i class="bi bi-filetype-csv"></i> CSV</a>
+                    <a asp-action="Index" asp-all-route-data="ruta" asp-route-formato="pdf" class="app-boton-sec"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+                </div>
+            </div>
+
+            <div class="app-tarjeta">
+                <div class="app-tarjeta-titulo">@Model.Titulo</div>
+                <div class="table-responsive">
+                    <table class="table table-hover app-tabla mb-0">
+                        <thead>
+                            <tr>
+                                @foreach (var c in Model.Columnas)
+                                {
+                                    <th class="@(c.Numerica ? "app-numero" : "")">@c.Titulo</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.Filas.Any())
+                            {
+                                <tr><td colspan="@Model.Columnas.Count" class="app-ayuda">Sin datos para estos filtros@(info.Categoria == GeneradorReportes.Nominas ? " (los reportes de nómina usan solo las nóminas aprobadas)" : "").</td></tr>
+                            }
+                            @foreach (var fila in Model.Filas)
+                            {
+                                <tr>
+                                    @for (var i = 0; i < fila.Length; i++)
+                                    {
+                                        <td class="@(fila[i] is decimal ? "app-numero" : "")">@GeneradorReportes.Celda(fila[i], Model.Columnas[i])</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                        @if (Model.Totales is { } totales)
+                        {
+                            <tfoot>
+                                <tr class="fw-semibold">
+                                    @for (var i = 0; i < totales.Length; i++)
+                                    {
+                                        <td class="@(totales[i] is decimal ? "app-numero" : "")">@GeneradorReportes.Celda(totales[i], Model.Columnas[i])</td>
+                                    }
+                                </tr>
+                            </tfoot>
+                        }
+                    </table>
+                </div>
+            </div>
+
+            @if (info.Categoria == GeneradorReportes.Nominas)
+            {
+                <p class="app-ayuda">El resumen de aportes a la TSS y del ISR del mes está en <a asp-controller="Archivos" asp-action="Index">Archivos TSS y banco</a>.</p>
             }
         </div>
-
-        <div style="background: var(--bg-surface); border:1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--space-lg) var(--space-xl); margin-top: var(--space-xl);">
-            <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom: var(--space-md);">
-                <span style="width:32px; height:32px; display:grid; place-items:center; background: var(--bg-muted); border:1px solid var(--border-color); border-radius: var(--radius); color: var(--text-secondary);"><i class="bi bi-pie-chart"></i></span>
-                <span style="font-weight:600; color: var(--text-primary);">Resumen general</span>
-            </div>
-            <div class="row g-3 text-center">
-                <div class="col-md-4">
-                    <div style="background: var(--bg-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding: var(--space-md);">
-                        <div style="font-size:1.4rem; font-weight:700; color: var(--text-primary);">@Model.Sum(x => x.TotalEmpleados)</div>
-                        <div style="font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600;">Total empleados</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div style="background: var(--success-soft); border:1px solid var(--success-border); border-radius: var(--radius); padding: var(--space-md);">
-                        <div style="font-size:1.4rem; font-weight:700; color: var(--success);">@Model.Sum(x => x.Activos)</div>
-                        <div style="font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--success); font-weight:600;">Total activos</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div style="background: var(--bg-primary); border:1px solid var(--border-color); border-radius: var(--radius); padding: var(--space-md);">
-                        <div style="font-size:1.15rem; font-weight:700; color: var(--text-primary);">@Model.Sum(x => x.NominaMensual).ToString("C", culture)</div>
-                        <div style="font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--text-muted); font-weight:600;">Nómina total</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
+    </div>
 </div>

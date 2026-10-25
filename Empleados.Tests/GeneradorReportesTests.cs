@@ -3,14 +3,15 @@ using Empleados.Data.DTOs;
 using Empleados.Data.Entities;
 using Empleados.Data.Services;
 using Microsoft.EntityFrameworkCore;
+using System.IO.Compression;
 using System.Text;
 
 namespace Empleados.Tests;
 
-public class ReportesNominaTests
+public class GeneradorReportesTests
 {
     // 1 = TI 45,000 desde 2020; 2 = Ventas 30,000 desde marzo de 2026; 3 = salió en junio de 2026
-    private static (EmpleadosDbContext Context, ReportesNominaService Reportes, CicloNominaService Ciclo, IncidenciaService Incidencias) Crear()
+    private static (EmpleadosDbContext Context, GeneradorReportes Reportes, CicloNominaService Ciclo, IncidenciaService Incidencias) Crear()
     {
         var options = new DbContextOptionsBuilder<EmpleadosDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
         using (var semilla = new EmpleadosDbContext(options))
@@ -28,7 +29,7 @@ public class ReportesNominaTests
         var context = new EmpleadosDbContext(options, contexto);
         var parametros = new ParametrosLegalesService(context);
         var incidencias = new IncidenciaService(context, parametros, contexto);
-        return (context, new ReportesNominaService(context, incidencias), new CicloNominaService(context, new NominaService(context, parametros), contexto), incidencias);
+        return (context, new GeneradorReportes(context, incidencias), new CicloNominaService(context, new NominaService(context, parametros), contexto), incidencias);
     }
 
     private static Empleado Empleado(int id, int departamento, decimal salario, DateTime ingreso, DateTime? salida = null) => new()
@@ -51,7 +52,7 @@ public class ReportesNominaTests
         var (_, reportes, ciclo, _) = Crear();
         await OctubreAprobada(ciclo);
 
-        var tabla = await reportes.CostoPorDepartamentoAsync(2026, 10);
+        var tabla = await reportes.CostoPorDepartamentoAsync(new(2026, 10));
 
         Assert.Equal(new[] { "TI", "Ventas" }, tabla.Filas.Select(f => (string)f[0]!));
         Assert.Equal(45000m, tabla.Filas[0][2]);
@@ -65,7 +66,7 @@ public class ReportesNominaTests
         var (_, reportes, ciclo, _) = Crear();
         await ciclo.CrearAsync(new CrearNominaDto { Anio = 2026, Mes = 10, Frecuencia = FrecuenciaPago.Mensual });
 
-        Assert.Empty((await reportes.CostoPorDepartamentoAsync(2026, 10)).Filas);
+        Assert.Empty((await reportes.CostoPorDepartamentoAsync(new(2026, 10))).Filas);
     }
 
     [Fact]
@@ -74,7 +75,7 @@ public class ReportesNominaTests
         var (_, reportes, ciclo, _) = Crear();
         await OctubreAprobada(ciclo);
 
-        var tabla = await reportes.AcumuladosAnualesAsync(2026);
+        var tabla = await reportes.AcumuladosAnualesAsync(new(2026));
         var fila = tabla.Filas.Single(f => (string)f[0]! == "N1 A");
 
         Assert.Equal(45000m, fila[2]);
@@ -86,7 +87,7 @@ public class ReportesNominaTests
     {
         var (_, reportes, _, _) = Crear();
 
-        var tabla = await reportes.RotacionAsync(2026);
+        var tabla = await reportes.RotacionAsync(new(2026));
 
         Assert.Equal(1m, tabla.Filas[2][2]); // marzo: un alta
         Assert.Equal(1m, tabla.Filas[5][3]); // junio: una baja
@@ -100,8 +101,8 @@ public class ReportesNominaTests
         var falta = await incidencias.CrearAsync(new IncidenciaDto { EmpleadoId = 1, Tipo = TipoIncidencia.Falta, FechaInicio = new DateTime(2026, 10, 5), FechaFin = new DateTime(2026, 10, 6) });
         await incidencias.AprobarAsync(falta.Valor!.Id);
 
-        var ausentismo = await reportes.AusentismoAsync(2026, 10);
-        var vacaciones = await reportes.VacacionesPendientesAsync();
+        var ausentismo = await reportes.AusentismoAsync(new(2026, 10));
+        var vacaciones = await reportes.VacacionesPendientesAsync(new(2026));
 
         Assert.Equal(2m, ausentismo.Filas.Single()[1]);
         Assert.Equal("N1 A", vacaciones.Filas.Single()[0]); // el de marzo de 2026 aún no cumple un año
@@ -112,13 +113,82 @@ public class ReportesNominaTests
     {
         var (context, reportes, ciclo, _) = Crear();
         await OctubreAprobada(ciclo);
-        var tabla = await reportes.CostoPorDepartamentoAsync(2026, 10);
+        var tabla = await reportes.CostoPorDepartamentoAsync(new(2026, 10));
 
-        var csv = Encoding.UTF8.GetString(ReportesNominaService.Csv(tabla)).TrimStart('﻿').Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
-        var pdf = ReportesNominaService.Pdf(tabla, await context.Empresas.FirstAsync());
+        var csv = Encoding.UTF8.GetString(GeneradorReportes.Csv(tabla)).TrimStart('﻿').Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        var pdf = GeneradorReportes.Pdf(tabla, await context.Empresas.FirstAsync());
 
         Assert.StartsWith("Departamento,Empleados,Ingresos", csv[0]);
         Assert.StartsWith("Total,2,75000", csv[^1]);
         Assert.Equal("%PDF", Encoding.ASCII.GetString(pdf, 0, 4));
     }
+
+    [Fact]
+    public async Task Plantilla_FiltraPorDepartamentoYEstado()
+    {
+        var (_, reportes, _, _) = Crear();
+
+        var ventas = await reportes.PlantillaAsync(new(2026, DepartamentoId: 2));
+        var despedidos = await reportes.PlantillaAsync(new(2026, Estado: EstadoEmpleado.Despedido));
+        var todos = await reportes.PlantillaAsync(new(2026));
+
+        Assert.Single(ventas.Filas); // el de ventas que salió no aparece por defecto
+        Assert.Equal("A, N3", Assert.Single(despedidos.Filas)[0]);
+        Assert.Equal(2, todos.Filas.Count);
+        Assert.Equal(75000m, todos.Totales![7]);
+    }
+
+    [Fact]
+    public async Task DetalleYComparativo_UsanLaNominaAprobada()
+    {
+        var (context, reportes, ciclo, _) = Crear();
+        await OctubreAprobada(ciclo);
+        var nomina = await context.Nominas.FirstAsync();
+
+        var detalle = await reportes.DetalleNominaAsync(new(2026, NominaId: nomina.Id));
+        var comparativo = await reportes.ComparativoMensualAsync(new(2026));
+        var porDepartamento = await reportes.EmpleadosPorDepartamentoAsync();
+
+        Assert.Equal(2, detalle.Filas.Count);
+        Assert.Equal(nomina.TotalNeto, detalle.Totales![7]);
+        Assert.Equal(75000m, comparativo.Filas[9][2]); // octubre
+        Assert.Equal(0m, comparativo.Filas[8][2]);
+        Assert.Equal(new object?[] { "TI", 1m, 1m, 45000m, "45,000.00" }, porDepartamento.Filas[0]);
+    }
+
+    [Fact]
+    public async Task Excel_EsUnXlsxConEncabezadoTotalesYAutofiltro()
+    {
+        var (context, reportes, ciclo, _) = Crear();
+        await OctubreAprobada(ciclo);
+        var tabla = await reportes.CostoPorDepartamentoAsync(new(2026, 10));
+
+        var xlsx = ExcelReporte.Generar(tabla, await context.Empresas.FirstAsync());
+
+        using var zip = new ZipArchive(new MemoryStream(xlsx));
+        Assert.NotNull(zip.GetEntry("[Content_Types].xml"));
+        Assert.NotNull(zip.GetEntry("xl/workbook.xml"));
+        var hoja = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd();
+        Assert.Contains("<t xml:space=\"preserve\">Departamento</t>", hoja);
+        Assert.Contains("<v>45000</v>", hoja);
+        Assert.Contains("<t xml:space=\"preserve\">Total</t>", hoja);
+        Assert.Contains("<autoFilter ref=\"A4:H7\"/>", hoja); // encabezado, 2 departamentos y totales
+        Assert.Equal("AA", ExcelReporte.Letra(26));
+    }
+
+    [Fact]
+    public async Task ResumenDeNomina_GeneraPdf()
+    {
+        var (context, _, ciclo, _) = Crear();
+        await OctubreAprobada(ciclo);
+        var nomina = (await ciclo.ObtenerAsync((await context.Nominas.FirstAsync()).Id))!;
+
+        var pdf = ResumenNominaPdf.Generar(await context.Empresas.FirstAsync(), nomina);
+
+        Assert.Equal("%PDF", Encoding.ASCII.GetString(pdf, 0, 4));
+    }
+
+    [Fact]
+    public void Catalogo_DescribeTodosLosReportes() =>
+        Assert.All(Enum.GetValues<TipoReporte>(), t => Assert.True(GeneradorReportes.Catalogo.ContainsKey(t), t.ToString()));
 }

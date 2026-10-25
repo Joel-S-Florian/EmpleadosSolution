@@ -23,7 +23,8 @@
             </div>
         </div>
         <div class="d-flex gap-2 flex-wrap align-items-end">
-            <a asp-action="RecibosPdf" asp-route-id="@Model.Id" class="app-boton-sec"><i class="bi bi-file-earmark-pdf"></i> Todos los recibos</a>
+            <a asp-action="ResumenPdf" asp-route-id="@Model.Id" class="app-boton-sec" title="Una fila por empleado, con totales"><i class="bi bi-table"></i> Resumen PDF</a>
+            <a asp-action="RecibosPdf" asp-route-id="@Model.Id" class="app-boton-sec" title="Un recibo detallado por página"><i class="bi bi-file-earmark-pdf"></i> Todos los recibos</a>
             @if (Model.Editable)
             {
                 <form asp-action="Calcular" asp-route-id="@Model.Id" method="post"><button type="submit" class="app-boton-sec"><i class="bi bi-arrow-repeat"></i> Recalcular</button></form>
